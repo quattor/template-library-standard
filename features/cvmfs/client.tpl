@@ -43,7 +43,7 @@ variable CVMFS_KEYS_DIR ?= undef;
 variable CVMFS_HTTP_PROXY ?= undef;
 
 # Release version
-variable CVMFS_CLIENT_VERSION ?= '2.1.14-1';
+variable CVMFS_CLIENT_VERSION ?= '2.1.15-1';
 
 # Repository contining the RPMs
 variable CVMFS_RPM_REPOSITORIES ?= list('CernVM-FS');
@@ -72,7 +72,8 @@ variable VO_CMS_LOCAL_SITE ?= undef;
 #
 # Add RPMs
 #
-include {'features/cvmfs/rpms/client'};
+variable RPMS_SUFFIX ?= '';
+include {'features/cvmfs/rpms/client' + RPMS_SUFFIX};
 
 
 #
@@ -90,7 +91,12 @@ include {'quattor/functions/repository'};
 #
 # Enable service
 #
-'/software/components/chkconfig/service/cvmfs' ?= nlist('on', '', 'startstop', false);
+'/software/components/chkconfig/service' = {
+    if (CVMFS_CLIENT_VERSION < '2.1' && ! is_defined(SELF['cvmfs'])) {
+        SELF['cvmfs'] = nlist('on', '', 'startstop', false);
+    };
+    SELF;
+};
 
 
 #
