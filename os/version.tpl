@@ -32,17 +32,6 @@ variable NODE_OS_VERSION = if ( is_defined(NODE_OS_VERSION_DB) && is_defined(OS_
                              };
                            };
 
-# Define loadpath for OS templates
-variable LOADPATH = {
-  if ( is_defined(NODE_OS_VERSION) ) {
-    SELF[length(SELF)] = NODE_OS_VERSION;
-  };
-  if ( is_defined(SELF) ) {
-    SELF;
-  } else {
-    null;
-  };
-};
 # calculate OS major, minor and arch and define OS flavour if needed
 variable OS_VERSION_PARAMS ?= {
   if ( is_defined(NODE_OS_VERSION) ) {
@@ -70,19 +59,27 @@ variable OS_VERSION_PARAMS ?= {
     undef;
   };
 };
+
 variable OS_FLAVOUR ?= {
     if ( OS_FLAVOUR_ENABLED && is_string(NODE_OS_VERSION) ) {
-      OS_VERSION_PARAMS['major'] +"x-"+ OS_VERSION_PARAMS['minor'];
+      OS_VERSION_PARAMS['major'] +".x-"+ OS_VERSION_PARAMS['arch'];
     } else {
       undef;
     };
 };
 
+# Define loadpath for OS templates
 variable LOADPATH = {
   if ( is_defined(OS_FLAVOUR) ) {
     SELF[length(SELF)] = OS_FLAVOUR
+  } else if ( is_defined(NODE_OS_VERSION) ) {
+    SELF[length(SELF)] = NODE_OS_VERSION;
   };
-  SELF;
+  if ( is_defined(SELF) ) {
+    SELF;
+  } else {
+    null;
+  };
 };
 
 # Tell other templates to use namespaces to access OS related templates
