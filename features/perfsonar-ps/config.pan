@@ -1,113 +1,202 @@
+# This templates is based on reference-platform.ks used by standard NetInstall for 
+# perfSONAR-PS. Standard configuration modules are used as much as possible but
+# some actions are implemented in a script installed by filecopy (configured
+# by postconfig.tpl).
+
 unique template features/perfsonar-ps/config;
 
-# RPMs
+variable PERFSONAR_USER ?= 'perfsonar';
+variable PERFSONAR_GROUP ?= 'perfsonar';
+variable PERFSONAR_OWAMP_BWCTL_LOG ?= '/var/log/perfsonar/owamp_bwctl.log';
+
+# Add RPMs
 include { 'features/perfsonar-ps/rpms/config' };
-include { 'features/perfsonar-ps/repository/config' };
 
-# Include EGI CA certificates and keep CRLs up to date
-include {'security/cas'};
-include {'features/fetch-crl/config'};
+include { 'components/sysctl/config' };
+include { 'components/chkconfig/config' };
+include { 'components/altlogrotate/config' };
 
-# perfSONAR ports
-variable PERFSONAR_PORTS ?= nlist(
-    'BWCTL', nlist(
-        'iperf_port', '5000:5250',
-        'nuttcp_port', '5251:5500',
-        'thrulay_port', '5501:5750',
-        'peer_port', '5751:6000',
-    ),
-    'OWAMP', nlist(
-        'testports', '5000:6000',
-    ),
-);
 
-#
-# Make sure that the wheel group can use sudo
-#
-include {'components/sudo/config'};
-'/software/components/sudo/privilege_lines' = {
-    item = nlist('user', '%wheel', 'run_as', 'ALL', 'host', 'ALL', 'cmd', 'ALL');
-    if (is_defined(SELF)) {
-        if (index(item, SELF) == -1) {
-            append(item);
-        };
-    };
-    SELF;
+# ----------------------------------------------------------------------------
+# Stop unwanted services
+# ----------------------------------------------------------------------------
+
+variable PERSFSONAR_UNWANTED_SERVICES ?= list('cups',
+                                              'gpm',
+                                              'portmap',
+                                              'iptables',
+                                              'ip6tables',
+                                              'irqbalance',
+                                              'bluetooth',
+                                              'haldaemon',
+                                              'cpuspeed',
+                                              'pcscd',
+                                              'nfslock',
+                                              'ypbind',
+                                              'mdmonitor',
+                                              'rpcidmapd',
+                                              'rpcgssd',
+                                              'netfs',
+                                              'autofs',
+                                              'yum-updatesd',
+                                              'avahi-dnsconfd',
+                                              'psacct',
+                                              'nfs',
+                                              'irda',
+                                              'rpcsvcgssd',
+                                              'mdmpd',
+                                              'readahead_later',
+                                              'readahead_early',
+                                              'kudzu',
+                                              'apmd',
+                                              'hidd',
+                                              'avahi-daemon',
+                                              'firstboot',
+                                              'smartd',
+                                             );
+
+
+'/software/components/chkconfig/service' = {
+  foreach (i;service;PERSFSONAR_UNWANTED_SERVICES) {
+    SELF[service] = nlist('off', '',
+                          'startstop', true,
+                         );
+  };
+  SELF;
 };
 
-#
-# Postconfigure script
-#
-variable contents = {
-    this = '!#/bin/bash\n\n';
-    if (is_defined(PERFSONAR_PORTS)) {
-        this = <<EOF;
 
-#
-# Configure tcp/udp peer_port
-#
-if ! grep ^peer_port /etc/bwctld/bwctld.conf > /dev/null 2>&1 ; then
-    sed -i 's|^#peer_port.*$|peer_port QUATTOR_PEER_PORT|' /etc/bwctld/bwctld.conf
-else
-    sed -i 's|^peer_port.*$|peer_port QUATTOR_PEER_PORT|' /etc/bwctld/bwctld.conf
-fi
-if ! grep ^peer_port /etc/bwctld/bwctld.conf > /dev/null 2>&1 ; then
-    echo 'peer_port QUATTOR_PEER_PORT' >> /etc/bwctld/bwctld.conf
-fi
+# ----------------------------------------------------------------------------
+# Stop unwanted services
+# ----------------------------------------------------------------------------
 
-#
-# Configure tcp/udp iperf_port
-#
-if ! grep ^iperf_port /etc/bwctld/bwctld.conf > /dev/null 2>&1 ; then
-    sed -i 's|^#iperf_port.*$|iperf_port QUATTOR_IPERF_PORT|' /etc/bwctld/bwctld.conf
-else
-    sed -i 's|^iperf_port.*$|iperf_port QUATTOR_IPERF_PORT|' /etc/bwctld/bwctld.conf
-fi
-if ! grep ^iperf_port /etc/bwctld/bwctld.conf > /dev/null 2>&1 ; then
-    echo 'iperf_port QUATTOR_IPERF_PORT' >> /etc/bwctld/bwctld.conf
-fi
+variable PERSFSONAR_WANTED_SERVICES ?= list('sshd',
+                                           );
 
-#
-# Configure tcp/udp nuttcp_port
-#
-if ! grep ^nuttcp_port /etc/bwctld/bwctld.conf > /dev/null 2>&1 ; then
-    sed -i 's|^#nuttcp_port.*$|nuttcp_port QUATTOR_NUTTCP_PORT|' /etc/bwctld/bwctld.conf
-else
-    sed -i 's|^nuttcp_port.*$|nuttcp_port QUATTOR_NUTTCP_PORT|' /etc/bwctld/bwctld.conf
-fi
-if ! grep ^nuttcp_port /etc/bwctld/bwctld.conf > /dev/null 2>&1 ; then
-    echo 'nuttcp_port QUATTOR_NUTTCP_PORT' >> /etc/bwctld/bwctld.conf
-fi
 
-#
-# Configure tcp/udp testports
-#
-if ! grep ^testports /etc/owampd/owampd.conf > /dev/null 2>&1 ; then
-    sed -i 's|^#testports.*$|testports QUATTOR_TESTPORTS|' /etc/owampd/owampd.conf
-else
-    sed -i 's|^testports.*$|testports QUATTOR_TESTPORTS|' /etc/owampd/owampd.conf
-fi
-if ! grep ^testports /etc/owampd/owampd.conf > /dev/null 2>&1 ; then
-    echo 'testports QUATTOR_TESTPORTS' >> /etc/owampd/owampd.conf
-fi
+'/software/components/chkconfig/service' = {
+  foreach (i;service;PERSFSONAR_WANTED_SERVICES) {
+    SELF[service] = nlist('on', '',
+                          'startstop', true,
+                         );
+  };
+  SELF;
+};
+
+
+# ----------------------------------------------------------------------------
+# Better tune the TCP defaults
+# ----------------------------------------------------------------------------
+
+prefix '/software/components/sysctl/variables';
+
+# increase TCP max buffer size setable using setsockopt()
+# 16 MB with a few parallel streams is recommended for most 10G paths
+# 32 MB might be needed for some very long end-to-end 10G or 40G paths
+'net.core.rmem_max' = '33554432';
+'net.core.wmem_max' = '33554432';
+# increase Linux autotuning TCP buffer limits
+# min, default, and max number of bytes to use
+# (only change the 3rd value, and make it 16 MB or more)
+'net.ipv4.tcp_rmem' = '4096 87380 16777216';
+'net.ipv4.tcp_wmem' = '4096 65536 16777216';
+# recommended to increase this for 10G NICS
+'net.core.netdev_max_backlog' = '30000';
+# don't cache ssthresh from previous connection
+'net.ipv4.tcp_no_metrics_save' = '1';
+# Explicitly set htcp as the congestion control
+'net.ipv4.tcp_congestion_control' = 'htcp';
+
+
+# ----------------------------------------------------------------------------
+# altlogrotate
+# ----------------------------------------------------------------------------
+
+variable CONTENTS = <<EOF;
+/bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+/bin/kill -HUP `cat /var/run/rsyslogd.pid 2> /dev/null` 2> /dev/null || true
 EOF
-        this = replace('QUATTOR_PEER_PORT', replace(':', '-', PERFSONAR_PORTS['BWCTL']['peer_port']), this);
-        this = replace('QUATTOR_IPERF_PORT', replace(':', '-', PERFSONAR_PORTS['BWCTL']['iperf_port']), this);
-        this = replace('QUATTOR_NUTTCP_PORT', replace(':', '-', PERFSONAR_PORTS['BWCTL']['nuttcp_port']), this);
-        this = replace('QUATTOR_TESTPORTS', replace(':', '-', PERFSONAR_PORTS['OWAMP']['testports']), this);
+
+"/software/components/altlogrotate/entries/owamp-logs" =
+  nlist("pattern", PERFSONAR_OWAMP_BWCTL_LOG,
+        "compress", true,
+        "missingok", true,
+        "frequency", "weekly",
+        "create", true,
+        "ifempty", true,
+        "rotate", 1,
+        "sharedscripts", true,
+        "scripts", nlist('postrotate', CONTENTS),
+        "createparams", nlist('owner',PERFSONAR_USER,
+                              'group',PERFSONAR_GROUP,
+                              'mode', '0644'),
+       );
+
+
+
+# ----------------------------------------------------------------------------
+# Install a few login scripts to add required path
+# ----------------------------------------------------------------------------
+
+variable PERFSONAR_PATHMUNGE_CONTENTS = <<EOF;
+pathmunge () {
+        if ! echo $PATH | /bin/egrep -q "(^|:)$1($|:)" ; then
+           if [ "$2" = "after" ] ; then
+              PATH=$PATH:$1
+           else
+              PATH=$1:$PATH
+           fi
+        fi
+}
+
+EOF
+
+variable PERFSONAR_LOGIN_SCRIPTS = nlist(escape('/etc/profile.d/add_dbxml_dir.sh'), list('/usr/dbxml-2.3.11/bin'),
+                                         escape('/etc/profile.d/add_toolkit_dirs.sh'), list('/opt/perfsonar_ps/toolkit/scripts'),
+                                         escape('/etc/profile.d/add_sbin_dirs.sh'), list('/sbin','/usr/sbin','/usr/local/sbin'),
+                                        );
+
+'/software/components/filecopy/services' = {
+  foreach (script;pathlist;PERFSONAR_LOGIN_SCRIPTS) {
+    contents = PERFSONAR_PATHMUNGE_CONTENTS;
+    foreach (i;path;pathlist) {
+      contents = contents + 'pathmunge "' + path + '"' + "\n";
     };
-    this;
+    SELF[escape(script)] = nlist('config', contents,
+                                 'perms', '0644',
+                                 'owner', 'root'
+                                );
+  };
+  SELF;
 };
 
-#
-# Install the script and set it to run if modified
-#
-include {'components/filecopy/config'};
-'/software/components/filecopy/services/{/usr/local/sbin/perfsonar-postconfig.sh}' = nlist(
-    'config', contents,
-    'perms', '0755',
-    'owner', 'root',
-    'group', 'root',
-    'backup', false,
-    'restart', '/usr/local/sbin/perfsonar-postconfig.sh',
-);
+
+# ----------------------------------------------------------------------------
+# Disable the HTTP TRACE methods
+# ----------------------------------------------------------------------------
+
+variable CONTENTS = <<EOF;
+# Disables the HTTP TRACE method
+TraceEnable      Off
+EOF
+
+
+'/software/components/filecopy/services' = {
+  SELF[escape('/etc/httpd/conf.d/disable_trace.conf')] = nlist('config', CONTENTS);
+  SELF;
+};
+
+
+# ----------------------------------------------------------------------------
+# Hack: use a script for all the actions difficult to implement with 
+# Quattor configuration modules
+# ----------------------------------------------------------------------------
+variable PERFSONAR_POST_CONFIG ?= 'features/perfsonar-ps/postconfig';
+include { if_exists(PERFSONAR_POST_CONFIG) };
+
+
+# ----------------------------------------------------------------------------
+# perfSONAR-PS Mesh Configuration service
+# ----------------------------------------------------------------------------
+variable PERFSONAR_MESH_ENABLED ?= true;
+include { if (is_boolean(PERFSONAR_MESH_ENABLED) && PERFSONAR_MESH_ENABLED) 'features/perfsonar-ps/mesh'};
