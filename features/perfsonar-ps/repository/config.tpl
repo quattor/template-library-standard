@@ -4,8 +4,17 @@ unique template features/perfsonar-ps/repository/config;
  
 include { 'quattor/functions/repository' };
 
-# Ordered list of repository to load
-variable PERFSONAR_REPOSITORY_LIST = list('sl5_internet2',
-                                     );
+# Include EGI CA repository
+variable SITE_REPOSITORY_LIST ?= list();
+variable SITE_REPOSITORY_LIST = append('ca');
 
-'/software/repositories' = add_repositories(PERFSONAR_REPOSITORY_LIST);
+# Local repository configuration overrides
+variable SITE_REPOSITORY_CONFIG ?= nlist();
+variable SITE_REPOSITORY_CONFIG = npush(
+#    'sl6.._x86_64', nlist('excludepkgs', list('kernel*')),
+);
+
+variable SITE_REPOSITORY_LIST = append('origin/internet2_el6_x86_64_main');
+variable SITE_REPOSITORY_LIST = append('origin/web100_el6_x86_64_main');
+
+

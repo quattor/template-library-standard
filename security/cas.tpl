@@ -1,5 +1,6 @@
 unique template security/cas;
 
+variable RPMS_SUFFIX ?= '';
 
 @{
 desc = Allows site to use a CA trust policy different from the default (EGI) one
@@ -7,7 +8,7 @@ values =  template namespace
 default = common/security/ca-policy-egi-core
 required = yes
 }
-variable SECURITY_CA_TRUST_POLICY ?= 'security/ca-policy-egi-core';
+variable SECURITY_CA_TRUST_POLICY ?= 'security/ca-policy-egi-core' + RPMS_SUFFIX;
 
 @{
 desc = RPM specifying a dummy CA (invalid) to work around problems in Apache with large number of CAs

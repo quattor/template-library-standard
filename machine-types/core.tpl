@@ -21,7 +21,9 @@ include { SITE_GLOBAL_VARS_TEMPLATE };
 #
 # define site functions
 #
-include { 'pro_site_functions' };
+variable SITE_FUNCTIONS_TEMPLATE ?= if_exists('site/functions');
+variable SITE_FUNCTIONS_TEMPLATE ?= if_exists('pro_site_functions');
+include { SITE_FUNCTIONS_TEMPLATE };
 
 #
 # profile_base for profile structure
@@ -91,7 +93,14 @@ include { 'pro_site_named_config' };
 #
 # Include OS version dependent RPMs
 #
-include { return(OS_NS_CONFIG+"base") };
+variable SERVICE_OS_BASE_TEMPLATE = {
+  if ( is_defined(OS_NS_CONFIG) ) {
+    OS_NS_CONFIG + "base";
+  } else {
+    undef;
+  };
+};
+include { SERVICE_OS_BASE_TEMPLATE };
 
 
 #

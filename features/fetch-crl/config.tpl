@@ -10,7 +10,8 @@ variable SITE_DEF_HOST_KEY     ?= SITE_DEF_GRIDSEC_ROOT+"/hostkey.pem";
 variable SITE_DEF_CERTDIR      ?= SITE_DEF_GRIDSEC_ROOT+"/certificates";
 
 # Include RPMs
-include { 'features/fetch-crl/rpms' };
+variable RPMS_SUFFIX ?= '';
+include { 'features/fetch-crl/rpms' + RPMS_SUFFIX };
 
 # ---------------------------------------------------------------------------- 
 # fetch-crl configuration
