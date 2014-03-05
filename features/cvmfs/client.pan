@@ -56,6 +56,11 @@ variable CVMFS_SERVER_URL_CERN ?= nlist(
     'URL-04-FNAL', 'http://cvmfs.fnal.gov:8000/opt/@org@',
 );
 
+# Servers for domain desy.de, sort this according to your location
+variable CVMFS_SERVER_URL_DESY ?= nlist(
+    'URL-01-DESY', 'http://grid-cvmfs-one.desy.de:8000/cvmfs/@fqrn@',
+);
+
 # VO specific stuff
 variable VO_ATLAS_LOCAL_AREA ?= undef;
 variable VO_CMS_LOCAL_SITE ?= undef;
@@ -72,8 +77,8 @@ variable VO_CMS_LOCAL_SITE ?= undef;
 #
 # Add RPMs
 #
-variable RPMS_SUFFIX ?= '';
-include {'features/cvmfs/rpms/client' + RPMS_SUFFIX};
+variable RPMS_CONFIG_SUFFIX ?= '';
+include {'features/cvmfs/rpms/client' + RPMS_CONFIG_SUFFIX};
 
 
 #
@@ -197,6 +202,54 @@ variable CONTENTS = {
     'restart', CVMFS_SERVICE_RELOAD_COMMAND,
 );
 
+#
+# Create local DESY domain configuration, reload service if changed
+#
+
+variable CVMFS_DESY_DOMAIN_ENABLED = {
+	foreach(i;rep;CVMFS_REPOSITORIES){
+		if(match(rep,'desy.de$')){
+			return(true);
+		};
+	};
+	return(false);
+};
+
+variable CONTENTS = {
+    if (!is_nlist(CVMFS_SERVER_URL_DESY)) {
+        error("CVMFS: CVMFS_SERVER_URL_DESY should be an nlist");
+    };
+    first = true;
+    this = 'CVMFS_SERVER_URL="';
+    foreach (k; v; CVMFS_SERVER_URL_DESY) {
+        if (!first) {
+            this = this + ';' + v;
+        } else {
+            this = this + v;
+            first = false;
+        };
+    };
+    this = this + '"' + "\n";
+    this = this + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/desy.de.pub\n"
+};
+
+'/software/components/filecopy/services' = {
+	if(CVMFS_DESY_DOMAIN_ENABLED){
+		SELF[escape('/etc/cvmfs/domain.d/desy.de.conf')]=nlist(
+	    		'config', CONTENTS,
+    			'owner', 'root',
+    			'perms', '0644',
+    			'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+		);
+		SELF[escape('/etc/cvmfs/keys/desy.de.pub')]=nlist(
+	    		'config', file_contents('features/cvmfs/keys/desy.de.pub'),
+    			'owner', 'root',
+    			'perms', '0644',
+    			'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+		);				
+	};
+	SELF;
+};
 
 #
 # fuse filesystem sharing is required

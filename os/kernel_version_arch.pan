@@ -81,6 +81,7 @@ variable OS_KERNEL_VERSION_DEFAULT ?= nlist(
   'sl610', '2.6.32-131.0.15.el6',
   'sl620', '2.6.32-220.el6',
   'sl630', '2.6.32-279.el6',
+  'sl640', '2.6.32-358.el6',
   'centos550', '2.6.18-194.el5',
   'fedora14', '2.6.35.6-45.fc14',
   'opensuse11','2.6.34-12.3',
