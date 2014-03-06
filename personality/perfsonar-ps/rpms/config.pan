@@ -1,4 +1,4 @@
-unique template features/perfsonar-ps/rpms/config;
+unique template personality/perfsonar-ps/rpms/config;
 
 '/software/packages/{authconfig}' ?= nlist();
 '/software/packages/{bash}' ?= nlist();
