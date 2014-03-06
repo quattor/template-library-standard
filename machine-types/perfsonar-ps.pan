@@ -10,6 +10,6 @@ variable OS_NS_CONFIG ?= 'config/core/';
 include { 'machine-types/core' };
 
 # Add perfSONAR configuration
-include { 'features/perfsonar-ps/config' };
+include { 'personality/perfsonar-ps/config' };
 
 

@@ -1,6 +1,6 @@
 # Standard repositories  for Internet2 specific components
  
-unique template features/perfsonar-ps/repository/config;
+unique template personality/perfsonar-ps/repository/config;
  
 include { 'quattor/functions/repository' };
 

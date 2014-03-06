@@ -1,8 +1,8 @@
-unique template features/perfsonar-ps/config;
+unique template personality/perfsonar-ps/config;
 
 # RPMs
-include { 'features/perfsonar-ps/rpms/config' };
-include { 'features/perfsonar-ps/repository/config' };
+include { 'personality/perfsonar-ps/rpms/config' };
+include { 'personality/perfsonar-ps/repository/config' };
 
 # Include EGI CA certificates and keep CRLs up to date
 include {'security/cas'};
