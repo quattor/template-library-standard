@@ -157,6 +157,9 @@ variable CONTENTS = {
     if (is_defined(CVMFS_DEBUGLOG)) {
         this = this + 'CVMFS_DEBUGLOG=' + to_string(CVMFS_DEBUGLOG) + "\n";
     };
+    if (is_defined(CVMFS_MOUNT_RW)) {
+        this = this + "CVMFS_MOUNT_RW=yes\n";
+    };
     this = this + 'CVMFS_HTTP_PROXY="' + CVMFS_HTTP_PROXY + '"' + "\n";
     this;
 };
