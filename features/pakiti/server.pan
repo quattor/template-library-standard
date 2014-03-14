@@ -12,7 +12,7 @@ variable PAKITI_DOCROOT ?= '/var/lib/pakiti2/www';
 variable PAKITI_USERS_FILE ?= '/var/lib/pakiti/users';
 
 
-include { 'config/pakiti/server/config' };
+include { if_exists('config/pakiti/server/config') };
 include { "components/filecopy/config" };
 
 # Specific authentification part
