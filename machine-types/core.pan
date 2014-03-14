@@ -56,7 +56,9 @@ include { MACHINE_PARAMS_CONFIG };
 
 
 # common site machine configuration
-include { 'pro_site_config' };
+variable SITE_CONFIG_TEMPLATE ?= if_exists('pro_site_config');
+variable SITE_CONFIG_TEMPLATE ?= 'site/config';
+include { SITE_CONFIG_TEMPLATE };
 
 
 # File system configuration.
@@ -87,7 +89,7 @@ include { 'pan/functions' };
 #
 # Configure Bind resolver
 #
-include { 'pro_site_named_config' };
+include { 'site/named' };
 
 
 #
