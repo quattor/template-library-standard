@@ -134,9 +134,8 @@ variable OS_KERNEL_VERSION = {
 # Define variables :
 #     - KERNEL_VERSION_NUM : kernel version number
 #     - KERNEL_VARIANT : smp, hugemem...
-#     - KERNEL_VERSION : the concatenation of the 2 previous variables.
-# Each variable can be customized (separatly), except KERNEL_VERSION.
-#
+
+variable KERNEL_EXPLICITLY_DEFINED = is_defined(KERNEL_VERSION_NUM) && is_defined(KERNEL_VARIANT);
 
 # If KERNEL_VERSION_NUM is not defined (recommended), build it from OS_KERNEL_VERSION entries.
 # First a match is attempted on the version+architecture, then on version only.
@@ -178,9 +177,6 @@ variable KERNEL_VARIANT ?= {
   };
 };
 
-variable KERNEL_VERSION = KERNEL_VERSION_NUM + KERNEL_VARIANT;
-
-
 #
 # Define variables related to CPU architecture.
 # Used to select appropriate version of some packages.
@@ -219,3 +215,34 @@ variable CPU_ARCH_64BIT ?= if ( CPU_ARCH == 'x86_64' ) {
                            } else {
                              false
                            };
+
+
+# Define kernel version.
+# KERNEL_VERSION cannot be overriden directly to avoid inconsistencies with
+# other kernel related variables.
+
+variable KERNEL_VERSION = {
+  version = KERNEL_VERSION_NUM + KERNEL_VARIANT;
+  if ( is_defined(OS_VERSION_PARAMS) &&
+       match(OS_VERSION_PARAMS['distribution'], '^sl$') &&
+       (OS_VERSION_PARAMS['majorversion'] >= '6') ) {
+    version = version + '.' + PKG_ARCH_KERNEL;
+  };
+  version;
+};
+
+# Do not define with sl5.x and sl6.x if default kernel versions are used: let yum do whatever is appropriate.
+# As /system/kernel/version cannot be let undef, use a value not matching any kernel.
+# Note: /system/kernel/version used to be defined in machine-types/xxx/base and thus
+# this value may be overwritten later in many cases... Change site templates if needed.
+
+'/system/kernel/version' = {
+  debug(OBJECT+': KERNEL_EXPLICITLY_DEFINED='+to_string(KERNEL_EXPLICITLY_DEFINED));
+  debug(OBJECT+': OS_VERSION_PARAMS='+to_string(OS_VERSION_PARAMS));
+  if ( !KERNEL_EXPLICITLY_DEFINED && is_defined(OS_VERSION_PARAMS['flavour']) ) {
+    'YUM-managed';
+  } else {
+    KERNEL_VERSION;
+  };
+};
+
