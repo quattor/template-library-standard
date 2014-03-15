@@ -34,8 +34,8 @@ variable NODE_OS_VERSION = if ( is_defined(NODE_OS_VERSION_DB) && is_defined(OS_
 
 # calculate OS major, minor and arch and define OS flavour if needed
 variable OS_VERSION_PARAMS ?= {
-  if ( is_defined(NODE_OS_VERSION) ) {
-    toks = matches(NODE_OS_VERSION, '^([a-z]+)([0-9])([0-9]+)(?:[_\-](.*))');
+  if ( is_string(NODE_OS_VERSION) ) {
+    toks = matches(NODE_OS_VERSION, '^([a-z]+)([0-9])([0-9x]+)(?:[_\-](.*))');
     if ( length(toks) < 5 ) {
       error('NODE_OS_VERSION ('+to_string(NODE_OS_VERSION)+') has an unexpected format. Define OS_VERSION_PARAMS explicitly');
     };
@@ -52,6 +52,9 @@ variable OS_VERSION_PARAMS ?= {
     SELF['minor'] = replace('0$','',toks[3]);
     SELF['version'] = SELF['major']+toks[3];
     SELF['arch'] = toks[4];
+    if ( OS_FLAVOUR_ENABLED ) {
+      SELF['flavour'] = 'x'
+    };
     debug('OS_VERSION_PARAMS = '+to_string(SELF));
     SELF;
   } else {
@@ -61,12 +64,13 @@ variable OS_VERSION_PARAMS ?= {
 };
 
 variable OS_FLAVOUR ?= {
-    if ( OS_FLAVOUR_ENABLED && is_string(NODE_OS_VERSION) ) {
-      OS_VERSION_PARAMS['major'] +".x-"+ OS_VERSION_PARAMS['arch'];
+    if ( is_defined(OS_VERSION_PARAMS['flavour']) ) {
+      OS_VERSION_PARAMS['major'] +"."+OS_VERSION_PARAMS['flavour']+"-"+ OS_VERSION_PARAMS['arch'];
     } else {
       undef;
     };
 };
+
 
 # Define loadpath for OS templates
 variable LOADPATH = {
