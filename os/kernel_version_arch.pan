@@ -271,7 +271,13 @@ variable KERNEL_VERSION = {
 # Variable PKG_LOCK_KERNEL_VERSION can be used to disable kernel version definition
 # even though kernel version has been explicitly defined in the configuration.
 include { 'components/spma/config' };
-variable PKG_LOCK_KERNEL_VERSION ?= if ( is_defined(PACKAGE_MANAGER) && (PACKAGE_MANAGER == 'yum') ){
+variable PACKAGE_MANAGER ?= if ( exists('/software/components/spma/packager') &&
+                                 is_defined(value('/software/components/spma/packager')) ) {
+                              value('/software/components/spma/packager')
+                            } else {
+                              'spma';
+                            };
+variable PKG_LOCK_KERNEL_VERSION ?= if ( PACKAGE_MANAGER == 'yum' ){
                                      true;
                                    } else {
                                      false;
