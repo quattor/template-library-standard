@@ -135,10 +135,11 @@ variable OS_KERNEL_VERSION = {
 #     - KERNEL_VERSION_NUM : kernel version number
 #     - KERNEL_VARIANT : smp, hugemem...
 
-variable KERNEL_EXPLICITLY_DEFINED = is_defined(KERNEL_VERSION_NUM) && is_defined(KERNEL_VARIANT);
+variable KERNEL_EXPLICITLY_DEFINED = is_defined(KERNEL_VERSION_NUM) || is_defined(KERNEL_VARIANT);
 
 # If KERNEL_VERSION_NUM is not defined (recommended), build it from OS_KERNEL_VERSION entries.
 # First a match is attempted on the version+architecture, then on version only.
+# If there is no match, don't define the kernel version (probably managed  by YUM)
 variable KERNEL_VERSION_NUM ?= {
   if ( is_defined(NODE_OS_VERSION) ) {
     if ( is_defined(OS_KERNEL_VERSION[NODE_OS_VERSION]) ) {
@@ -148,32 +149,42 @@ variable KERNEL_VERSION_NUM ?= {
                 is_defined(OS_KERNEL_VERSION[OS_VERSION_PARAMS['version']]) ) {
       OS_KERNEL_VERSION[OS_VERSION_PARAMS['version']];
     } else {
-      error('No kernel version defined for OS version/arch '+NODE_OS_VERSION+' (version='+to_string(OS_VERSION_PARAMS['version'])+')' );
+      # Variant defined but no version explicitly defined and none found in the default list
+      if ( KERNEL_EXPLICITLY_DEFINED ) {
+        error('Kernel variant defined to '+KERNEL_VARIANT+' but no default kernel version could be found for OS version '+NODE_OS_VERSION);
+      } else {
+        debug('No default kernel version defined for OS version/arch '+NODE_OS_VERSION+' (version='+to_string(OS_VERSION_PARAMS['version'])+')' );
+      };
     };
   } else {
     error('No OS version defined : unable to guess kernel version. Define variable KERNEL_VERSION_NUM.');
   };
 };
 
+# For SL4 only
 variable KERNEL_VARIANT ?= {
-  ram_size = 0;
-  foreach (i;v;value("/hardware/ram")) {
-    if ( is_defined(v["size"]) ) {
-      ram_size = ram_size + v["size"];
-    } else {
-      error('RAM size undefined for bank '+to_string(0));
+  if ( is_defined(OS_VERSION_PARAMS['version']) && (OS_VERSION_PARAMS['major'] == 'sl4') ) {
+    ram_size = 0;
+    foreach (i;v;value("/hardware/ram")) {
+      if ( is_defined(v["size"]) ) {
+        ram_size = ram_size + v["size"];
+      } else {
+        error('RAM size undefined for bank '+to_string(0));
+      };
     };
-  };
-  if ( (KERNEL_SMP_PARAMS['limit'] > 0) && (ram_size >= KERNEL_SMP_PARAMS['limit'])) {
-    debug('Memory size above the smp kernel limit. Using largesmp kernel.');
-    KERNEL_SMP_PARAMS['largesmp'];
+    if ( (KERNEL_SMP_PARAMS['limit'] > 0) && (ram_size >= KERNEL_SMP_PARAMS['limit'])) {
+      debug('Memory size above the smp kernel limit. Using largesmp kernel.');
+      KERNEL_SMP_PARAMS['largesmp'];
+    } else {
+      if ( exists("/hardware/cpu/1") ) {
+        # largesmp is the default smp kernel for all 64-bit machines
+        KERNEL_SMP_PARAMS['smp'];
+      } else {
+        '';
+      };
+    };
   } else {
-    if ( exists("/hardware/cpu/1") ) {
-      # largesmp is the default smp kernel for all 64-bit machines
-      KERNEL_SMP_PARAMS['smp'];
-    } else {
-      '';
-    };
+    undef;
   };
 };
 
@@ -222,13 +233,25 @@ variable CPU_ARCH_64BIT ?= if ( CPU_ARCH == 'x86_64' ) {
 # other kernel related variables.
 
 variable KERNEL_VERSION = {
-  version = KERNEL_VERSION_NUM + KERNEL_VARIANT;
-  if ( is_defined(OS_VERSION_PARAMS) &&
-       match(OS_VERSION_PARAMS['distribution'], '^sl$') &&
+  debug(OBJECT+': KERNEL_EXPLICITLY_DEFINED='+to_string(KERNEL_EXPLICITLY_DEFINED));
+  debug(OBJECT+': OS_VERSION_PARAMS='+to_string(OS_VERSION_PARAMS));
+  debug(OBJECT+': Kernel version='+to_string(KERNEL_VERSION_NUM)+', Kernel variant='+to_string(KERNEL_VARIANT));
+  if ( KERNEL_EXPLICITLY_DEFINED  || !is_defined(OS_VERSION_PARAMS['flavour']) ) {
+    if ( is_defined(KERNEL_VARIANT) ) {
+      variant = KERNEL_VARIANT;
+    } else {
+      variant = '';
+    };
+    version = KERNEL_VERSION_NUM + variant;
+    if ( is_defined(OS_VERSION_PARAMS) &&
+        match(OS_VERSION_PARAMS['distribution'], '^sl$') &&
        (OS_VERSION_PARAMS['majorversion'] >= '6') ) {
-    version = version + '.' + PKG_ARCH_KERNEL;
+      version = version + '.' + PKG_ARCH_KERNEL;
+    };
+    version;
+  } else {
+    undef
   };
-  version;
 };
 
 # Do not define with sl5.x and sl6.x if default kernel versions are used: let yum do whatever is appropriate.
@@ -237,8 +260,6 @@ variable KERNEL_VERSION = {
 # this value may be overwritten later in many cases... Change site templates if needed.
 
 '/system/kernel/version' = {
-  debug(OBJECT+': KERNEL_EXPLICITLY_DEFINED='+to_string(KERNEL_EXPLICITLY_DEFINED));
-  debug(OBJECT+': OS_VERSION_PARAMS='+to_string(OS_VERSION_PARAMS));
   if ( !KERNEL_EXPLICITLY_DEFINED && is_defined(OS_VERSION_PARAMS['flavour']) ) {
     'YUM-managed';
   } else {
@@ -246,3 +267,18 @@ variable KERNEL_VERSION = {
   };
 };
 
+# Lock kernel version if using YUM-based deployment and a version has been explicitly defined
+# Variable PKG_LOCK_KERNEL_VERSION can be used to disable kernel version definition
+# even though kernel version has been explicitly defined in the configuration.
+include { 'components/spma/config' };
+variable PKG_LOCK_KERNEL_VERSION ?= if ( is_defined(PACKAGE_MANAGER) && (PACKAGE_MANAGER == 'yum') ){
+                                     true;
+                                   } else {
+                                     false;
+                                   };
+'/software/packages' = {
+  if ( KERNEL_EXPLICITLY_DEFINED && PKG_LOCK_KERNEL_VERSION ) {
+    pkg_repl('kernel*',KERNEL_VERSION_NUM,PKG_ARCH_KERNEL);
+  };
+  SELF;
+};
