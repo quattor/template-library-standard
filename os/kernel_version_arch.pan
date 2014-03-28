@@ -284,6 +284,7 @@ variable PKG_LOCK_KERNEL_VERSION ?= if ( PACKAGE_MANAGER == 'yum' ){
                                    };
 '/software/packages' = {
   if ( KERNEL_EXPLICITLY_DEFINED && PKG_LOCK_KERNEL_VERSION ) {
+    debug(OBJECT+': locking kernel version to '+KERNEL_VERSION_NUM);
     pkg_repl('kernel*',KERNEL_VERSION_NUM,PKG_ARCH_KERNEL);
   };
   SELF;
