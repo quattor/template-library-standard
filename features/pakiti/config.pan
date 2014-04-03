@@ -21,10 +21,11 @@ include { 'features/fetch-crl/config' };
 include { if ( PAKITI_SERVER == FULL_HOSTNAME ) {
 	'features/pakiti/server';
 } else {
-	'features/pakiti/client';
+	'features/pakiti/client/config';
 };
 
 };
 
-# updates
-include {'features/pakiti/updates'};
+# Pakiti updates if using SPMA
+include { if ( PACKAGE_MANAGER == 'spma' ) 'features/pakiti/updates' };
+
