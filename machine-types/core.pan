@@ -55,6 +55,12 @@ include { MACHINE_PARAMS_CONFIG };
               };
 
 
+# Cluster specific configuration
+variable CLUSTER_INFO_TEMPLATE ?= if_exists('pro_site_cluster_info');
+variable CLUSTER_INFO_TEMPLATE ?= 'site/cluster_info';
+include { CLUSTER_INFO_TEMPLATE };
+
+
 # common site machine configuration
 variable SITE_CONFIG_TEMPLATE ?= if_exists('pro_site_config');
 variable SITE_CONFIG_TEMPLATE ?= 'site/config';
