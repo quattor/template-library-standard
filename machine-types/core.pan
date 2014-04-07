@@ -84,7 +84,11 @@ variable OS_TEMPLATE_NAMESPACE = true;
 # Define OS related namespaces
 variable OS_NS_ROOT = 'config/';
 variable OS_NS_OS = OS_NS_ROOT + 'os/';
-variable OS_NS_CONFIG ?= OS_NS_ROOT + 'os/';
+variable OS_NS_CONFIG ?= if ( is_defined(if_exists(OS_NS_ROOT+'os/base')) ) {
+                           OS_NS_ROOT + 'os/';
+                         } else {
+                           OS_NS_ROOT + 'core/';
+                         };
 variable OS_NS_QUATTOR = OS_NS_ROOT + 'quattor/';
 variable OS_NS_REPOSITORY ?= 'repository/';
 #
