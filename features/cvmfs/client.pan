@@ -45,9 +45,6 @@ variable CVMFS_HTTP_PROXY ?= undef;
 # Release version
 variable CVMFS_CLIENT_VERSION ?= '2.1.15-1';
 
-# Repository contining the RPMs
-variable CVMFS_RPM_REPOSITORIES ?= list('CernVM-FS');
-
 # Servers for domain cern.ch, sort this according to your location
 variable CVMFS_SERVER_URL_CERN ?= nlist(
     'URL-01-CERN', 'http://cvmfs-stratum-one.cern.ch:8000/opt/@org@',
@@ -84,14 +81,7 @@ include {'features/cvmfs/rpms/client' + RPMS_CONFIG_SUFFIX};
 #
 # Add repository
 #
-include {'quattor/functions/repository'};
-'/software/repositories' = {
-    if(is_list(CVMFS_RPM_REPOSITORIES)) {
-        add_repositories(CVMFS_RPM_REPOSITORIES);
-    };
-    SELF;
-};
-
+include { 'repository/config/cvmfs' };
 
 #
 # Enable service
