@@ -55,6 +55,12 @@ include { MACHINE_PARAMS_CONFIG };
               };
 
 
+# Cluster specific configuration
+variable CLUSTER_INFO_TEMPLATE ?= if_exists('pro_site_cluster_info');
+variable CLUSTER_INFO_TEMPLATE ?= 'site/cluster_info';
+include { CLUSTER_INFO_TEMPLATE };
+
+
 # common site machine configuration
 variable SITE_CONFIG_TEMPLATE ?= if_exists('pro_site_config');
 variable SITE_CONFIG_TEMPLATE ?= 'site/config';
@@ -78,7 +84,11 @@ variable OS_TEMPLATE_NAMESPACE = true;
 # Define OS related namespaces
 variable OS_NS_ROOT = 'config/';
 variable OS_NS_OS = OS_NS_ROOT + 'os/';
-variable OS_NS_CONFIG ?= OS_NS_ROOT + 'os/';
+variable OS_NS_CONFIG ?= if ( is_defined(if_exists(OS_NS_ROOT+'os/base')) ) {
+                           OS_NS_ROOT + 'os/';
+                         } else {
+                           OS_NS_ROOT + 'core/';
+                         };
 variable OS_NS_QUATTOR = OS_NS_ROOT + 'quattor/';
 variable OS_NS_REPOSITORY ?= 'repository/';
 #
