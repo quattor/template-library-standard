@@ -18,25 +18,11 @@ required = no
 }
 variable SECURITY_CA_DUMMY ?= list("dummy-ca-certs","20090630-1");
 
-@{
-desc = template describing RPM repository holding the CA descriptions (RPMs)
-values =  a template or null to disable it
-default = repository/ca
-required = no
-}
-variable SECURITY_CA_RPM_REPOSITORY ?= "repository/ca";
-
 # Include CA trust policy
 include { SECURITY_CA_TRUST_POLICY };
 
 # Configure RPM repository holding CA descriptions
-'/software/repositories' = {
-  if ( is_defined(SECURITY_CA_RPM_REPOSITORY) ) { 
-    SELF[length(SELF)] = create(SECURITY_CA_RPM_REPOSITORY);
-  };
-  debug('Repositories configured'+to_string(SELF));
-  SELF;
-};
+include { 'repository/config/ca' };
 
 # Add dummy CA to workaround an Apache issue with large number of CAs
 "/software/packages" = {
