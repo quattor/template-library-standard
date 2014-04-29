@@ -1,3 +1,5 @@
+# SPMA only
+
 unique template features/pakiti/updates;
 
 variable PAKITI_VERSION = '2.1.4-4';
