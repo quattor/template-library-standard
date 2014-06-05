@@ -11,13 +11,12 @@ include {'features/fetch-crl/config'};
 # perfSONAR ports
 variable PERFSONAR_PORTS ?= nlist(
     'BWCTL', nlist(
-        'iperf_port', '5000:5250',
-        'nuttcp_port', '5251:5500',
-        'thrulay_port', '5501:5750',
-        'peer_port', '5751:6000',
+        'iperf_port', '5001:5200',
+        'nuttcp_port', '5201:5600',
+        'peer_port', '6001:6200',
     ),
     'OWAMP', nlist(
-        'testports', '5000:6000',
+        'testports', '8760:8960',
     ),
 );
 
