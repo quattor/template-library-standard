@@ -9,7 +9,7 @@ include {'security/cas'};
 include {'features/fetch-crl/config'};
 
 # perfSONAR ports
-variable PERFSONAR_PORTS ?= nlist(
+variable PERFSONAR_PORTS_DEFAULT ?= nlist(
     'BWCTL', nlist(
         'iperf_port', '5001:5200',
         'nuttcp_port', '5201:5600',
@@ -19,6 +19,28 @@ variable PERFSONAR_PORTS ?= nlist(
         'testports', '8760:8960',
     ),
 );
+
+@{
+desc = port ranges to use for perfSonar defined as nlist
+values = nlist whose keys are BWCTL (throughput tests) and OWAMP (latency tests)\
+ and values are nlist of port ranges (see source). Every omitted value will take the \
+ default value.
+default = PERFSONAR_PORTS_DEFAULT
+required = no
+}
+variable PERFSONAR_PORTS = {
+  foreach (component;port_list;PERFSONAR_PORTS_DEFAULT) {
+    foreach (range_name;range_ports;port_list) {
+      if ( !is_defined(SELF[component][range_name]) ) {
+        if ( !is_defined(SELF[component]) ) {
+          SELF[component] = nlist();
+        };
+        SELF[component][range_name] = range_ports;
+      };
+    };
+  };
+  SELF;
+};
 
 #
 # Make sure that the wheel group can use sudo
