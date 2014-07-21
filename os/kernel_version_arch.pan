@@ -255,13 +255,19 @@ variable KERNEL_VERSION = {
 };
 
 # Do not define with sl5.x and sl6.x if default kernel versions are used: let yum do whatever is appropriate.
-# As /system/kernel/version cannot be let undef, use a value not matching any kernel.
+# As /system/kernel/version cannot be let undef until 14.8, use a magic value not matching any kernel.
 # Note: /system/kernel/version used to be defined in machine-types/xxx/base and thus
 # this value may be overwritten later in many cases... Change site templates if needed.
 
+include { if_exists('quattor/client/version') };
 '/system/kernel/version' = {
   if ( !KERNEL_EXPLICITLY_DEFINED && is_defined(OS_VERSION_PARAMS['flavour']) ) {
-    'YUM-managed';
+    # Consider that 14.1xx is >= 14.10 as 14.1 never existed
+    if ( is_defined(QUATTOR_RELEASE) && ((QUATTOR_RELEASE >= '15') || match(QUATTOR_RELEASE,'^14\.[189]')) ) {
+      null;
+    } else {
+      'YUM-managed';
+    };
   } else {
     KERNEL_VERSION;
   };
