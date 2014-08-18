@@ -1,8 +1,8 @@
 unique template features/pakiti/client/config;
 
-variable PAKITI_RPMS ?= if_exists('config/pakiti/client/config');
+include if_exists('config/pakiti/client/config');
 variable PAKITI_RPMS ?= 'features/pakiti/client/rpms';
-include { PAKITI_RPMS };
+include PAKITI_RPMS;
 
 variable pakiti_conf = "servers_name = "+PAKITI_SERVER+":"+PAKITI_SERVER_PORT+"\n";
 variable pakiti_conf = pakiti_conf+"server_url = "+PAKITI_SERVER_URL+"\n";
