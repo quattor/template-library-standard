@@ -144,7 +144,8 @@ include { USER_CONFIG_INCLUDE };
 #
 # Add site specific configuration if any
 #
-include { return(GLITE_BASE_CONFIG_SITE) };
+variable GLITE_BASE_CONFIG_SITE ?= null;
+include GLITE_BASE_CONFIG_SITE;
 
 # Default repository configuration template 
 variable PKG_REPOSITORY_CONFIG ?= 'repository/config';
