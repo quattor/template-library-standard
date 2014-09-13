@@ -52,8 +52,8 @@ variable SITE_REPOSITORY_CONFIG = {
   SELF;
 };
 
-variable REPOSITORY_INTERNET2_BASE ?= 'internet2_el6_x86_64_main';
-variable REPOSITORY_INTERNET2_WEB100 ?= 'web100_el6_x86_64_main';
+variable REPOSITORY_INTERNET2_BASE ?= 'internet2_tools';
+variable REPOSITORY_INTERNET2_WEB100 ?= 'internet2_kernel';
 '/software/repositories' = add_repositories(list(REPOSITORY_INTERNET2_BASE,REPOSITORY_INTERNET2_WEB100),YUM_INTERNET2_SNAPSHOT_NS);
 
 
