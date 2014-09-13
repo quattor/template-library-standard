@@ -36,7 +36,7 @@ variable SECURITY_CA_RPM_REPOSITORY ?= list("ca");
 include { 'quattor/functions/repository' };
 
 '/software/repositories' = {
-  if ( is_defined(YUM_CA_RPM_SNAPSHOT_DATE) ) {
+  if ( is_defined(YUM_CA_RPM_SNAPSHOT_DATE) && (QUATTOR_RELEASE >= '14') ) {
     add_repositories(SECURITY_CA_RPM_REPOSITORY,YUM_CA_RPM_SNAPSHOT_NS);
   } else {
     add_repositories(SECURITY_CA_RPM_REPOSITORY);
