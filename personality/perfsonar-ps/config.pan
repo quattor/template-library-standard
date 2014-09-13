@@ -48,10 +48,8 @@ variable PERFSONAR_PORTS = {
 include {'components/sudo/config'};
 '/software/components/sudo/privilege_lines' = {
     item = nlist('user', '%wheel', 'run_as', 'ALL', 'host', 'ALL', 'cmd', 'ALL');
-    if (is_defined(SELF)) {
-        if (index(item, SELF) == -1) {
-            append(item);
-        };
+    if ( !is_defined(SELF) || (index(item, SELF) == -1) ) {
+        append(item);
     };
     SELF;
 };
