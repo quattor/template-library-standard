@@ -1,5 +1,52 @@
 unique template features/pakiti/server;
 
+@{
+desc = Pakiti instance descriptive name
+values = string
+default = grid site name if defined, else server domain name
+required = no
+}
+variable PAKITI_TITLE ?= if ( is_defined(SITE_NAME) ) {
+                           format("%s Pakiti instance",SITE_NAME);
+                         } else {
+                           # domain_from_object() requires a valid default domain,
+                           # even if useless...
+                           domain_from_object('no.dom.ain');
+                         };
+
+
+@{
+desc = Pakiti database host name 
+values = string
+default = pakiti
+required = no
+}
+variable PAKITI_DB_NAME ?= 'pakiti';
+
+@{
+desc = Pakiti database server name 
+values = host name
+default = localhost
+required = no
+}
+variable PAKITI_DB_HOST ?= 'localhost';
+
+@{
+desc = Pakiti database user name 
+values = string
+default = pakiti
+required = no
+}
+variable PAKITI_DB_USER ?= 'pakiti';
+
+@{
+desc = Pakiti database user password 
+values = string
+default = none
+required = yes
+}
+variable PAKITI_DB_PASS ?= error('PAKITI_DB_PASS is not defined: no default');
+
 variable PAKITI_AUTH ?= true;
 variable PAKITI_USERS ?= list(
 # '',
@@ -34,13 +81,14 @@ variable CONFIG_AUTH = CONFIG_AUTH + "AuthUserFile         "+ PAKITI_USERS_FILE 
 #variable CONFIG_AUTH = CONFIG_AUTH + "</Directory>\n";
 
 #HTTP configuration
-variable CONFIG= if ( ( PAKITI_SERVER_PORT != "443") ) {
-	"Listen " + PAKITI_SERVER_PORT + "\n\n"; #must listen on given port
+variable CONFIG= if ( PAKITI_SERVER_PORT != 443 ) {
+	format("Listen %d\n\n", PAKITI_SERVER_PORT);
 } else {
 	"";
 };
 
-variable CONFIG= CONFIG + "<VirtualHost " + PAKITI_VIRTUAL_HOST + ":" + PAKITI_SERVER_PORT +">\n" + <<EOF;
+variable CONFIG = CONFIG + format("<VirtualHost %s:%d>\n",PAKITI_VIRTUAL_HOST,PAKITI_SERVER_PORT);
+variable CONFIG = CONFIG + <<EOF;
 SSLEngine on
 SSLCipherSuite ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP
 EOF
