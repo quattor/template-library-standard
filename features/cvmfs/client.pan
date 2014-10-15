@@ -43,7 +43,7 @@ variable CVMFS_KEYS_DIR ?= undef;
 variable CVMFS_HTTP_PROXY ?= undef;
 
 # Release version
-variable CVMFS_CLIENT_VERSION ?= '2.1.15-1';
+variable CVMFS_CLIENT_VERSION ?= '2.1.19-1';
 
 # Servers for domain cern.ch, sort this according to your location
 variable CVMFS_SERVER_URL_CERN ?= nlist(
@@ -56,6 +56,12 @@ variable CVMFS_SERVER_URL_CERN ?= nlist(
 # Servers for domain desy.de, sort this according to your location
 variable CVMFS_SERVER_URL_DESY ?= nlist(
     'URL-01-DESY', 'http://grid-cvmfs-one.desy.de:8000/cvmfs/@fqrn@',
+);
+
+# Servers for domain gridpp.ac.uk, sort this according to your location
+variable CVMFS_SERVER_URL_RAL ?= nlist(
+    'URL-01-RAL', 'http://cvmfs-egi.gridpp.rl.ac.uk:8000/cvmfs/@org@.gridpp.ac.uk',
+    'URL-02-NIKHEF', 'http://cvmfs01.nikhef.nl/cvmfs/@org@.gridpp.ac.uk',
 );
 
 # VO specific stuff
@@ -200,12 +206,12 @@ variable CONTENTS = {
 #
 
 variable CVMFS_DESY_DOMAIN_ENABLED = {
-	foreach(i;rep;CVMFS_REPOSITORIES){
-		if(match(rep,'desy.de$')){
-			return(true);
-		};
-	};
-	return(false);
+    foreach(i;rep;CVMFS_REPOSITORIES){
+        if(match(rep,'desy.de$')){
+            return(true);
+        };
+    };
+    return(false);
 };
 
 variable CONTENTS = {
@@ -227,21 +233,71 @@ variable CONTENTS = {
 };
 
 '/software/components/filecopy/services' = {
-	if(CVMFS_DESY_DOMAIN_ENABLED){
-		SELF[escape('/etc/cvmfs/domain.d/desy.de.conf')]=nlist(
-	    		'config', CONTENTS,
-    			'owner', 'root',
-    			'perms', '0644',
-    			'restart', CVMFS_SERVICE_RELOAD_COMMAND,
-		);
-		SELF[escape('/etc/cvmfs/keys/desy.de.pub')]=nlist(
-	    		'config', file_contents('features/cvmfs/keys/desy.de.pub'),
-    			'owner', 'root',
-    			'perms', '0644',
-    			'restart', CVMFS_SERVICE_RELOAD_COMMAND,
-		);				
-	};
-	SELF;
+    if(CVMFS_DESY_DOMAIN_ENABLED){
+        SELF[escape('/etc/cvmfs/domain.d/desy.de.conf')]=nlist(
+            'config', CONTENTS,
+            'owner', 'root',
+            'perms', '0644',
+            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+        );
+        SELF[escape('/etc/cvmfs/keys/desy.de.pub')]=nlist(
+            'config', file_contents('features/cvmfs/keys/desy.de.pub'),
+            'owner', 'root',
+            'perms', '0644',
+            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+        );
+    };
+    SELF;
+};
+
+
+#
+# Create local RAL domain configuration, reload service if changed
+#
+
+variable CVMFS_RAL_DOMAIN_ENABLED = {
+    foreach(i;rep;CVMFS_REPOSITORIES){
+        if(match(rep,'gridpp.ac.uk$')){
+            return(true);
+        };
+    };
+    return(false);
+};
+
+variable CONTENTS = {
+    if (!is_nlist(CVMFS_SERVER_URL_RAL)) {
+        error("CVMFS: CVMFS_SERVER_URL_RAL should be an nlist");
+    };
+    first = true;
+    this = 'CVMFS_SERVER_URL="';
+    foreach (k; v; CVMFS_SERVER_URL_RAL) {
+        if (!first) {
+            this = this + ';' + v;
+        } else {
+            this = this + v;
+            first = false;
+        };
+    };
+    this = this + '"' + "\n";
+    this = this + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/gridpp.ac.uk.pub\n"
+};
+
+'/software/components/filecopy/services' = {
+    if(CVMFS_RAL_DOMAIN_ENABLED){
+        SELF[escape('/etc/cvmfs/domain.d/gridpp.ac.uk.conf')]=nlist(
+            'config', CONTENTS,
+            'owner', 'root',
+            'perms', '0644',
+            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+        );
+        SELF[escape('/etc/cvmfs/keys/gridpp.ac.uk.pub')]=nlist(
+            'config', file_contents('features/cvmfs/keys/gridpp.ac.uk.pub'),
+            'owner', 'root',
+            'perms', '0644',
+            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+        );
+    };
+    SELF;
 };
 
 #
