@@ -20,7 +20,7 @@ variable PERFSONAR_PORTS_DEFAULT ?= nlist(
         'owamp_port', '5601:5900',
     ),
     'OWAMP', nlist(
-        'testports', '8760:8960',
+        'testports', '8760:9960',
     ),
 );
 
