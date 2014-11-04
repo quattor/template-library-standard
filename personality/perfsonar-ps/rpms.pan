@@ -1,4 +1,4 @@
-unique template personality/perfsonar-ps/rpms/config;
+unique template personality/perfsonar-ps/rpms;
 
 '/software/packages' = {
 # perfSonar and related mandatory tools
