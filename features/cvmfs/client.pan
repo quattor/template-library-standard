@@ -81,7 +81,7 @@ variable VO_CMS_LOCAL_SITE ?= undef;
 # Add RPMs
 #
 variable RPMS_CONFIG_SUFFIX ?= '';
-include {'features/cvmfs/rpms/client' + RPMS_CONFIG_SUFFIX};
+include { 'features/cvmfs/rpms' };
 
 
 #
