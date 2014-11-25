@@ -1,4 +1,4 @@
-# This template uses 
+# This template uses
 #
 # RESPONSIBLE: Stephen Childs <childss@cs.tcd.ie>
 
@@ -17,14 +17,14 @@ function dev_from_block = {
         error(name+": requires only one argument");
     };
     block = to_string(ARGV[0]);
-    
+
     if (match(block,"^(md|partitions)/(.*)")) {
         res=matches(block,"^(md|partitions)/(.*)");
         return("/dev/"+res[2]);
     } else {
         error(name+": not supported "+block)
     };
-    
+
 };
 
 variable XEN_DOM0_ROOT_DEVICE ?= {
@@ -36,7 +36,7 @@ variable XEN_DOM0_ROOT_DEVICE ?= {
             } else {
                 error("XEN_DOM0_ROOT_DEVICE: found mountpoint /, but no block_device");
             };
-        } 
+        }
     };
     ## if you get here, it wasn't found
     error("XEN_DOM0_ROOT_DEVICE: no mountpoint / found. Please set XEN_DOM0_ROOT_DEVICE manually.");

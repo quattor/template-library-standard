@@ -27,7 +27,7 @@ function arch_from_cpu = {
   } else {
     arch = undef;
   };
-  
+
   if ( !is_defined(arch) ) {
     error('Unable to guess OS architecture from CPU characteristrics');
   } else if ( arch == 'DISTRIB_ARCH' ) {
@@ -42,13 +42,13 @@ function arch_from_cpu = {
       error('Distribution architecture not found, unable to guess OS architecture used');
     };
   };
-  
+
   if ( exists("/hardware/cpu/0/arch") &&
        (value("/hardware/cpu/0/arch") == 'i386') &&
        !match(arch,'i686|athlon') ) {
     error('OS architecture '+arch+' unsupported on CPU arch '+value("/hardware/cpu/0/arch"));
   };
-  
+
   arch;
 };
 

@@ -1,7 +1,7 @@
 # Standard repositories  for Internet2 specific components
- 
+
 unique template repository/config/perfsonar-ps;
- 
+
 variable YUM_SNAPSHOT_NS ?= 'repository/snapshot';
 
 @{

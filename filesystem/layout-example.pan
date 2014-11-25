@@ -1,4 +1,4 @@
-# Filesystem layout template 
+# Filesystem layout template
 # Can be used as a starting point for a site specific template
 
 template filesystem/layout-example;

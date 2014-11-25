@@ -13,7 +13,7 @@ xrd.protocol xproofd:1093 libXrdProofd.so
 fi
 xpd.workdir PROOF_SANDBOX_AREA
 
-xpd.role worker 
+xpd.role worker
 
 EOF
 

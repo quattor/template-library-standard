@@ -21,7 +21,7 @@ function update_hw_params = {
           SELF['harddisks'][disk]['capacity'] = value;
         } else {
           error('No hard disk found in HW configuration');
-        }; 
+        };
       } else if ( param == 'mac' ) {
         SELF['cards']['nic']['eth0']['hwaddr'] = value;
       };

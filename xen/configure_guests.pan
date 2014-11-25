@@ -9,9 +9,9 @@ variable XEN_PROFILE_PREFIX?="";
 
 variable XEN_GUESTS ?= {
     res=list();
-    debug(FULL_HOSTNAME+": Reading XEN_DB to get list of guests");    
+    debug(FULL_HOSTNAME+": Reading XEN_DB to get list of guests");
     if (exists(XEN_DB) && exists(XEN_DB[FULL_HOSTNAME])) {
-        res=XEN_DB[FULL_HOSTNAME];    
+        res=XEN_DB[FULL_HOSTNAME];
         foreach (key; value; res) {
             debug("xendb: guest: "+value);
 
@@ -35,14 +35,14 @@ include { 'xen/auto_network' };
     debug(FULL_HOSTNAME+": Configuring guest "+vm);
     options=nlist();
 
-    if (exists(XEN_RAM) && is_defined(XEN_RAM)) {    
+    if (exists(XEN_RAM) && is_defined(XEN_RAM)) {
         xen_ram=XEN_RAM;
 
     }
     else {
-        xen_ram=value("//"+XEN_PROFILE_PREFIX+vm+"/hardware/ram/0/size")/MB;      
+        xen_ram=value("//"+XEN_PROFILE_PREFIX+vm+"/hardware/ram/0/size")/MB;
     };
-        
+
     # get first disk from /hardware
     first(value("//"+XEN_PROFILE_PREFIX+vm+"/hardware/harddisks"),mydisk,v);
 
@@ -78,7 +78,7 @@ include { 'xen/auto_network' };
     options["disk"]=list(nlist("type",'lvm',
                      "hostdevice",XEN_VG,
                      "hostvol",vm,
-                     "guestdevice",mydisk,                    
+                     "guestdevice",mydisk,
                      "size", value("//"+XEN_PROFILE_PREFIX+vm+"/hardware/harddisks/"+mydisk+"/capacity"),
                      "rw",'w'));
     options["disk"][0]["create"]= if (XEN_CREATE_FILESYSTEMS) {true;} else {false;};

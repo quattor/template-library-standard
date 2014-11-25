@@ -36,11 +36,11 @@ include {'components/filecopy/config'};
   return(web_apps);
 };
 
-# ---------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------
 # chkconfig
 # Ensure httpd is running.
-# ---------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------
 include { 'components/chkconfig/config' };
 
-"/software/components/chkconfig/service/httpd/on" = ""; 
-"/software/components/chkconfig/service/httpd/startstop" = true; 
+"/software/components/chkconfig/service/httpd/on" = "";
+"/software/components/chkconfig/service/httpd/startstop" = true;

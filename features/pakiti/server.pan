@@ -16,7 +16,7 @@ variable PAKITI_TITLE ?= if ( is_defined(SITE_NAME) ) {
 
 
 @{
-desc = Pakiti database host name 
+desc = Pakiti database host name
 values = string
 default = pakiti
 required = no
@@ -24,7 +24,7 @@ required = no
 variable PAKITI_DB_NAME ?= 'pakiti';
 
 @{
-desc = Pakiti database server name 
+desc = Pakiti database server name
 values = host name
 default = localhost
 required = no
@@ -32,7 +32,7 @@ required = no
 variable PAKITI_DB_HOST ?= 'localhost';
 
 @{
-desc = Pakiti database user name 
+desc = Pakiti database user name
 values = string
 default = pakiti
 required = no
@@ -40,7 +40,7 @@ required = no
 variable PAKITI_DB_USER ?= 'pakiti';
 
 @{
-desc = Pakiti database user password 
+desc = Pakiti database user password
 values = string
 default = none
 required = yes
@@ -174,9 +174,9 @@ include { 'components/symlink/config' };
                 "replace",  nlist("all","yes","link", "yes")
               )
          );
- 
- 
-##           
+
+
+##
 ##Pakiti Server config
 ##
 

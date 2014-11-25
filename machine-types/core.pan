@@ -126,12 +126,12 @@ include { 'quattor/client/config' };
 include { return(FILESYSTEM_CONFIG_SITE) };
 
 #
-# AII component must be included after much of the other setup. 
+# AII component must be included after much of the other setup.
 #
 include { OS_NS_QUATTOR + 'aii' };
 
 
-# 
+#
 # Add local users if some configured
 #
 variable USER_CONFIG_INCLUDE = if ( exists(USER_CONFIG_SITE) && is_defined(USER_CONFIG_SITE) ) {
@@ -147,5 +147,5 @@ include { USER_CONFIG_INCLUDE };
 variable GLITE_BASE_CONFIG_SITE ?= null;
 include GLITE_BASE_CONFIG_SITE;
 
-# Default repository configuration template 
+# Default repository configuration template
 variable PKG_REPOSITORY_CONFIG ?= 'repository/config';

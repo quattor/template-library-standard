@@ -140,7 +140,7 @@ variable NODE_USER_GROUP_ENTRIES = {
   foreach (entry;v;user_entries) {
     SELF['users'][length(SELF['users'])] = entry;
   };
-  
+
   SELF;
 };
 
@@ -220,9 +220,9 @@ variable NODE_USER_GROUP_LIST = {
       };
     };
   };
-  
+
   if ( exists(DB_MACHINE_USERS_GROUPS[FULL_HOSTNAME]) ) {
-    
+
     foreach (user;group_list;DB_MACHINE_USERS_GROUPS[FULL_HOSTNAME]) {
       if (exists(node_users[user])) {
         tmp_groups=nlist();
@@ -238,7 +238,7 @@ variable NODE_USER_GROUP_LIST = {
           };
         };
       };
-    };    
+    };
   };
 
   SELF['users'] = list();
@@ -253,7 +253,7 @@ variable NODE_USER_GROUP_LIST = {
       SELF['groups'][length(SELF['groups'])] = group;
     };
   };
-  
+
   SELF;
 };
 
@@ -301,7 +301,7 @@ variable USER_LIST = {
 
 '/software/components/accounts' = {
   account_config = SELF;
-  
+
   if ( length(NODE_USER_GROUP_LIST['groups']) > 0 ) {
     account_config = create_accounts_from_db(GROUP_LIST,
                                              NODE_USER_GROUP_LIST['groups'],
@@ -312,7 +312,7 @@ variable USER_LIST = {
     user_config = create_accounts_from_db(USER_LIST,
                                           NODE_USER_GROUP_LIST['users']);
   };
-  
+
   account_config;
 };
 
@@ -333,7 +333,7 @@ variable USER_LIST = {
       SELF['users'][user]['ssh_keys_urls'] = key_list;
     };
   };
-  
+
   if ( exists(SELF['users']) && is_defined(SELF['users']) ) {
     SELF['configSerial'] = USERACCESS_CONFIG_SERIAL;
     SELF['dependencies']['pre'] = list('accounts');
