@@ -43,7 +43,7 @@ include { 'rpms/xen/guest' };
     foreach (host; guestlist; XEN_DB) {
         debug("host: "+host);
         foreach(index; guest; guestlist) {
-           
+
             if (guest == FULL_HOSTNAME) {
 
                 if (myhost == "") {
@@ -51,14 +51,14 @@ include { 'rpms/xen/guest' };
                 } else if (myhost != host) {
                     error("Guest "+FULL_HOSTNAME+" defined on >1 host: "+myhost+", "+host);
 
-                };   
+                };
             };
 
         };
     };
 #    if (myhost == "") {
 #        error ("No host found for guest "+FULL_HOSTNAME);
-#    }; 
+#    };
 };
     myhost;
 };

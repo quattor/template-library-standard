@@ -60,7 +60,7 @@ variable CVMFS_CLIENT_CLEANUP_QUOTA ?= {
 #
 variable cron_command = {
     this = 'sleep $[ $RANDOM \% ' + to_string(CVMFS_CLIENT_CLEANUP_CRON_SLEEP) + ' ]s;'
-        + 'flock -n /var/lock/cvmfs_client_cleanup.lock ' 
+        + 'flock -n /var/lock/cvmfs_client_cleanup.lock '
         + CVMFS_CLIENT_CLEANUP_SCRIPT + ' '
         + to_string(CVMFS_CLIENT_CLEANUP_QUOTA) + ' '
         + to_string(CVMFS_CLIENT_CLEANUP_THRESHOLD) + ' '

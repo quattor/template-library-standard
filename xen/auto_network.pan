@@ -3,9 +3,9 @@ template xen/auto_network;
 ##
 ## Template that generates/guesses the xen network values
 ## - Does not override defined values?
-## 
+##
 ## Generated variables: XEN_VIF_BRIDGE, XEN_UDHCP_DEV, XEN_NETWORK_BRIDGES
-## 
+##
 
 ##
 ## enable all network interfaces as a network device on the dom0
@@ -32,21 +32,21 @@ variable XEN_NETWORK_BRIDGES = {
     } else {
         l = nlist();
     };
-    
+
     i=0;
     foreach(k;v;value("/system/network/interfaces")){
         br = "xenbr"+to_string(i);
-                
+
         if((! exists(l[br])) && (! exists(v['master']))) {
             l[br]= nlist('netdev',k,'vifnum',i);
         };
         i = i+1;
     };
-    
-    l; 
+
+    l;
 };
 
-## 
+##
 ## Make a map between dom0 dev and bridge name
 ## internal variable
 ##
@@ -64,11 +64,11 @@ variable XEN_NETWORK_BRIDGES_DEV2BR_MAP = {
             error("XEN_NETWORK_BRIDGES_DEV2BR_MAP: Defined bridge "+k+" has no netdev defined and does not match xenb(\\d+) regexp.");
         };
     };
-    
+
     l;
 };
 
-## 
+##
 ## convert base10 to bin
 ##
 function base10_to_bin = {
@@ -78,17 +78,17 @@ function base10_to_bin = {
     };
     d = to_long(ARGV[0]);
     ans = '';
-    
-    div = d/2; 
+
+    div = d/2;
     mod = d%2;
     while ((div+mod) > 0) {
         ans = to_string(mod) + ans;
         d = div;
         div = d/2;
-        mod = d%2; 
+        mod = d%2;
     };
-    
-    return(ans);    
+
+    return(ans);
 };
 
 ##
@@ -106,7 +106,7 @@ function ip_to_bin = {
         i = 1;
         while(i <= 4) {
             ## add 256 for trailing 0s
-            ans = ans + substr(base10_to_bin(256+to_long(result[i])),1,8);            
+            ans = ans + substr(base10_to_bin(256+to_long(result[i])),1,8);
             i = i + 1;
         };
         return(ans);
@@ -125,24 +125,24 @@ function which_dev_matches_ip = {
         error(name+": requires only one argument");
     };
     bin = ip_to_bin(ARGV[0]);
-    
+
     foreach(k;v;value("/system/network/interfaces")){
         ## get all the ip/netmasks,routes,aliases
-        ## try which one fits 
+        ## try which one fits
         ## - first hit is answer
         ## - (default) gateway is useless
         ##   dhcp requests are not routed
-        ## - routing gateways are also useless 
+        ## - routing gateways are also useless
         ##   imagine a direct route from dom0 to domU through private network exists on dom0
         ##   route add -host domu.public gw domU.private
         ##   this will never work unless the dom0 is the aii and/or profile server
         l = list();
-        
+
         ## ipaddress
         if (exists(v['ip'])) {
             l[length(l)]=list(v['ip'],v['netmask']);
         };
-        
+
         ## routes
         if (exists(v['route'])) {
             foreach(k2;v2;v['route']) {
@@ -155,7 +155,7 @@ function which_dev_matches_ip = {
                 };
             };
         };
-        
+
         ## aliases
         if (exists(v['aliases'])) {
             foreach(k2;v2;v['aliases']) {
@@ -163,7 +163,7 @@ function which_dev_matches_ip = {
             };
         };
 
-        
+
         foreach(k3;v3;l) {
             b = ip_to_bin(v3[0]);
             mask = ip_to_bin(v3[1]);
@@ -172,10 +172,10 @@ function which_dev_matches_ip = {
                 return(k);
             };
         };
-        
+
     };
-    
-    return('');            
+
+    return('');
 };
 
 ##
@@ -228,7 +228,7 @@ variable XEN_UDHCP_DEV = {
                 ## this will never work.
                 error("XEN_UDHCP_DEV for vm "+vm+": boot_nic "+dev+" is not defined in /system/network/interfaces.");
              };
-             
+
              SELF[vm] = res;
         };
     };

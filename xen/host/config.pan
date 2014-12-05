@@ -19,6 +19,6 @@ include { 'xen/configure_guests' };
 
 include { 'rpms/xen/host' };
 
-# linux and Xen versions needed by grub config are set 
+# linux and Xen versions needed by grub config are set
 # in the OS-specific package includes so this comes last
 include { 'xen/grub' };

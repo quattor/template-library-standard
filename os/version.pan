@@ -100,7 +100,7 @@ variable GLITE_CONFIG_HACKS = if ( is_defined(NODE_OS_VERSION) &&
                               } else {
                                 SELF;
                               };
-                                 
+
 # Add local definitions, if any
 # This can be used to do any action, even replace standard
 # definitions, if no db file is provided

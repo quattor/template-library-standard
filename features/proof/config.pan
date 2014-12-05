@@ -113,7 +113,7 @@ start() {
 }
 
 stop() {
-	[ ! -f /var/lock/subsys/xrootd ] && return 0 || true 
+	[ ! -f /var/lock/subsys/xrootd ] && return 0 || true
         echo -n $"Stopping $prog: "
         killproc xrootd
         RETVAL=$?

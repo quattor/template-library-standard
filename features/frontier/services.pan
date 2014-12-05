@@ -26,13 +26,13 @@ variable FRONTIER_HOST_MONITOR_STRING ?= {
 };
 
 include { 'components/filecopy/config' };
-'/software/components/filecopy/services/{/etc/squid/customized.sh}' = 
+'/software/components/filecopy/services/{/etc/squid/customized.sh}' =
   nlist('config',format(file_contents('features/frontier/customized.sh.file'),
                  FRONTIER_LOCAL_NET_STRING,
                  FRONTIER_HOST_MONITOR_STRING,
                  FRONTIER_CACHE_MEM,
                  FRONTIER_CACHE_DIR,
-        ),  
+        ),
         'restart','service frontier-squid reload',
         'perms','0644');
 

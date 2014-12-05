@@ -14,7 +14,7 @@ variable pakiti_conf = pakiti_conf + format("tag = %s\n", PAKITI_TAG);
 variable PAKITI_CLIENT_INSECURE ?= false;
 variable PAKITI_CLIENT_CONF ?= '/etc/pakiti2/pakiti2-client.conf';
 variable pakiti_conf = if (is_boolean(PAKITI_CLIENT_INSECURE) && PAKITI_CLIENT_INSECURE ) {
-                         SELF + "curl_path = /usr/bin/curl --insecure\n"; 
+                         SELF + "curl_path = /usr/bin/curl --insecure\n";
                        } else {
                          SELF;
                        };

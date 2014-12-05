@@ -4,9 +4,9 @@
 # Quattor release.
 #
 #######################################################################
- 
+
 unique template repository/config/quattor;
- 
+
 include { 'quattor/functions/repository' };
 
 # Ordered list of repository to load

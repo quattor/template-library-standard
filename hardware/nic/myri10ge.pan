@@ -2,7 +2,7 @@
 #
 # template hardware/nic/myri10ge;
 #
-# RESPONSIBLE: Liliana Martin 
+# RESPONSIBLE: Liliana Martin
 ######################################################
 
 structure template hardware/nic/myri10ge;

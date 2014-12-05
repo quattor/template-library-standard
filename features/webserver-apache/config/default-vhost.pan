@@ -1,6 +1,6 @@
 unique template features/webserver-apache/config/default-vhost;
 
-variable DEFAULT_VHOST_CONFIG = { 
+variable DEFAULT_VHOST_CONFIG = {
   if (index("ssl",WEB_SERVER_MODULES) != -1 ) {
     config = "NameVirtualHost SERVERIP:80 \n\
 NameVirtualHost SERVERIP:443 \n\
