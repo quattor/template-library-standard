@@ -64,6 +64,11 @@ variable CVMFS_SERVER_URL_RAL ?= nlist(
     'URL-02-NIKHEF', 'http://cvmfs01.nikhef.nl/cvmfs/@org@.gridpp.ac.uk',
 );
 
+# Servers for domain egi.eu
+variable CVMFS_SERVER_URL_EGI ?= nlist(
+    'URL-01-RAL', 'http://cvmfs-egi.gridpp.rl.ac.uk:8000/cvmfs/@org@.egi.eu',
+);
+
 # VO specific stuff
 variable VO_ATLAS_LOCAL_AREA ?= undef;
 variable VO_CMS_LOCAL_SITE ?= undef;
@@ -299,6 +304,56 @@ variable CONTENTS = {
     };
     SELF;
 };
+
+#
+# Create local EGI domain configuration, reload service if changed
+#
+
+variable CVMFS_EGI_DOMAIN_ENABLED = {
+    foreach(i;rep;CVMFS_REPOSITORIES){
+        if(match(rep,'egi.eu$')){
+            return(true);
+        };
+    };
+    return(false);
+};
+
+variable CONTENTS = {
+    if (!is_nlist(CVMFS_SERVER_URL_EGI)) {
+        error("CVMFS: CVMFS_SERVER_URL_EGI should be an nlist");
+    };
+    first = true;
+    this = 'CVMFS_SERVER_URL="';
+    foreach (k; v; CVMFS_SERVER_URL_EGI) {
+        if (!first) {
+            this = this + ';' + v;
+        } else {
+            this = this + v;
+            first = false;
+        };
+    };
+    this = this + '"' + "\n";
+    this = this + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/egi.eu.pub\n"
+};
+
+'/software/components/filecopy/services' = {
+    if(CVMFS_EGI_DOMAIN_ENABLED){
+        SELF[escape('/etc/cvmfs/domain.d/egi.eu.conf')]=nlist(
+            'config', CONTENTS,
+            'owner', 'root',
+            'perms', '0644',
+            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+        );
+        SELF[escape('/etc/cvmfs/keys/egi.eu.pub')]=nlist(
+            'config', file_contents('features/cvmfs/keys/egi.eu.pub'),
+            'owner', 'root',
+            'perms', '0644',
+            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+        );
+    };
+    SELF;
+};
+
 
 #
 # fuse filesystem sharing is required
