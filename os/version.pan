@@ -40,6 +40,9 @@ variable OS_VERSION_PARAMS ?= {
       error('NODE_OS_VERSION ('+to_string(NODE_OS_VERSION)+') has an unexpected format. Define OS_VERSION_PARAMS explicitly');
     };
     SELF['distribution'] = toks[1];
+    if ( match(SELF['distribution'], '^(el|centos|rhel|sl)') ) {
+      SELF['family'] = 'el';
+    };
     SELF['majorversion'] = toks[2];
     # Handle Fedora as a special case where there is no minor version.
     if ( SELF['distribution'] == 'fedora' ) {

@@ -38,7 +38,7 @@ variable QUATTOR_REPOSITORY_LIST ?= if ( is_defined(QUATTOR_RELEASE) ) {
                                       if ( match(QUATTOR_RELEASE,'13\.1') && (QUATTOR_RELEASE != '13.12') ) {
                                         repos = list(QUATTOR_REPOSITORY_TEMPLATE,'quattor_externals','quattor_components');
                                       } else {
-                                        repos = list(QUATTOR_REPOSITORY_TEMPLATE,'quattor_externals');
+                                        repos = list(QUATTOR_REPOSITORY_TEMPLATE,'quattor_externals_arch','quattor_externals_noarch');
                                       };
                                       debug("Repositories added for Quattor release "+QUATTOR_RELEASE+": "+to_string(repos));
                                       repos;
