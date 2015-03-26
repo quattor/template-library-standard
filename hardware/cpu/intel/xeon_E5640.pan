@@ -5,4 +5,4 @@ structure template hardware/cpu/intel/xeon_E5640;
 "model"  = "Intel(R) Xeon(R) CPU E5640 2.67GHz";
 "speed"  = 2666*MHz;
 "arch"   = "x86_64";
-"cores" = 4;
+"cores"  = 4;
