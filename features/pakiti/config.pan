@@ -12,7 +12,7 @@ required = no
 variable PAKITI_CA_PATH ?= SITE_DEF_CERTDIR;
 
 @{
-desc = Pakiti server host name
+desc = Pakiti server host name 
 values = host name FQDN
 default = none
 required = yes
@@ -20,7 +20,7 @@ required = yes
 variable PAKITI_SERVER ?= error('PAKITI_SERVER variable undefined: no default');
 
 @{
-desc = Pakiti port on server
+desc = Pakiti port on server  
 values = port number
 default = 443
 required = no
@@ -28,7 +28,7 @@ required = no
 variable PAKITI_SERVER_PORT ?= 443;
 
 @{
-desc = Pakiti tag to used for this machine
+desc = Pakiti tag to used for this machine  
 values = string
 default = none
 required = no
@@ -36,7 +36,7 @@ required = no
 variable PAKITI_TAG ?= 'none';
 
 @{
-desc = Pakiti feed URL on the server
+desc = Pakiti feed URL on the server  
 values = URL (host specific part)
 default = /feed
 required = no
@@ -59,12 +59,17 @@ include { 'features/fetch-crl/config' };
 
 include { if ( PAKITI_SERVER == FULL_HOSTNAME ) {
 	'features/pakiti/server';
-} else {
-	'features/pakiti/client/config';
-};
+}};
 
-};
+variable PAKITI_CLIENT_V3 ?= false;
 
+include	{
+	 if(PAKITI_CLIENT_V3){
+	   'features/pakiti/client/configv3';
+	 }else{
+	   'features/pakiti/client/config';
+	 };
+};	  
 # Pakiti updates if using SPMA
 include { if ( PACKAGE_MANAGER == 'spma' ) 'features/pakiti/updates' };
 
