@@ -24,7 +24,7 @@ function filesystem_layout_mod = {
   if ( (ARGC != 1) || !is_nlist(ARGV[0]) ) {
     error(function_name+': one argument required, must be a nlist');
   };
-
+  
   foreach (volume;params;ARGV[0]) {
     if ( exists(SELF[volume]) ) {
       foreach (key;value;params) {
@@ -164,6 +164,13 @@ variable FILESYSTEM_DEFAULT_FS_TYPE ?= 'ext3';
 variable FILESYSTEM_DEFAULT_FORMAT ?= true;
 variable FILESYSTEM_DEFAULT_PRESERVE ?= true;
 
+@use{
+  type = dict
+  default = null
+  note = define for each physical device the label (msdos, gpt, ...)
+}
+variable PHYSICAL_DEVICE_LABEL ?= null;
+
 # Remove entries with a zero size.
 # Also ensure there is type defined for every volume with a non-zero size.
 # MD devices need a special treatment to ensure the devices they use have a non zero size. If
@@ -172,13 +179,13 @@ variable FILESYSTEM_DEFAULT_PRESERVE ?= true;
 # The same sort of check must be done for file systems to ensure that if they don't have a size defined, the device
 # they use has an entry in the volume list with a non-zero size (if there is no entry for the device used
 # by the file system, a partition will be created but the file system must have a size defined).
-# For raid1 MD devices (mirror), it is also possible to have the size defined at the MD level and no
-# specific entries defined for the partitions used. In this case, add an entry for the underlying
+# For raid1 MD devices (mirror), it is also possible to have the size defined at the MD level and no 
+# specific entries defined for the partitions used. In this case, add an entry for the underlying 
 # partitions with the appropriate size defined.
 variable DISK_VOLUME_PARAMS = {
   volumes = nlist();
   debug('Initial list of file systems: '+to_string(SELF));
-
+  
   # MD-related checks
   foreach (volume;params;SELF) {
     if ( exists(params['type']) && (params['type'] == 'md') ) {
@@ -214,7 +221,7 @@ variable DISK_VOLUME_PARAMS = {
       };
     };
   };
-
+  
   # File system related checks (a file system is recognized by its mountpoint attribute).
   # Ignore LVM-based file systems: check will be done later.
   foreach (volume;params;SELF) {
@@ -235,7 +242,7 @@ variable DISK_VOLUME_PARAMS = {
       };
     };
   };
-
+    
   # Remove all entries with a zero size
   foreach (volume;params;SELF) {
     if ( !exists(params['size']) || (params['size'] != 0) ) {
@@ -282,7 +289,7 @@ variable DISK_DEVICE_LIST = {
 #
 # DISK_PART_BY_DEV contains 2 different set of data:
 #   - 'partitions': an entry with each partition and its parameters, grouped by physical disk
-#   - 'changed_part_num': an entry for each partition renumbered to use a consecutive numbering. The
+#   - 'changed_part_num': an entry for each partition renumbered to use a consecutive numbering. The 
 #                         keys are the original partition name, the value the new one.
 variable DISK_PART_BY_DEV = {
   SELF['partitions'] = nlist();
@@ -346,7 +353,7 @@ variable DISK_PART_BY_DEV = {
       };
     };
   };
-
+  
   # Process SELF['partitions'] and ensure that for each device, partition numbers are consecutive but keeping
   # logical partitions >=5. Renumbering cannot be used only based on the alphabetical order of partitions as
   # there may be 2 digits for the partition number.
@@ -356,7 +363,7 @@ variable DISK_PART_BY_DEV = {
   #
   # Note that this code heavily relies on the fact PAN nlists are run through in the lexical order by foreach
   # statement in panc v8. Should this change, this code would need to be fixed...
-
+  
   foreach (phys_dev;dev_params;SELF['partitions']) {
     new_part_num = 1;
     new_part_list = nlist();
@@ -365,6 +372,11 @@ variable DISK_PART_BY_DEV = {
     sorted_partition_list = list();
     two_digit_units = list();
     last_primary = SELF['partitions'][phys_dev]['last_primary'];
+    if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
+      label = PHYSICAL_DEVICE_LABEL[phys_dev];
+    } else {
+      label = "msdos";
+    };
 
     # First build the list of partitions sorted by partition number instead of lexical order
     # (10 after 9 and not after 1). This would not work with partition number >= 100 but this
@@ -377,16 +389,15 @@ variable DISK_PART_BY_DEV = {
       };
     };
     sorted_partition_list = merge(sorted_partition_list,two_digit_units);
-
-    # Renumber partitions if necessary.
+   
+    # Renumber partitions if necessary. 
     foreach (i;partition;sorted_partition_list) {
       part_num = SELF['partitions'][phys_dev]['part_num'][partition];
-
       # Primary partitions: update last primary partition detected.
       # Also if the partition as no explicit size (size=-1), add it
       # to the list of primary partitions without and explicit size.
       # An extended partition is treated as a primary one at this point.
-      if ( part_num <= 4 ) {
+      if ( (part_num <= 4)  || (label == "gpt") ) {
         if ( SELF['partitions'][phys_dev]['size'][partition] == -1 ) {
           debug('Primary/extended partition '+partition+' has no size defined. Postponing allocation of a partition number.');
           primary_no_size[length(primary_no_size)] = part_num;
@@ -399,7 +410,7 @@ variable DISK_PART_BY_DEV = {
       } else {
         if ( new_part_num <= 4 ) {
           new_part_num = 5;
-        };
+        }; 
         if ( SELF['partitions'][phys_dev]['size'][partition] == -1 ) {
           debug('Logical partition '+partition+' has no size defined. Postponing allocation of a partition number.');
           logical_no_size[length(logical_no_size)] = part_num;
@@ -426,7 +437,7 @@ variable DISK_PART_BY_DEV = {
     # Check that an extended partition has been explicitly defined, else create one if
     # there are partition numbers >=5 (last existing number used after renumbering is
     # new_part_num-1).
-    if ( (new_part_num > 5) && !is_defined(SELF['partitions'][phys_dev]['extended']) ) {
+    if ( (new_part_num > 5) && !is_defined(SELF['partitions'][phys_dev]['extended']) && (label != 'gpt') ) {
       if ( last_primary == 0 ) {
         debug('No primary partition defined for '+phys_dev);
       };
@@ -449,7 +460,7 @@ variable DISK_PART_BY_DEV = {
         # Checks are different for primary and logical partitions
         if ( listnum == 0 ) {              # Primary partitions
           if ( (length(no_size_list) > 1) ||
-               ((length(no_size_list) == 1) &&
+               ((length(no_size_list) == 1) && 
                             is_defined(SELF['partitions'][phys_dev]['extended']) &&
                             (no_size_list[0] != SELF['partitions'][phys_dev]['extended']) ) ) {
             if ( is_defined(SELF['partitions'][phys_dev]['extended']) ) {
@@ -460,7 +471,7 @@ variable DISK_PART_BY_DEV = {
             error(to_string(length(no_size_list))+' primary '+to_string(no_size_list)+' '+extended_msg+
                                            ' partitions found on '+phys_dev+' without an explicit size defined');
           };
-          if ( last_primary >= 4 ) {
+          if ( (last_primary >= 4) && (label != 'gpt') ) {
             error('Cannot add partition (formerly) '+old_part_name+': 4 primary partitions already defined');
           };
           no_size_part_num = last_primary + 1;
@@ -512,7 +523,11 @@ variable DISK_VOLUME_PARAMS = {
 #Create physical devices
 "/system/blockdevices/physical_devs" = {
   foreach (phys_dev;params;DISK_PART_BY_DEV['partitions']) {
-    SELF[phys_dev] = nlist ("label", "msdos");
+    if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
+      SELF[phys_dev] = nlist ("label", PHYSICAL_DEVICE_LABEL[phys_dev]);
+    } else {
+      SELF[phys_dev] = nlist ("label", "msdos");
+    };
   };
   SELF;
 };
@@ -532,7 +547,7 @@ variable DISK_VOLUME_PARAMS = {
   SELF;
 };
 
-# Add MD and VG definitions
+# Add MD and VG definitions 
 "/system/blockdevices" = {
   foreach (i;dev_name;DISK_DEVICE_LIST) {
     params = DISK_VOLUME_PARAMS[dev_name];
@@ -603,7 +618,7 @@ variable DISK_LV_BY_VG = {
     if ( params['type'] == 'lvm' ) {
       # Already checked for existence
       params = DISK_VOLUME_PARAMS[device];
-
+    
       if ( !exists(params['device'])  ) {
         error("Logical volume name undefined for '"+device+"'");
       };
@@ -622,7 +637,7 @@ variable DISK_LV_BY_VG = {
       };
     };
   };
-
+  
   SELF;
 };
 
@@ -684,7 +699,7 @@ variable DISK_LV_BY_VG = {
     };
     volumes[volgroup][length(volumes[volgroup])] = logvols[0];
   };
-
+  
   # Add configuration information for each file system
   foreach (i;volgroup;volgroups) {
     foreach (i;dev_name;volumes[volgroup]) {
@@ -726,7 +741,7 @@ variable DISK_LV_BY_VG = {
 };
 
 # Set requested permissions or owner (if any) on filesystem mountpoints
-include {
+include { 
 	if (exists(DUMMY_NODE) && DUMMY_NODE) {
 		return(null);
 	} else {
@@ -755,6 +770,6 @@ include {
       SELF['paths'][length(SELF['paths'])] = path_params
     };
   };
-
+  
   SELF;
 };
