@@ -179,8 +179,8 @@ variable PHYSICAL_DEVICE_LABEL ?= null;
 # The same sort of check must be done for file systems to ensure that if they don't have a size defined, the device
 # they use has an entry in the volume list with a non-zero size (if there is no entry for the device used
 # by the file system, a partition will be created but the file system must have a size defined).
-# For raid1 MD devices (mirror), it is also possible to have the size defined at the MD level and no 
-# specific entries defined for the partitions used. In this case, add an entry for the underlying 
+# For raid1 MD devices (mirror), it is also possible to have the size defined at the MD level and no
+# specific entries defined for the partitions used. In this case, add an entry for the underlying
 # partitions with the appropriate size defined.
 variable DISK_VOLUME_PARAMS = {
   volumes = nlist();
@@ -242,7 +242,7 @@ variable DISK_VOLUME_PARAMS = {
       };
     };
   };
-    
+
   # Remove all entries with a zero size
   foreach (volume;params;SELF) {
     if ( !exists(params['size']) || (params['size'] != 0) ) {
@@ -289,7 +289,7 @@ variable DISK_DEVICE_LIST = {
 #
 # DISK_PART_BY_DEV contains 2 different set of data:
 #   - 'partitions': an entry with each partition and its parameters, grouped by physical disk
-#   - 'changed_part_num': an entry for each partition renumbered to use a consecutive numbering. The 
+#   - 'changed_part_num': an entry for each partition renumbered to use a consecutive numbering. The
 #                         keys are the original partition name, the value the new one.
 variable DISK_PART_BY_DEV = {
   SELF['partitions'] = nlist();
@@ -389,8 +389,8 @@ variable DISK_PART_BY_DEV = {
       };
     };
     sorted_partition_list = merge(sorted_partition_list,two_digit_units);
-   
-    # Renumber partitions if necessary. 
+
+    # Renumber partitions if necessary.
     foreach (i;partition;sorted_partition_list) {
       part_num = SELF['partitions'][phys_dev]['part_num'][partition];
       # Primary partitions: update last primary partition detected.
@@ -410,7 +410,7 @@ variable DISK_PART_BY_DEV = {
       } else {
         if ( new_part_num <= 4 ) {
           new_part_num = 5;
-        }; 
+        };
         if ( SELF['partitions'][phys_dev]['size'][partition] == -1 ) {
           debug('Logical partition '+partition+' has no size defined. Postponing allocation of a partition number.');
           logical_no_size[length(logical_no_size)] = part_num;
@@ -547,7 +547,7 @@ variable DISK_VOLUME_PARAMS = {
   SELF;
 };
 
-# Add MD and VG definitions 
+# Add MD and VG definitions
 "/system/blockdevices" = {
   foreach (i;dev_name;DISK_DEVICE_LIST) {
     params = DISK_VOLUME_PARAMS[dev_name];
@@ -618,7 +618,7 @@ variable DISK_LV_BY_VG = {
     if ( params['type'] == 'lvm' ) {
       # Already checked for existence
       params = DISK_VOLUME_PARAMS[device];
-    
+
       if ( !exists(params['device'])  ) {
         error("Logical volume name undefined for '"+device+"'");
       };
@@ -741,7 +741,7 @@ variable DISK_LV_BY_VG = {
 };
 
 # Set requested permissions or owner (if any) on filesystem mountpoints
-include { 
+include {
 	if (exists(DUMMY_NODE) && DUMMY_NODE) {
 		return(null);
 	} else {
