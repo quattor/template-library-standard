@@ -24,7 +24,7 @@ function filesystem_layout_mod = {
   if ( (ARGC != 1) || !is_nlist(ARGV[0]) ) {
     error(function_name+': one argument required, must be a nlist');
   };
-  
+
   foreach (volume;params;ARGV[0]) {
     if ( exists(SELF[volume]) ) {
       foreach (key;value;params) {
@@ -185,7 +185,7 @@ variable PHYSICAL_DEVICE_LABEL ?= null;
 variable DISK_VOLUME_PARAMS = {
   volumes = nlist();
   debug('Initial list of file systems: '+to_string(SELF));
-  
+
   # MD-related checks
   foreach (volume;params;SELF) {
     if ( exists(params['type']) && (params['type'] == 'md') ) {
@@ -221,7 +221,7 @@ variable DISK_VOLUME_PARAMS = {
       };
     };
   };
-  
+
   # File system related checks (a file system is recognized by its mountpoint attribute).
   # Ignore LVM-based file systems: check will be done later.
   foreach (volume;params;SELF) {
@@ -353,7 +353,7 @@ variable DISK_PART_BY_DEV = {
       };
     };
   };
-  
+
   # Process SELF['partitions'] and ensure that for each device, partition numbers are consecutive but keeping
   # logical partitions >=5. Renumbering cannot be used only based on the alphabetical order of partitions as
   # there may be 2 digits for the partition number.
@@ -363,7 +363,7 @@ variable DISK_PART_BY_DEV = {
   #
   # Note that this code heavily relies on the fact PAN nlists are run through in the lexical order by foreach
   # statement in panc v8. Should this change, this code would need to be fixed...
-  
+
   foreach (phys_dev;dev_params;SELF['partitions']) {
     new_part_num = 1;
     new_part_list = nlist();
@@ -637,7 +637,7 @@ variable DISK_LV_BY_VG = {
       };
     };
   };
-  
+
   SELF;
 };
 
@@ -699,7 +699,7 @@ variable DISK_LV_BY_VG = {
     };
     volumes[volgroup][length(volumes[volgroup])] = logvols[0];
   };
-  
+
   # Add configuration information for each file system
   foreach (i;volgroup;volgroups) {
     foreach (i;dev_name;volumes[volgroup]) {
@@ -770,6 +770,6 @@ include {
       SELF['paths'][length(SELF['paths'])] = path_params
     };
   };
-  
+
   SELF;
 };
