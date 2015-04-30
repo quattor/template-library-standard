@@ -460,7 +460,7 @@ variable DISK_PART_BY_DEV = {
         # Checks are different for primary and logical partitions
         if ( listnum == 0 ) {              # Primary partitions
           if ( (length(no_size_list) > 1) ||
-               ((length(no_size_list) == 1) && 
+               ((length(no_size_list) == 1) &&
                             is_defined(SELF['partitions'][phys_dev]['extended']) &&
                             (no_size_list[0] != SELF['partitions'][phys_dev]['extended']) ) ) {
             if ( is_defined(SELF['partitions'][phys_dev]['extended']) ) {
