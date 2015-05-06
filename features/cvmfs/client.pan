@@ -373,7 +373,11 @@ include {'components/profile/config'};
     if (is_defined(VO_ATLAS_LOCAL_AREA)) {
         SELF['ATLAS_LOCAL_AREA'] = VO_ATLAS_LOCAL_AREA;
     };
-    SELF;
+    if ( is_defined(SELF) ) {
+      SELF;
+    } else {
+      null;
+    };
 };
 
 
