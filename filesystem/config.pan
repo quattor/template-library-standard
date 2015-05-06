@@ -164,10 +164,20 @@ variable FILESYSTEM_DEFAULT_FS_TYPE ?= 'ext3';
 variable FILESYSTEM_DEFAULT_FORMAT ?= true;
 variable FILESYSTEM_DEFAULT_PRESERVE ?= true;
 
-@use{
-  type = dict
-  default = null
-  note = define for each physical device the label (msdos, gpt, ...)
+@{
+desc = define the default label for physical devices
+values = string
+default = gpt
+required = no
+}
+variable PHYSICAL_DEVICE_DEFAULT_LABEL ?= "gpt";
+
+@{
+desc = the label for physical devices defined as dict.
+values = dict whose keys are physical devices and values are labels \
+ (msdos, gpt, ...)
+default = null
+required = no
 }
 variable PHYSICAL_DEVICE_LABEL ?= null;
 
@@ -375,7 +385,7 @@ variable DISK_PART_BY_DEV = {
     if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
       label = PHYSICAL_DEVICE_LABEL[phys_dev];
     } else {
-      label = "msdos";
+      label = PHYSICAL_DEVICE_DEFAULT_LABEL;
     };
 
     # First build the list of partitions sorted by partition number instead of lexical order
@@ -526,7 +536,7 @@ variable DISK_VOLUME_PARAMS = {
     if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
       SELF[phys_dev] = nlist ("label", PHYSICAL_DEVICE_LABEL[phys_dev]);
     } else {
-      SELF[phys_dev] = nlist ("label", "msdos");
+      SELF[phys_dev] = nlist ("label", PHYSICAL_DEVICE_DEFAULT_LABEL);
     };
   };
   SELF;
