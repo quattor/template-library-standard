@@ -164,6 +164,23 @@ variable FILESYSTEM_DEFAULT_FS_TYPE ?= 'ext3';
 variable FILESYSTEM_DEFAULT_FORMAT ?= true;
 variable FILESYSTEM_DEFAULT_PRESERVE ?= true;
 
+@{
+desc = define the default label for physical devices
+values = string
+default = gpt
+required = no
+}
+variable PHYSICAL_DEVICE_DEFAULT_LABEL ?= "gpt";
+
+@{
+desc = the label for physical devices defined as dict.
+values = dict whose keys are physical devices and values are labels \
+ (msdos, gpt, ...)
+default = null
+required = no
+}
+variable PHYSICAL_DEVICE_LABEL ?= null;
+
 # Remove entries with a zero size.
 # Also ensure there is type defined for every volume with a non-zero size.
 # MD devices need a special treatment to ensure the devices they use have a non zero size. If
@@ -365,6 +382,11 @@ variable DISK_PART_BY_DEV = {
     sorted_partition_list = list();
     two_digit_units = list();
     last_primary = SELF['partitions'][phys_dev]['last_primary'];
+    if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
+      label = PHYSICAL_DEVICE_LABEL[phys_dev];
+    } else {
+      label = PHYSICAL_DEVICE_DEFAULT_LABEL;
+    };
 
     # First build the list of partitions sorted by partition number instead of lexical order
     # (10 after 9 and not after 1). This would not work with partition number >= 100 but this
@@ -381,12 +403,11 @@ variable DISK_PART_BY_DEV = {
     # Renumber partitions if necessary.
     foreach (i;partition;sorted_partition_list) {
       part_num = SELF['partitions'][phys_dev]['part_num'][partition];
-
       # Primary partitions: update last primary partition detected.
       # Also if the partition as no explicit size (size=-1), add it
       # to the list of primary partitions without and explicit size.
       # An extended partition is treated as a primary one at this point.
-      if ( part_num <= 4 ) {
+      if ( (part_num <= 4)  || (label == "gpt") ) {
         if ( SELF['partitions'][phys_dev]['size'][partition] == -1 ) {
           debug('Primary/extended partition '+partition+' has no size defined. Postponing allocation of a partition number.');
           primary_no_size[length(primary_no_size)] = part_num;
@@ -426,7 +447,7 @@ variable DISK_PART_BY_DEV = {
     # Check that an extended partition has been explicitly defined, else create one if
     # there are partition numbers >=5 (last existing number used after renumbering is
     # new_part_num-1).
-    if ( (new_part_num > 5) && !is_defined(SELF['partitions'][phys_dev]['extended']) ) {
+    if ( (new_part_num > 5) && !is_defined(SELF['partitions'][phys_dev]['extended']) && (label != 'gpt') ) {
       if ( last_primary == 0 ) {
         debug('No primary partition defined for '+phys_dev);
       };
@@ -460,7 +481,7 @@ variable DISK_PART_BY_DEV = {
             error(to_string(length(no_size_list))+' primary '+to_string(no_size_list)+' '+extended_msg+
                                            ' partitions found on '+phys_dev+' without an explicit size defined');
           };
-          if ( last_primary >= 4 ) {
+          if ( (last_primary >= 4) && (label != 'gpt') ) {
             error('Cannot add partition (formerly) '+old_part_name+': 4 primary partitions already defined');
           };
           no_size_part_num = last_primary + 1;
@@ -512,7 +533,11 @@ variable DISK_VOLUME_PARAMS = {
 #Create physical devices
 "/system/blockdevices/physical_devs" = {
   foreach (phys_dev;params;DISK_PART_BY_DEV['partitions']) {
-    SELF[phys_dev] = nlist ("label", "msdos");
+    if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
+      SELF[phys_dev] = nlist ("label", PHYSICAL_DEVICE_LABEL[phys_dev]);
+    } else {
+      SELF[phys_dev] = nlist ("label", PHYSICAL_DEVICE_DEFAULT_LABEL);
+    };
   };
   SELF;
 };
