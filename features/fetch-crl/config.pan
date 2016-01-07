@@ -16,25 +16,41 @@ include { 'features/fetch-crl/rpms' + RPMS_CONFIG_SUFFIX };
 # Define fetch-crl version if not defined when adding RPMs
 variable FETCH_CRL_VERSION ?= '3.0';
 
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------- 
 # fetch-crl configuration
-# ----------------------------------------------------------------------------
-include { 'components/sysconfig/config' };
-"/software/components/sysconfig/files/fetch-crl/CRLDIR" = SITE_DEF_CERTDIR;
-"/software/components/sysconfig/files/fetch-crl/FORCE_OVERWRITE" = if ( FETCH_CRL_FORCE_OVERWRITE ) {
-                                                                     'yes';
-                                                                   } else {
-                                                                     'no';
-                                                                   };
-"/software/components/sysconfig/files/fetch-crl/QUIET" = if ( FETCH_CRL_QUIET ) {
-                                                           'yes';
-                                                         } else {
-                                                           'no';
-                                                         };
+# ---------------------------------------------------------------------------- 
+include { 'components/metaconfig/config' };
+# property daemons is not supported in older version of metaconfig but unfortunately
+# metaconfig doesn't publish its version until 15.12. Until the version is defined
+# use QUATTOR_RELEASE to determine the version.
+'/software/components/metaconfig/services/{/etc/sysconfig/fetch-crl}/daemons' = {
+  if ( QUATTOR_RELEASE >= '15' ) {
+    nlist('fetch-crl-boot', 'restart');
+  } else {
+    null;
+  };
+};
+'/software/components/metaconfig/services/{/etc/sysconfig/fetch-crl}/backup' = '.old';
+'/software/components/metaconfig/services/{/etc/sysconfig/fetch-crl}/module' = 'tiny';
+'/software/components/metaconfig/services/{/etc/sysconfig/fetch-crl}/contents' = {
+  SELF["CRLDIR"] = SITE_DEF_CERTDIR;
+  SELF["FORCE_OVERWRITE"] = if ( FETCH_CRL_FORCE_OVERWRITE ) {
+                              'yes';
+                            } else {
+                              'no';
+                            };
+  SELF["QUIET"] = if ( FETCH_CRL_QUIET ) {
+                    'yes';
+                  } else {
+                    'no';
+                  };
+  SELF;
+};
 
-# ----------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------- 
 # cron
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------- 
 include { 'components/cron/config' };
 "/software/components/cron/entries" = {
   if (FETCH_CRL_VERSION < '3.0') {
@@ -54,10 +70,10 @@ include { 'components/cron/config' };
 };
 
 
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------- 
 # altlogrotate
-# ----------------------------------------------------------------------------
-include { 'components/altlogrotate/config' };
+# ---------------------------------------------------------------------------- 
+include { 'components/altlogrotate/config' }; 
 "/software/components/altlogrotate/entries" = {
   if (FETCH_CRL_VERSION < '3.0') {
     SELF['fetch-crl-cron'] =   nlist("pattern", "/var/log/fetch-crl-cron.ncm-cron.log",
@@ -78,9 +94,9 @@ include { 'components/altlogrotate/config' };
 };
 
 
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------- 
 # chkconfig
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------- 
 "/software/components/chkconfig/service" = {
   if (FETCH_CRL_VERSION >= '3.0') {
     # Run fetch-crl on boot
