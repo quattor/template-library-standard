@@ -3,6 +3,10 @@ unique template features/fetch-crl/config;
 
 variable FETCH_CRL_QUIET ?= true;
 variable FETCH_CRL_FORCE_OVERWRITE ?= true;
+# This avoid having fetch-crl-boot returning a non-zero exit status on
+# transient errors. Does not apply to the cron.
+# Ignored (but harmless) if fetch-crl < 3.0.13.
+variable FETCH_CRL_BOOT_IGNORE_RETRIEVAL_ERRORS ?= true;
 
 variable SITE_DEF_GRIDSEC_ROOT ?= "/etc/grid-security";
 variable SITE_DEF_HOST_CERT    ?= SITE_DEF_GRIDSEC_ROOT+"/hostcert.pem";
@@ -34,6 +38,9 @@ include { 'components/metaconfig/config' };
 '/software/components/metaconfig/services/{/etc/sysconfig/fetch-crl}/module' = 'tiny';
 '/software/components/metaconfig/services/{/etc/sysconfig/fetch-crl}/contents' = {
   SELF["CRLDIR"] = SITE_DEF_CERTDIR;
+  if ( FETCH_CRL_BOOT_IGNORE_RETRIEVAL_ERRORS ) {
+    SELF["FETCHCRL_BOOT_OPTIONS"] = '"--define rcmode=noretrievalerrors"';
+  };
   SELF["FORCE_OVERWRITE"] = if ( FETCH_CRL_FORCE_OVERWRITE ) {
                               'yes';
                             } else {
