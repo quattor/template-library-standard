@@ -97,8 +97,9 @@ include { 'repository/config/cvmfs' };
 #
 # Enable service
 #
+include 'quattor/functions/package';
 '/software/components/chkconfig/service' = {
-    if (CVMFS_CLIENT_VERSION < '2.1' && ! is_defined(SELF['cvmfs'])) {
+    if ((pkg_compare_version('2.1', CVMFS_CLIENT_VERSION) == -1) && ! is_defined(SELF['cvmfs'])) {
         SELF['cvmfs'] = nlist('on', '', 'startstop', false);
     };
     SELF;
