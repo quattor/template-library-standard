@@ -1,7 +1,7 @@
 structure template hardware/nic/qlogic/qlge;
 
 'driver' = 'qlge';
-'pxe'    = true;
+'pxe'    = false;
 'boot'   = false;
 'media'  = 'Ethernet';
 'name'   = 'Qlogic 10Gb CNA';

@@ -1,7 +1,7 @@
 structure template hardware/nic/nvidia/mcp55;
 
 'driver' = 'forcedeth';
-'pxe'    = true;
+'pxe'    = false;
 'boot'   = false;
 'media'  = 'Ethernet';
 'name'   = 'nVidia nForce MCP55 Gigabit card';
