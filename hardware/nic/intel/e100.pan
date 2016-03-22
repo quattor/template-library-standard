@@ -1,4 +1,3 @@
-
 structure template hardware/nic/intel/e100;
 
 "driver" = "intelpro100";

@@ -1,9 +1,3 @@
-######################################################
-#
-# template hardware/nic/bnx2x;
-#
-######################################################
-
 structure template hardware/nic/broadcom/bnx2x;
 
 "driver" = "bnx2x";

@@ -1,11 +1,3 @@
-######################################################
-#
-# template pro_hardware_card_nic_pcnet32;
-#
-# RESPONSIBLE: Charles Loomis <charles.loomis@cern.ch>
-#
-######################################################
-
 structure template hardware/nic/amd/pcnet32;
 
 "driver" = "pcnet32";

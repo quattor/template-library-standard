@@ -1,11 +1,3 @@
-######################################################
-#
-# template hardware/nic/bnx2;
-#
-# RESPONSIBLE: Victor Mendoza <mendoza@lpnhe.in2p3.fr>
-#
-######################################################
-
 structure template hardware/nic/broadcom/bnx2;
 
 "driver" = "bnx2";

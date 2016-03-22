@@ -1,11 +1,3 @@
-######################################################
-#
-# template hardware/nic/xen_vif
-#
-# RESPONSIBLE: Stephen Childs <childss@cs.tcd.ie>
-#
-######################################################
-
 structure template hardware/nic/xen/xen_vif;
 
 "driver" = "xen";

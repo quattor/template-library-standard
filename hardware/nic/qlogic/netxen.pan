@@ -1,9 +1,3 @@
-######################################################
-#
-# template hardware/nic/netxen;
-#
-######################################################
-
 structure template hardware/nic/qlogic/netxen;
 
 "driver" = "netxen_nic";

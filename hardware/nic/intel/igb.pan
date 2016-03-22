@@ -1,11 +1,3 @@
-######################################################
-#
-# from template hardware/nic/igb;
-#
-# RESPONSIBLE: Christophe DIARRA
-#
-######################################################
-
 structure template hardware/nic/intel/igb;
 
 "driver" = "igb";

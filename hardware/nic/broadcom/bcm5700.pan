@@ -1,9 +1,3 @@
-######################################################
-#
-# RESPONSIBLE: Jacquelin Charbonnel <charbonnel@lal.in2p3.fr>
-#
-######################################################
-
 structure template hardware/nic/broadcom/bcm5700;
 
 "driver" = "bcm5700";

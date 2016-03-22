@@ -1,11 +1,3 @@
-######################################################
-#
-# template pro_hardware_card_nic_tg3;
-#
-# RESPONSIBLE: Charles Loomis <charles.loomis@cern.ch>
-#
-######################################################
-
 structure template hardware/nic/broadcom/tg3;
 
 "driver" = "tg3";
