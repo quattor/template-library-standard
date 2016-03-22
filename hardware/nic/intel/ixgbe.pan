@@ -6,7 +6,7 @@
 #
 ######################################################
 
-structure template hardware/nic/ixgbe;
+structure template hardware/nic/intel/ixgbe;
 
 "driver" = "ixgbe";
 "pxe"    = false;

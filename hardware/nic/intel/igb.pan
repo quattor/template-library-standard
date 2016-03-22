@@ -6,7 +6,7 @@
 #
 ######################################################
 
-structure template hardware/nic/igb;
+structure template hardware/nic/intel/igb;
 
 "driver" = "igb";
 "pxe"    = false;

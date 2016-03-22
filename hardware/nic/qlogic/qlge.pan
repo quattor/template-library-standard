@@ -6,7 +6,7 @@
 #
 ######################################################
 
-structure template hardware/nic/qlge;
+structure template hardware/nic/qlogic/qlge;
 
 "driver" = "qlge";
 "pxe"    = true;

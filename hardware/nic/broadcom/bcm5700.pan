@@ -4,7 +4,7 @@
 #
 ######################################################
 
-structure template hardware/nic/bcm5700;
+structure template hardware/nic/broadcom/bcm5700;
 
 "driver" = "bcm5700";
 "driverrpms" = list("bcm5700", "bcm5700-smp");

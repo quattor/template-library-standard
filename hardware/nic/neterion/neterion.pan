@@ -6,7 +6,7 @@
 #
 ######################################################
 
-structure template hardware/nic/neterion;
+structure template hardware/nic/neterion/neterion;
 
 "driver" = "s2io";
 "pxe"    = false;

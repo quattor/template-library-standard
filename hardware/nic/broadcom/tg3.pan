@@ -6,7 +6,7 @@
 #
 ######################################################
 
-structure template hardware/nic/tg3;
+structure template hardware/nic/broadcom/tg3;
 
 "driver" = "tg3";
 "pxe"    = true;

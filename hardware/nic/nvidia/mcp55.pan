@@ -1,4 +1,4 @@
-structure template hardware/nic/mcp55;
+structure template hardware/nic/nvidia/mcp55;
 
 "driver" = "forcedeth";
 "pxe"    = true;

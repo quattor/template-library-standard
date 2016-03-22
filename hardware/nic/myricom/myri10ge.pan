@@ -5,7 +5,7 @@
 # RESPONSIBLE: Liliana Martin
 ######################################################
 
-structure template hardware/nic/myri10ge;
+structure template hardware/nic/myricom/myri10ge;
 
 "driver" = "myri10ge";
 "pxe"    = false;

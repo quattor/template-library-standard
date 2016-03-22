@@ -6,7 +6,7 @@
 #
 ######################################################
 
-structure template hardware/nic/e1000;
+structure template hardware/nic/intel/e1000;
 
 "driver" = "e1000";
 "pxe"    = false;

@@ -4,7 +4,7 @@
 #
 ######################################################
 
-structure template hardware/nic/be2net;
+structure template hardware/nic/hp/be2net;
 
 "driver" = "be2net";
 "pxe"    = true;

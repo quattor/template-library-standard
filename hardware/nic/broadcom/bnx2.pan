@@ -6,7 +6,7 @@
 #
 ######################################################
 
-structure template hardware/nic/bnx2;
+structure template hardware/nic/broadcom/bnx2;
 
 "driver" = "bnx2";
 "pxe"    = true;

@@ -1,5 +1,5 @@
 
-structure template hardware/nic/e100;
+structure template hardware/nic/intel/e100;
 
 "driver" = "intelpro100";
 "pxe"    = false;

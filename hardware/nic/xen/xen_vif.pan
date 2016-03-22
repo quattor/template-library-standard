@@ -6,7 +6,7 @@
 #
 ######################################################
 
-structure template hardware/nic/xen_vif;
+structure template hardware/nic/xen/xen_vif;
 
 "driver" = "xen";
 "pxe"    = true;
