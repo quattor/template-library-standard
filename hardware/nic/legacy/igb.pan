@@ -1,5 +1,7 @@
-structure template hardware/nic/intel/igb;
+structure template hardware/nic/legacy/igb;
 
+'model' = 'igb';
+'manufacturer' = 'intel';
 'driver' = 'igb';
 'pxe'    = false;
 'boot'   = false;

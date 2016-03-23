@@ -1,5 +1,7 @@
-structure template hardware/nic/intel/e1000;
+structure template hardware/nic/legacy/e1000;
 
+'model' = 'e1000';
+'manufacturer' = 'intel';
 'driver' = 'e1000';
 'pxe'    = false;
 'boot'   = false;

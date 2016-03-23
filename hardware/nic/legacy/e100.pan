@@ -1,5 +1,7 @@
-structure template hardware/nic/intel/e100;
+structure template hardware/nic/legacy/e100;
 
+'model' = 'e100';
+'manufacturer' = 'intel';
 'driver' = 'intelpro100';
 'pxe'    = false;
 'boot'   = false;
