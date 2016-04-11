@@ -1,14 +1,4 @@
-######################################################
-#
-# template hardware/nic/myri10ge;
-#
-# RESPONSIBLE: Liliana Martin
-######################################################
-
 structure template hardware/nic/myri10ge;
 
-"driver" = "myri10ge";
-"pxe"    = false;
-"boot"   = false;
-"media"  = "Ethernet";
-"name"   = "Intel 10 GbE PCIe";
+include 'hardware/nic/legacy/myri10ge';
+include 'hardware/nic/deprecation-warning';
