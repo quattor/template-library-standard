@@ -519,7 +519,7 @@ variable DISK_PART_BY_DEV = {
 # DISK_VOLUME_PARAMS: this flag explicitly states that this entry correspond to a
 # physical partition description and that no attempt should be made to dereference it.
 variable DISK_VOLUME_PARAMS = {
-  foreach (volume;params;DISK_VOLUME_PARAMS) {
+  foreach (volume;params;SELF) {
     if ( (params['type'] == 'partition') &&
          (is_defined(DISK_PART_BY_DEV['changed_part_num'][params['device']])) ) {
       debug('Updating '+volume+' partition to new name/number: '+DISK_PART_BY_DEV['changed_part_num'][params['device']]);
