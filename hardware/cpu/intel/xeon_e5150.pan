@@ -1,4 +1,4 @@
-structure template hardware/cpu/intel/woodcrest_2660;
+structure template hardware/cpu/intel/xeon_E5150;
 
 "manufacturer" = "Intel";
 "vendor" = "Intel";
