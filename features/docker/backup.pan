@@ -10,10 +10,6 @@ variable DOCKER_BACKUP_COMMAND?="/usr/sbin/backup_docker_data -dir "+DOCKER_BACK
 
 variable DOCKER_BACKUP_FREQUENCY?="30 11 * * *";
 
-include {'components/spma/config'};
-
-'/software/packages/{postfix}' = nlist();
-
 include {'components/filecopy/config'};
 
 '/software/components/filecopy/services/{/usr/sbin/backup_docker_data}' = nlist(
@@ -33,8 +29,3 @@ include {'components/cron/config'};
         SELF;
 };
 
-include {'components/chkconfig/config'};
-
-prefix '/software/components/chkconfig/service/';
-
-'postfix' = nlist('on', '', 'startstop', true);
