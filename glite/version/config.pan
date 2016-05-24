@@ -15,13 +15,24 @@ include { NODE_GLITE_VERSION_DB };
 
 # Find version to run on this node based on node name or OS version
 # and update loadpath accordingly.
-variable NODE_GLITE_VERSION_LOADPATH = if ( is_defined(NODE_GLITE_VERSION[escape(FULL_HOSTNAME)]) ) {
-                                         NODE_GLITE_VERSION[escape(FULL_HOSTNAME)];
-                                       } else if ( is_defined(NODE_GLITE_VERSION_DEFAULT[OS_VERSION_PARAMS['major']]) ) {
-                                         NODE_GLITE_VERSION_DEFAULT[OS_VERSION_PARAMS['major']];
-                                       } else {
-                                         undef;
-                                       };
+# If the version is defined to the empty string, it means that gLite must not be configured
+variable NODE_GLITE_VERSION_LOADPATH = {
+  loadpath = undef;
+
+  if ( is_defined(NODE_GLITE_VERSION[escape(FULL_HOSTNAME)]) ) {
+    if ( NODE_GLITE_VERSION[escape(FULL_HOSTNAME)] != '' ) {
+      debug(format('%s: NODE_GLITE_VERSION for this node = ', FULL_HOSTNAME, to_string(NODE_GLITE_VERSION[escape(FULL_HOSTNAME)])));
+      loadpath = NODE_GLITE_VERSION[escape(FULL_HOSTNAME)];
+    } else {
+      debug(format('%s: NODE_GLITE_VERSION_LOADPATH explicitly disabled', FULL_HOSTNAME));
+    };
+  } else if ( is_defined(NODE_GLITE_VERSION_DEFAULT[OS_VERSION_PARAMS['major']]) ) {
+    debug(format('%s: using NODE_GLITE_VERSION_DEFAULT (%s)', FULL_HOSTNAME, to_string(NODE_GLITE_VERSION_DEFAULT[OS_VERSION_PARAMS['major']])));
+    loadpath = NODE_GLITE_VERSION_DEFAULT[OS_VERSION_PARAMS['major']];
+  };
+
+  loadpath;
+};
 
 variable LOADPATH = {
   if ( is_defined(NODE_GLITE_VERSION_LOADPATH) ) {
