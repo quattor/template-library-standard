@@ -355,6 +355,126 @@ variable CONTENTS = {
     SELF;
 };
 
+function cvmfs_add_key = {
+  if (ARGC < 2) {
+    error('number of arguments must be at least 2');
+  };
+
+  pubkey_name = ARGV[0];
+  pubkey_file = ARGV[1];
+
+  SELF[escape('/etc/cvmfs/keys/' + pubkey_name + '.pub')]=nlist(
+      'config', file_contents(pubkey_file),
+      'owner', 'root',
+      'perms', '0644',
+      'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+  );
+
+  return(SELF);
+};
+
+function cvmfs_add_config_file = {
+  if (ARGC < 3) {
+    error('number of arguments must be at least 3');
+  };
+
+  if (!CVMFS_CLIENT_ENABLED) {
+      return(SELF);
+  };
+
+
+  domain_name = ARGV[0];
+  server_url = ARGV[1];
+  destination = ARGV[2];
+
+  if (!is_nlist(server_url)) {
+      error("CVMFS: server URL should be an nlist");
+  };
+
+  first = true;
+  contents = 'CVMFS_SERVER_URL="';
+  foreach (k; v; server_url) {
+    if (!first) {
+      contents = contents + ';' + v;
+    } else {
+        contents = contents + v;
+        first = false;
+    };
+  };
+
+  contents = contents + '"' + "\n";
+  contents = contents + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/" + domain_name + ".pub\n";
+
+  SELF[escape('/etc/cvmfs/' + destination + '/' + domain_name +'.conf')]=nlist(
+      'config', contents,
+      'owner', 'root',
+      'perms', '0644',
+      'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+  );
+
+  return(SELF);
+};
+
+function cvmfs_add_server = {
+  if (ARGC < 2) {
+    error('number of arguments must be at least 2');
+  };
+
+  domain_name = ARGV[0];
+  server_url = ARGV[1];
+
+  return(cvmfs_add_config_file(domain_name, server_url, 'domain.d'));
+};
+
+function cvmfs_add_repo = {
+  if (ARGC < 2) {
+    error('number of arguments must be at least 2');
+  };
+
+  repo_name = ARGV[0];
+  server_url = ARGV[1];
+
+  return(cvmfs_add_config_file(repo_name, server_url, 'config.d'));
+};
+
+variable CVMFS_EXTRA_DOMAINS ?= undef;
+
+function cvmfs_configure_extra_domains = {
+    if (!is_defined(CVMFS_EXTRA_DOMAINS)) {
+        return(SELF);
+    };
+
+    this = SELF;
+
+    foreach (domain_name; domain_def; CVMFS_EXTRA_DOMAINS) {
+        this = cvmfs_add_server(domain_name, domain_def['server_urls']);
+        this = cvmfs_add_key(domain_name, domain_def['pubkeys_file']);
+    };
+
+    return(this);
+};
+
+'/software/components/filecopy/services' = cvmfs_configure_extra_domains();
+
+variable CVMFS_EXTRA_REPOSITORIES ?= undef;
+
+function cvmfs_configure_extra_repos = {
+    if (!is_defined(CVMFS_EXTRA_REPOSITORIES)) {
+        return(SELF);
+    };
+
+    this = SELF;
+
+    foreach (repo_name; repo_def; CVMFS_EXTRA_REPOSITORIES) {
+        this = cvmfs_add_repo(repo_name, repo_def['server_urls']);
+        this = cvmfs_add_key(repo_name, repo_def['pubkeys_file']);
+    };
+
+    return(this);
+};
+
+'/software/components/filecopy/services' = cvmfs_configure_extra_repos();
+
 
 #
 # fuse filesystem sharing is required
