@@ -69,6 +69,11 @@ variable CVMFS_SERVER_URL_EGI ?= nlist(
     'URL-01-RAL', 'http://cvmfs-egi.gridpp.rl.ac.uk:8000/cvmfs/@org@.egi.eu',
 );
 
+# Servers for domain in2p3.fr
+variable CVMFS_SERVER_URL_IN2P3 ?= nlist(
+    'URL-01-IN2P3', 'http://cccrnvmfss1li01.in2p3.fr/cvmfs/@org@.in2p3.fr',
+);
+
 # VO specific stuff
 variable VO_ATLAS_LOCAL_AREA ?= undef;
 variable VO_CMS_LOCAL_SITE ?= undef;
@@ -355,6 +360,55 @@ variable CONTENTS = {
     SELF;
 };
 
+
+#
+# Create local IN2P3 domain configuration, reload service if changed
+#
+
+variable CVMFS_IN2P3_DOMAIN_ENABLED = {
+    foreach(i;rep;CVMFS_REPOSITORIES){
+        if(match(rep,'in2p3.fr$')){
+            return(true);
+        };
+    };
+    return(false);
+};
+
+variable CONTENTS = {
+    if (!is_nlist(CVMFS_SERVER_URL_IN2P3)) {
+        error("CVMFS: CVMFS_SERVER_URL_IN2P3 should be an nlist");
+    };
+    first = true;
+    this = 'CVMFS_SERVER_URL="';
+    foreach (k; v; CVMFS_SERVER_URL_IN2P3) {
+        if (!first) {
+            this = this + ';' + v;
+        } else {
+            this = this + v;
+            first = false;
+        };
+    };
+    this = this + '"' + "\n";
+    this = this + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/francegrilles.in2p3.fr.pub\n"
+};
+
+'/software/components/filecopy/services' = {
+    if(CVMFS_IN2P3_DOMAIN_ENABLED){
+        SELF[escape('/etc/cvmfs/domain.d/in2p3.fr.conf')]=nlist(
+            'config', CONTENTS,
+            'owner', 'root',
+            'perms', '0644',
+            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+        );
+        SELF[escape('/etc/cvmfs/keys/francegrilles.in2p3.fr.pub')]=nlist(
+            'config', file_contents('features/cvmfs/keys/francegrilles.in2p3.fr.pub'),
+            'owner', 'root',
+            'perms', '0644',
+            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+        );
+    };
+    SELF;
+};
 
 #
 # fuse filesystem sharing is required
