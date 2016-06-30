@@ -181,180 +181,6 @@ include { 'components/filecopy/config' };
 );
 
 
-#
-# Create local CERN domain configuration, reload service if changed
-#
-variable CONTENTS = {
-    if (!is_nlist(CVMFS_SERVER_URL_CERN)) {
-        error("CVMFS: CVMFS_SERVER_URL_CERN should be an nlist");
-    };
-    first = true;
-    this = 'CVMFS_SERVER_URL="';
-    foreach (k; v; CVMFS_SERVER_URL_CERN) {
-        if (!first) {
-            this = this + ';' + v;
-        } else {
-            this = this + v;
-            first = false;
-        };
-    };
-    this = this + '"' + "\n";
-};
-'/software/components/filecopy/services/{/etc/cvmfs/domain.d/cern.ch.local}' = nlist(
-    'config', CONTENTS,
-    'owner', 'root',
-    'perms', '0644',
-    'restart', CVMFS_SERVICE_RELOAD_COMMAND,
-);
-
-#
-# Create local DESY domain configuration, reload service if changed
-#
-
-variable CVMFS_DESY_DOMAIN_ENABLED = {
-    foreach(i;rep;CVMFS_REPOSITORIES){
-        if(match(rep,'desy.de$')){
-            return(true);
-        };
-    };
-    return(false);
-};
-
-variable CONTENTS = {
-    if (!is_nlist(CVMFS_SERVER_URL_DESY)) {
-        error("CVMFS: CVMFS_SERVER_URL_DESY should be an nlist");
-    };
-    first = true;
-    this = 'CVMFS_SERVER_URL="';
-    foreach (k; v; CVMFS_SERVER_URL_DESY) {
-        if (!first) {
-            this = this + ';' + v;
-        } else {
-            this = this + v;
-            first = false;
-        };
-    };
-    this = this + '"' + "\n";
-    this = this + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/desy.de.pub\n"
-};
-
-'/software/components/filecopy/services' = {
-    if(CVMFS_DESY_DOMAIN_ENABLED){
-        SELF[escape('/etc/cvmfs/domain.d/desy.de.conf')]=nlist(
-            'config', CONTENTS,
-            'owner', 'root',
-            'perms', '0644',
-            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
-        );
-        SELF[escape('/etc/cvmfs/keys/desy.de.pub')]=nlist(
-            'config', file_contents('features/cvmfs/keys/desy.de.pub'),
-            'owner', 'root',
-            'perms', '0644',
-            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
-        );
-    };
-    SELF;
-};
-
-
-#
-# Create local RAL domain configuration, reload service if changed
-#
-
-variable CVMFS_RAL_DOMAIN_ENABLED = {
-    foreach(i;rep;CVMFS_REPOSITORIES){
-        if(match(rep,'gridpp.ac.uk$')){
-            return(true);
-        };
-    };
-    return(false);
-};
-
-variable CONTENTS = {
-    if (!is_nlist(CVMFS_SERVER_URL_RAL)) {
-        error("CVMFS: CVMFS_SERVER_URL_RAL should be an nlist");
-    };
-    first = true;
-    this = 'CVMFS_SERVER_URL="';
-    foreach (k; v; CVMFS_SERVER_URL_RAL) {
-        if (!first) {
-            this = this + ';' + v;
-        } else {
-            this = this + v;
-            first = false;
-        };
-    };
-    this = this + '"' + "\n";
-    this = this + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/gridpp.ac.uk.pub\n"
-};
-
-'/software/components/filecopy/services' = {
-    if(CVMFS_RAL_DOMAIN_ENABLED){
-        SELF[escape('/etc/cvmfs/domain.d/gridpp.ac.uk.conf')]=nlist(
-            'config', CONTENTS,
-            'owner', 'root',
-            'perms', '0644',
-            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
-        );
-        SELF[escape('/etc/cvmfs/keys/gridpp.ac.uk.pub')]=nlist(
-            'config', file_contents('features/cvmfs/keys/gridpp.ac.uk.pub'),
-            'owner', 'root',
-            'perms', '0644',
-            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
-        );
-    };
-    SELF;
-};
-
-#
-# Create local EGI domain configuration, reload service if changed
-#
-
-variable CVMFS_EGI_DOMAIN_ENABLED = {
-    foreach(i;rep;CVMFS_REPOSITORIES){
-        if(match(rep,'egi.eu$')){
-            return(true);
-        };
-    };
-    return(false);
-};
-
-variable CONTENTS = {
-    if (!is_nlist(CVMFS_SERVER_URL_EGI)) {
-        error("CVMFS: CVMFS_SERVER_URL_EGI should be an nlist");
-    };
-    first = true;
-    this = 'CVMFS_SERVER_URL="';
-    foreach (k; v; CVMFS_SERVER_URL_EGI) {
-        if (!first) {
-            this = this + ';' + v;
-        } else {
-            this = this + v;
-            first = false;
-        };
-    };
-    this = this + '"' + "\n";
-    this = this + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/egi.eu.pub\n"
-};
-
-'/software/components/filecopy/services' = {
-    if(CVMFS_EGI_DOMAIN_ENABLED){
-        SELF[escape('/etc/cvmfs/domain.d/egi.eu.conf')]=nlist(
-            'config', CONTENTS,
-            'owner', 'root',
-            'perms', '0644',
-            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
-        );
-        SELF[escape('/etc/cvmfs/keys/egi.eu.pub')]=nlist(
-            'config', file_contents('features/cvmfs/keys/egi.eu.pub'),
-            'owner', 'root',
-            'perms', '0644',
-            'restart', CVMFS_SERVICE_RELOAD_COMMAND,
-        );
-    };
-    SELF;
-};
-
 function cvmfs_add_key = {
   if (ARGC < 2) {
     error('number of arguments must be at least 2');
@@ -387,10 +213,6 @@ function cvmfs_add_config_file = {
   server_url = ARGV[1];
   destination = ARGV[2];
 
-  if (!is_nlist(server_url)) {
-      error("CVMFS: server URL should be an nlist");
-  };
-
   first = true;
   contents = 'CVMFS_SERVER_URL="';
   foreach (k; v; server_url) {
@@ -405,7 +227,7 @@ function cvmfs_add_config_file = {
   contents = contents + '"' + "\n";
   contents = contents + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/" + domain_name + ".pub\n";
 
-  SELF[escape('/etc/cvmfs/' + destination + '/' + domain_name +'.conf')]=nlist(
+  SELF[escape('/etc/cvmfs/' + destination + '/' + domain_name + '.conf')]=nlist(
       'config', contents,
       'owner', 'root',
       'perms', '0644',
@@ -437,6 +259,113 @@ function cvmfs_add_repo = {
   return(cvmfs_add_config_file(repo_name, server_url, 'config.d'));
 };
 
+#
+# Create local CERN domain configuration, reload service if changed
+#
+variable CONTENTS = {
+    if (!is_nlist(CVMFS_SERVER_URL_CERN)) {
+        error("CVMFS: CVMFS_SERVER_URL_CERN should be an nlist");
+    };
+    first = true;
+    this = 'CVMFS_SERVER_URL="';
+    foreach (k; v; CVMFS_SERVER_URL_CERN) {
+        if (!first) {
+            this = this + ';' + v;
+        } else {
+            this = this + v;
+            first = false;
+        };
+    };
+    this = this + '"' + "\n";
+};
+
+'/software/components/filecopy/services/{/etc/cvmfs/domain.d/cern.ch.local}' = nlist(
+    'config', CONTENTS,
+    'owner', 'root',
+    'perms', '0644',
+    'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+);
+
+#
+# Create local DESY domain configuration, reload service if changed
+#
+
+variable CVMFS_DESY_DOMAIN_ENABLED = {
+    foreach(i;rep;CVMFS_REPOSITORIES){
+        if(match(rep,'desy.de$')){
+            return(true);
+        };
+    };
+    return(false);
+};
+
+'/software/components/filecopy/services' = {
+    if(CVMFS_DESY_DOMAIN_ENABLED){
+        this = SELF;
+
+        this = cvmfs_add_server('desy.de', CVMFS_SERVER_URL_DESY);
+        this = cvmfs_add_key('desy.de', 'features/cvmfs/keys/desy.de.pub');
+
+        return(this);
+    };
+    SELF;
+};
+
+
+#
+# Create local RAL domain configuration, reload service if changed
+#
+
+variable CVMFS_RAL_DOMAIN_ENABLED = {
+    foreach(i;rep;CVMFS_REPOSITORIES){
+        if(match(rep,'gridpp.ac.uk$')){
+            return(true);
+        };
+    };
+    return(false);
+};
+
+'/software/components/filecopy/services' = {
+    if(CVMFS_RAL_DOMAIN_ENABLED){
+        this = SELF;
+
+        this = cvmfs_add_server('gridpp.ac.uk', CVMFS_SERVER_URL_RAL);
+        this = cvmfs_add_key('gridpp.ac.uk', 'features/cvmfs/keys/gridpp.ac.uk.pub');
+
+        return(this);
+    };
+    SELF;
+};
+
+#
+# Create local EGI domain configuration, reload service if changed
+#
+
+variable CVMFS_EGI_DOMAIN_ENABLED = {
+    foreach(i;rep;CVMFS_REPOSITORIES){
+        if(match(rep,'egi.eu$')){
+            return(true);
+        };
+    };
+    return(false);
+};
+
+'/software/components/filecopy/services' = {
+    if(CVMFS_EGI_DOMAIN_ENABLED){
+        this = SELF;
+
+        this = cvmfs_add_server('egi.eu', CVMFS_SERVER_URL_EGI);
+        this = cvmfs_add_key('egi.eu', 'features/cvmfs/keys/egi.eu.pub');
+
+        return(this);
+    };
+    SELF;
+};
+
+#
+# Create user-defined CVMFS repositories and domains
+#
+
 variable CVMFS_EXTRA_DOMAINS ?= undef;
 
 function cvmfs_configure_extra_domains = {
@@ -454,8 +383,6 @@ function cvmfs_configure_extra_domains = {
     return(this);
 };
 
-'/software/components/filecopy/services' = cvmfs_configure_extra_domains();
-
 variable CVMFS_EXTRA_REPOSITORIES ?= undef;
 
 function cvmfs_configure_extra_repos = {
@@ -472,6 +399,8 @@ function cvmfs_configure_extra_repos = {
 
     return(this);
 };
+
+'/software/components/filecopy/services' = cvmfs_configure_extra_domains();
 
 '/software/components/filecopy/services' = cvmfs_configure_extra_repos();
 
