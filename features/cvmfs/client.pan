@@ -209,9 +209,14 @@ function cvmfs_add_config_file = {
   };
 
 
-  domain_name = ARGV[0];
+  config_file = ARGV[0];
   server_url = ARGV[1];
   destination = ARGV[2];
+  keyfile = undef;
+
+  if (ARGC > 3) {
+      keyfile = ARGV[3];
+  };
 
   first = true;
   contents = 'CVMFS_SERVER_URL="';
@@ -225,9 +230,12 @@ function cvmfs_add_config_file = {
   };
 
   contents = contents + '"' + "\n";
-  contents = contents + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/" + domain_name + ".pub\n";
 
-  SELF[escape('/etc/cvmfs/' + destination + '/' + domain_name + '.conf')]=nlist(
+  if (is_defined(keyfile)) {
+      contents = contents + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/" + keyfile + "\n";
+  };
+
+  SELF[escape('/etc/cvmfs/' + destination + '/' + config_file)]=nlist(
       'config', contents,
       'owner', 'root',
       'perms', '0644',
@@ -245,7 +253,7 @@ function cvmfs_add_server = {
   domain_name = ARGV[0];
   server_url = ARGV[1];
 
-  return(cvmfs_add_config_file(domain_name, server_url, 'domain.d'));
+  return(cvmfs_add_config_file(domain_name + '.conf', server_url, 'domain.d', domain_name + '.pub'));
 };
 
 function cvmfs_add_repo = {
@@ -256,35 +264,13 @@ function cvmfs_add_repo = {
   repo_name = ARGV[0];
   server_url = ARGV[1];
 
-  return(cvmfs_add_config_file(repo_name, server_url, 'config.d'));
+  return(cvmfs_add_config_file(repo_name + '.conf', server_url, 'config.d', repo_name + '.pub'));
 };
 
 #
 # Create local CERN domain configuration, reload service if changed
 #
-variable CONTENTS = {
-    if (!is_nlist(CVMFS_SERVER_URL_CERN)) {
-        error("CVMFS: CVMFS_SERVER_URL_CERN should be an nlist");
-    };
-    first = true;
-    this = 'CVMFS_SERVER_URL="';
-    foreach (k; v; CVMFS_SERVER_URL_CERN) {
-        if (!first) {
-            this = this + ';' + v;
-        } else {
-            this = this + v;
-            first = false;
-        };
-    };
-    this = this + '"' + "\n";
-};
-
-'/software/components/filecopy/services/{/etc/cvmfs/domain.d/cern.ch.local}' = nlist(
-    'config', CONTENTS,
-    'owner', 'root',
-    'perms', '0644',
-    'restart', CVMFS_SERVICE_RELOAD_COMMAND,
-);
+'/software/components/filecopy/services' = cvmfs_add_config_file('cern.ch.local', CVMFS_SERVER_URL_CERN, 'domain.d');
 
 #
 # Create local DESY domain configuration, reload service if changed
