@@ -1,4 +1,4 @@
-structure template hardware/cpu/intel/xeon_E5440;
+structure template hardware/cpu/intel/xeon_e5440;
 
 "manufacturer" = "Intel";
 "model" = "Intel(R) Xeon(R) CPU E5440 @ 2.83 GHz";
