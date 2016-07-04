@@ -1,4 +1,4 @@
-structure template hardware/cpu/intel/xeon_E5_2650v2;
+structure template hardware/cpu/intel/xeon_e5_2650v2;
 
 "manufacturer" = "Intel";
 "model" = "Intel(R) Xeon(R) CPU E5-2650 v2 @ 2.60 GHz";
