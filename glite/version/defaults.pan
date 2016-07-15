@@ -1,10 +1,11 @@
 unique template glite/version/defaults;
 
-# Version par defaut.
-# undef disable configuration of gLite UI.
+# Defaut MW sion per major OS version
+# empty string disable configuration of UI.
 variable NODE_GLITE_VERSION_DEFAULT = nlist(
-  'sl4', 'glite-3.1',
-  'sl5', 'glite-3.2',
+  'sl5', 'umd-3',
+  'sl6', 'umd-3',
+  'el7', 'umd-4',
 );
 
 
