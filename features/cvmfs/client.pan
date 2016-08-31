@@ -352,6 +352,17 @@ variable CVMFS_EGI_DOMAIN_ENABLED = {
 # Create user-defined CVMFS repositories and domains
 #
 
+#
+# Add custom domains through predefinition of variable CVMFS_EXTRA_DOMAINS
+#
+# It should be defined as in this example:
+# variable CVMFS_EXTRA_DOMAINS ?= nlist('example.org',
+#                                             nlist('server_urls', nlist('URL-NAME1', 'http://cvmfs1.example.org/cvmfs/@org@.example.org',
+#                                                                        'URL-NAME2', 'http://cvmfs2.example.org/cvmfs/@org@.example.org'),
+#                                             'pubkeys_file', 'cvmfs/keys/example.org.pub' # cvmfs/keys/example.org.pub is a local file in your template source distribution
+#                                             ),
+#                                    );
+
 variable CVMFS_EXTRA_DOMAINS ?= undef;
 
 function cvmfs_configure_extra_domains = {
@@ -368,6 +379,17 @@ function cvmfs_configure_extra_domains = {
 
     return(this);
 };
+
+#
+# Add custom domains through predefinition of variable CVMFS_EXTRA_REPOSITORIES
+#
+# It should be defined as in this example:
+# variable CVMFS_EXTRA_REPOSITORIES ?= nlist('vo.example.org',
+#                                             nlist('server_urls', nlist('URL-NAME1', 'http://cvmfs1.example.org/cvmfs/vo.example.org',
+#                                                                        'URL-NAME2', 'http://cvmfs2.example.org/cvmfs/vo.example.org'),
+#                                             'pubkeys_file', 'cvmfs/keys/vo.example.org.pub' # cvmfs/keys/vo.example.org.pub is a local file in your template source distribution
+#                                             ),
+#                                    );
 
 variable CVMFS_EXTRA_REPOSITORIES ?= undef;
 
