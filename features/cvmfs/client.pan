@@ -189,7 +189,7 @@ function cvmfs_add_key = {
   pubkey_name = ARGV[0];
   pubkey_file = ARGV[1];
 
-  SELF[escape('/etc/cvmfs/keys/' + pubkey_name + '.pub')]=nlist(
+  SELF[escape('/etc/cvmfs/keys/' + pubkey_name)]=nlist(
       'config', file_contents(pubkey_file),
       'owner', 'root',
       'perms', '0644',
@@ -290,7 +290,7 @@ variable CVMFS_DESY_DOMAIN_ENABLED = {
         this = SELF;
 
         this = cvmfs_add_server('desy.de', CVMFS_SERVER_URL_DESY);
-        this = cvmfs_add_key('desy.de', 'features/cvmfs/keys/desy.de.pub');
+        this = cvmfs_add_key('desy.de.pub', 'features/cvmfs/keys/desy.de.pub');
 
         return(this);
     };
@@ -316,7 +316,7 @@ variable CVMFS_RAL_DOMAIN_ENABLED = {
         this = SELF;
 
         this = cvmfs_add_server('gridpp.ac.uk', CVMFS_SERVER_URL_RAL);
-        this = cvmfs_add_key('gridpp.ac.uk', 'features/cvmfs/keys/gridpp.ac.uk.pub');
+        this = cvmfs_add_key('gridpp.ac.uk.pub', 'features/cvmfs/keys/gridpp.ac.uk.pub');
 
         return(this);
     };
@@ -341,7 +341,7 @@ variable CVMFS_EGI_DOMAIN_ENABLED = {
         this = SELF;
 
         this = cvmfs_add_server('egi.eu', CVMFS_SERVER_URL_EGI);
-        this = cvmfs_add_key('egi.eu', 'features/cvmfs/keys/egi.eu.pub');
+        this = cvmfs_add_key('egi.eu.pub', 'features/cvmfs/keys/egi.eu.pub');
 
         return(this);
     };
@@ -363,7 +363,7 @@ function cvmfs_configure_extra_domains = {
 
     foreach (domain_name; domain_def; CVMFS_EXTRA_DOMAINS) {
         this = cvmfs_add_server(domain_name, domain_def['server_urls']);
-        this = cvmfs_add_key(domain_name, domain_def['pubkeys_file']);
+        this = cvmfs_add_key(domain_name + '.pub', domain_def['pubkeys_file']);
     };
 
     return(this);
@@ -380,7 +380,7 @@ function cvmfs_configure_extra_repos = {
 
     foreach (repo_name; repo_def; CVMFS_EXTRA_REPOSITORIES) {
         this = cvmfs_add_repo(repo_name, repo_def['server_urls']);
-        this = cvmfs_add_key(repo_name, repo_def['pubkeys_file']);
+        this = cvmfs_add_key(repo_name + '.pub', repo_def['pubkeys_file']);
     };
 
     return(this);
