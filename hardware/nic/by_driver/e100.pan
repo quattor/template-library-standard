@@ -1,7 +1,12 @@
 structure template hardware/nic/legacy/e100;
 
-"driver" = "intelpro100";
+# This driver supports Intel 10/100 Mbps PCI Ethernet Interfaces
+# Including 82550, 82551, 82557, 82558, 82559 and 82562
+
+"driver" = "e100";
 "pxe"    = false;
 "boot"   = false;
 "media"  = "Ethernet";
-"name"   = "Intel 82555 10/100 Megabit card";
+"name"   = "Intel(R) PRO/100 Network Driver";
+"maxspeed" = 100;
+"manufacturer" = "intel";
