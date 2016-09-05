@@ -1,7 +1,9 @@
-structure template hardware/nic/legacy/myri10ge;
+structure template hardware/nic/by_driver/myri10ge;
 
 "driver" = "myri10ge";
 "pxe"    = false;
 "boot"   = false;
 "media"  = "Ethernet";
-"name"   = "Intel 10 GbE PCIe";
+"name"   = "Myricom 10G driver (10GbE)";
+"maxspeed" = 10000;
+"manufacturer" = "intel";
