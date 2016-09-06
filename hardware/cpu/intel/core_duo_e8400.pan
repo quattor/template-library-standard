@@ -1,4 +1,4 @@
-structure template hardware/cpu/intel/core_duo_E8400;
+structure template hardware/cpu/intel/core_duo_e8400;
 
 "manufacturer" = "Intel";
 "vendor" = "Intel";

@@ -1,4 +1,4 @@
-structure template hardware/cpu/intel/xeon_E5-1650v2;
+structure template hardware/cpu/intel/xeon_e5-1650v2;
 
 "manufacturer" = "Intel";
 "vendor" = "Intel";

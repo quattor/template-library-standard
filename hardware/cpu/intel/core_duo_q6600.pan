@@ -1,4 +1,4 @@
-structure template hardware/cpu/intel/core_duo_Q6600;
+structure template hardware/cpu/intel/core_duo_q6600;
 
 "manufacturer" = "Intel";
 "vendor" = "Intel";
