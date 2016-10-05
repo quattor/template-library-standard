@@ -62,9 +62,20 @@ variable DISK_BOOT_PART_PREFIX ?= if ( exists('/hardware/harddisks/'+DISK_BOOT_D
                                     '';
                                   };
 
+# Add the required biosboot partition if the disk is using a GPT label, BIOS is using legacy mode
+# Define biosboot partition size accordingly
+variable DISK_BOOT_ADD_BIOSBOOT_PART ?= false;
+variable DISK_BOOT_BIOSBOOT_PART_SIZE ?= if ( DISK_BOOT_ADD_BIOSBOOT_PART ) {
+                                           100*MB;
+                                         } else {
+                                           0;
+                                         };
+                                         
+#
 # An ordered list of partition. Index will be used to build device name (index+1).
-# Value is an arbitrary string.
+# Values must match key in DISK_VOLUME_PARAMS.
 variable DISK_BOOT_PARTS = list(
+  'biosboot',
   'boot',
   'root',
   'swap',
@@ -99,6 +110,10 @@ variable DISK_SWAP_SIZE ?= {
 # designated by FILESYSTEM_LAYOUT_CONFIG_SITE (this variable is defined when this template is executed).
 # Key is an arbitrary name referenced by DISK_DEVICE_LIST.
 variable DISK_VOLUME_PARAMS ?= {
+  SELF['biosboot'] = nlist('size', DISK_BOOT_BIOSBOOT_PART_SIZE,
+                       'type', 'partition',
+                       'flags', list('bios_grub'),
+                       'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('boot',DISK_BOOT_PARTS)+1));
   SELF['boot'] = nlist('size', 256*MB,
                        'mountpoint', '/boot',
                        'fstype', 'ext2',
@@ -182,7 +197,7 @@ required = no
 variable PHYSICAL_DEVICE_LABEL ?= null;
 
 # Remove entries with a zero size.
-# Also ensure there is type defined for every volume with a non-zero size.
+# Also ensure there is a type defined for every volume with a non-zero size.
 # MD devices need a special treatment to ensure the devices they use have a non zero size. If
 # all devices have a null size, md device is removed. If at least one has a non-zero size, device
 # with a null size are removed from the list.
@@ -339,10 +354,11 @@ variable DISK_PART_BY_DEV = {
           phys_dev = toks[1];
         };
         if ( !exists(SELF['partitions'][phys_dev]) ) {
-          # Use 2 separate nlist, size and part_num, to ease processing later (partitions_add() requires a nlist of
-          # partitions where the key is the partition name and the value the size). In each list,
-          # the key is the partition name.
-          SELF['partitions'][phys_dev] = nlist('size', nlist(),
+          # Build 2 separate nlist, part_list and part_num, the key being the partition name in each
+          # list. part_list will be passed to partitions_add() which requires a dict of
+          # partitions where the key is a partitionname and the value the partition parameters (as a dict).
+          # part_num is a transient dict used internally to do the partition final numbering.
+          SELF['partitions'][phys_dev] = nlist('part_list', nlist(),
                                                'part_num', nlist(),
                                                'part_prefix', disk_part_prefix,
                                                'extended', undef,
@@ -350,7 +366,16 @@ variable DISK_PART_BY_DEV = {
                                               );
         };
         part_num = to_long(toks[2]);
-        SELF['partitions'][phys_dev]['size'][params['device']] = params['size'];
+        if ( is_defined(params['size']) ) {
+          SELF['partitions'][phys_dev]['part_list'][params['device']]['size'] = params['size'];
+        } else {
+          # Assume rest of physical device by default
+          SELF['partitions'][phys_dev]['part_list'][params['device']]['size'] = -1;
+        };
+        # 'flags' is a list of property that will be set to true in the block device configuration
+        if ( is_defined(params['flags']) ) {
+          SELF['partitions'][phys_dev]['part_list'][params['device']]['flags'] = params['flags'];
+        };
         SELF['partitions'][phys_dev]['part_num'][params['device']] = part_num;
         if ( is_defined(params['subtype']) && (params['subtype'] == 'extended') ) {
           if ( is_defined(SELF['partitions'][phys_dev]['extended']) ) {
@@ -364,6 +389,8 @@ variable DISK_PART_BY_DEV = {
     };
   };
 
+  debug(format('%s: devices defined before partition renumbering = %s', OBJECT, to_string(SELF['partitions'])));
+  
   # Process SELF['partitions'] and ensure that for each device, partition numbers are consecutive but keeping
   # logical partitions >=5. Renumbering cannot be used only based on the alphabetical order of partitions as
   # there may be 2 digits for the partition number.
@@ -408,7 +435,7 @@ variable DISK_PART_BY_DEV = {
       # to the list of primary partitions without and explicit size.
       # An extended partition is treated as a primary one at this point.
       if ( (part_num <= 4)  || (label == "gpt") ) {
-        if ( SELF['partitions'][phys_dev]['size'][partition] == -1 ) {
+        if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] == -1 ) {
           debug('Primary/extended partition '+partition+' has no size defined. Postponing allocation of a partition number.');
           primary_no_size[length(primary_no_size)] = part_num;
         } else{
@@ -421,14 +448,14 @@ variable DISK_PART_BY_DEV = {
         if ( new_part_num <= 4 ) {
           new_part_num = 5;
         };
-        if ( SELF['partitions'][phys_dev]['size'][partition] == -1 ) {
+        if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] == -1 ) {
           debug('Logical partition '+partition+' has no size defined. Postponing allocation of a partition number.');
           logical_no_size[length(logical_no_size)] = part_num;
         };
       };
       # If the partition has no defined size (size=-1), ignore it at the moment.
       # It number will be assigned later.
-      if ( SELF['partitions'][phys_dev]['size'][partition] != -1 ) {
+      if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] != -1 ) {
         if ( part_num == new_part_num ) {
           new_part_name = partition;
         } else {
@@ -436,7 +463,7 @@ variable DISK_PART_BY_DEV = {
           debug('Renaming partition '+partition+' into '+new_part_name);
           SELF['changed_part_num'][partition] = new_part_name;
         };
-        new_part_list[new_part_name] = SELF['partitions'][phys_dev]['size'][partition];
+        new_part_list[new_part_name] = SELF['partitions'][phys_dev]['part_list'][partition];
         new_part_num = new_part_num + 1;
       };
     };
@@ -471,8 +498,8 @@ variable DISK_PART_BY_DEV = {
         if ( listnum == 0 ) {              # Primary partitions
           if ( (length(no_size_list) > 1) ||
                ((length(no_size_list) == 1) &&
-                            is_defined(SELF['partitions'][phys_dev]['extended']) &&
-                            (no_size_list[0] != SELF['partitions'][phys_dev]['extended']) ) ) {
+                 is_defined(SELF['partitions'][phys_dev]['extended']) &&
+                 (no_size_list[0] != SELF['partitions'][phys_dev]['extended']) ) ) {
             if ( is_defined(SELF['partitions'][phys_dev]['extended']) ) {
               extended_msg='and 1 extended';
             } else {
@@ -506,8 +533,11 @@ variable DISK_PART_BY_DEV = {
     };
 
     # Assign the new list of partition for the device.
-    SELF['partitions'][phys_dev]['size'] = new_part_list;
+    SELF['partitions'][phys_dev]['part_list'] = new_part_list;
   };
+
+  debug(format('%s: renumbered partitions = %s', OBJECT, to_string(SELF['changed_part_num'])));
+  debug(format('%s: devices defined after partition renumbering = %s', OBJECT, to_string(SELF['partitions'])));
 
   SELF;
 };
@@ -549,9 +579,9 @@ variable DISK_VOLUME_PARAMS = {
     if ( is_defined(DISK_PART_BY_DEV['partitions'][phys_dev]['extended']) ) {
       extended_part = phys_dev + DISK_PART_BY_DEV['partitions'][phys_dev]['part_prefix'] +
                                             to_string(DISK_PART_BY_DEV['partitions'][phys_dev]['extended']);
-      partitions_add (phys_dev, params['size'],extended_part);
+      partitions_add (phys_dev, params['part_list'], extended_part);
     } else {
-      partitions_add (phys_dev, params['size']);
+      partitions_add (phys_dev, params['part_list']);
     };
   };
   SELF;
