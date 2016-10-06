@@ -596,7 +596,7 @@ variable DISK_PART_BY_DEV = {
       } else {
         partition = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(last_primary+1);
         debug('Creating '+partition+' as an extended partition using unused part of '+phys_dev);
-        new_part_list[partition] = -1;
+        new_part_list[partition]['size'] = -1;
         last_primary = last_primary + 1;
         SELF['partitions'][phys_dev]['extended'] = last_primary;
       };
@@ -638,7 +638,7 @@ variable DISK_PART_BY_DEV = {
 
         new_part_name = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(no_size_part_num);
         debug('Assigning partition name '+new_part_name+' to former '+old_part_name+' (no explicit size)');
-        new_part_list[new_part_name] = -1;
+        new_part_list[new_part_name]['size'] = -1;
         if ( old_part_name != new_part_name ) {
           SELF['changed_part_num'][old_part_name] = new_part_name;
         };
