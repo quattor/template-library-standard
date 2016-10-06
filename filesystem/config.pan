@@ -141,6 +141,7 @@ default = 256 MB
 required = no
 }
 variable DISK_BOOT_BLOCKDEV_SIZE ?= 256*MB;
+
 @{
 desc =  default size for block device home
 values = long
@@ -148,6 +149,7 @@ default = 0 (not created)
 required = no
 }
 variable DISK_HOME_BLOCKDEV_SIZE ?= 0*GB;
+
 @{
 desc =  default size for block device opt
 values = long
@@ -155,6 +157,7 @@ default = 2 GB
 required = no
 }
 variable DISK_OPT_BLOCKDEV_SIZE ?= 2*GB;
+
 @{
 desc =  default size for block device root
 values = long
@@ -162,6 +165,7 @@ default = 1 GB
 required = no
 }
 variable DISK_ROOT_BLOCKDEV_SIZE ?= 1*GB;
+
 @{
 desc =  default size for block device swareas
 values = long
@@ -169,6 +173,7 @@ default = 0 (not created)
 required = no
 }
 variable DISK_SWAREAS_BLOCKDEV_SIZE ?= 0*GB;
+
 @{
 desc =  default size for block device tmp
 values = long
@@ -176,6 +181,7 @@ default = 1 GB
 required = no
 }
 variable DISK_TMP_BLOCKDEV_SIZE ?= 1*GB;
+
 @{
 desc =  default size for block device usr
 values = long
@@ -183,6 +189,7 @@ default = 5 GB
 required = no
 }
 variable DISK_USR_BLOCKDEV_SIZE ?= 5*GB;
+
 @{
 desc =  default size for block device var
 values = long
@@ -190,6 +197,7 @@ default = -1 (remaining unused space)
 required = no
 }
 variable DISK_VAR_BLOCKDEV_SIZE ?= -1;
+
 @{
 desc =  default size for block device vg.01
 values = long
