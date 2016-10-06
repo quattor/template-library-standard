@@ -206,6 +206,14 @@ required = no
 }
 variable DISK_VG01_BLOCKDEV_SIZE ?= -1;
 
+@{
+desc =  default name for default volume group
+values = string
+default = vg.01
+required = no
+}
+variable DISK_VG01_VOLGROUP_NAME ?= 'vg.01';
+
 
 # Define list of volume (partition, logical volumes, md...).
 # Default list is a disk with 4 partitions : /boot, /, swap and one partition for LVM.
@@ -227,12 +235,12 @@ variable DISK_VOLUME_PARAMS ?= {
   SELF['home'] = nlist('size', DISK_HOME_BLOCKDEV_SIZE,
                        'mountpoint', '/home',
                        'type', 'lvm',
-                       'volgroup', 'vg.01',
+                       'volgroup', DISK_VG01_VOLGROUP_NAME,
                        'device', 'homevol');
   SELF['opt'] = nlist('size', DISK_OPT_BLOCKDEV_SIZE,
                       'mountpoint', '/opt',
                       'type', 'lvm',
-                      'volgroup', 'vg.01',
+                      'volgroup', DISK_VG01_VOLGROUP_NAME,
                       'device', 'optvol');
   SELF['root'] = nlist('size', DISK_ROOT_BLOCKDEV_SIZE,
                        'mountpoint', '/',
@@ -246,26 +254,26 @@ variable DISK_VOLUME_PARAMS ?= {
   SELF['swareas'] = nlist('size', DISK_SWAREAS_BLOCKDEV_SIZE,
                           'mountpoint', '/swareas',
                           'type', 'lvm',
-                          'volgroup', 'vg.01',
+                          'volgroup', DISK_VG01_VOLGROUP_NAME,
                           'device', 'swareasvol');
   SELF['tmp'] = nlist('size', DISK_TMP_BLOCKDEV_SIZE,
                       'mountpoint', '/tmp',
                       'type', 'lvm',
-                      'volgroup', 'vg.01',
+                      'volgroup', DISK_VG01_VOLGROUP_NAME,
                       'device', 'tmpvol');
   SELF['usr'] = nlist('size', DISK_USR_BLOCKDEV_SIZE,
                       'mountpoint', '/usr',
                       'type', 'lvm',
-                      'volgroup', 'vg.01',
+                      'volgroup', DISK_VG01_VOLGROUP_NAME,
                       'device', 'usrvol');
   SELF['var'] = nlist('size', DISK_VAR_BLOCKDEV_SIZE,
                       'mountpoint', '/var',
                       'type', 'lvm',
-                      'volgroup', 'vg.01',
+                      'volgroup', DISK_VG01_VOLGROUP_NAME,
                       'device', 'varvol');
-  SELF['vg.01'] = nlist('size', DISK_VG01_BLOCKDEV_SIZE,
-                        'type', 'vg',
-                        'devices', list(DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('lvm',DISK_BOOT_PARTS)+1)));
+  SELF[DISK_VG01_VOLGROUP_NAME] = nlist('size', DISK_VG01_BLOCKDEV_SIZE,
+                                        'type', 'vg',
+                                        'devices', list(DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('lvm',DISK_BOOT_PARTS)+1)));
   SELF;
 };
 
