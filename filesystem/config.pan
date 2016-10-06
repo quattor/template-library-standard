@@ -210,7 +210,7 @@ variable DISK_VOLUME_PARAMS ?= {
   SELF['biosboot'] = nlist('size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
                        'type', 'partition',
                        'flags', list('bios_grub'),
-                       'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('boot',DISK_BOOT_PARTS)+1));
+                       'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('biosboot',DISK_BOOT_PARTS)+1));
   SELF['boot'] = nlist('size', DISK_BOOT_BLOCKDEV_SIZE,
                        'mountpoint', '/boot',
                        'fstype', 'ext2',
