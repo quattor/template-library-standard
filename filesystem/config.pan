@@ -214,6 +214,14 @@ required = no
 }
 variable DISK_VG01_VOLGROUP_NAME ?= 'vg.01';
 
+@{
+desc =  partition flags for biosboot partition
+values = list of strings (matching valid partition flag names in blockdevices schema)
+default = bios_grub
+required = no
+}
+variable DISK_BIOSBOOT_PART_FLAGS ?= list('bios_grub');
+
 
 # Define list of volume (partition, logical volumes, md...).
 # Default list is a disk with 4 partitions : /boot, /, swap and one partition for LVM.
@@ -225,7 +233,7 @@ variable DISK_VG01_VOLGROUP_NAME ?= 'vg.01';
 variable DISK_VOLUME_PARAMS ?= {
   SELF['biosboot'] = nlist('size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
                        'type', 'partition',
-                       'flags', list('bios_grub'),
+                       'flags', DISK_BIOSBOOT_PART_FLAGS,
                        'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('biosboot',DISK_BOOT_PARTS)+1));
   SELF['boot'] = nlist('size', DISK_BOOT_BLOCKDEV_SIZE,
                        'mountpoint', '/boot',
