@@ -5,7 +5,27 @@ unique template filesystem/config;
 
 include { 'quattor/functions/filesystem' };
 
+
+@{
+desc =  template customizing the default disk layout provided by the default configuration
+values = template namespace
+default = null
+required = no
+}
 variable FILESYSTEM_LAYOUT_CONFIG_SITE ?= null;
+
+@{
+desc =  template included at the beginning of the file system configuration and allowing to \
+ to redefine the default size of block devices defined in the default configuration
+values = template namespace
+default = FILESYSTEM_LAYOUT_CONFIG_SITE+'-init' or null if FILESYSTEM_LAYOUT_CONFIG_SITE is undefined
+required = no
+}
+variable FILESYSTEM_LAYOUT_CONFIG_INIT ?= if ( is_defined(FILESYSTEM_LAYOUT_CONFIG_SITE) ) {
+                                            if_exists(FILESYSTEM_LAYOUT_CONFIG_SITE + '-init');
+                                          } else {
+                                            null;
+                                          };
 
 # The following variables define defaults for file systems and partitions.
 # They are actually defined after including FILESYSTEM_LAYOUT_CONFIG_SITE.
@@ -37,6 +57,12 @@ function filesystem_layout_mod = {
   SELF;
 };
 
+
+# Include site configuration initialization if any
+include FILESYSTEM_LAYOUT_CONFIG_INIT;
+
+
+# Retrieve boot device name based on HW configuration
 variable DISK_BOOT_DEV ?= boot_disk();
 variable DISK_BOOT_DEV ?= {
   if (exists("/hardware/harddisks/sda")) {
