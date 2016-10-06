@@ -65,13 +65,8 @@ variable DISK_BOOT_PART_PREFIX ?= if ( exists('/hardware/harddisks/'+DISK_BOOT_D
 # Add the required biosboot partition if the disk is using a GPT label, BIOS is using legacy mode
 # Define biosboot partition size accordingly
 variable DISK_BOOT_ADD_BIOSBOOT_PART ?= false;
-variable DISK_BOOT_BIOSBOOT_PART_SIZE ?= if ( DISK_BOOT_ADD_BIOSBOOT_PART ) {
-                                           100*MB;
-                                         } else {
-                                           0;
-                                         };
-                                         
-#
+
+
 # An ordered list of partition. Index will be used to build device name (index+1).
 # Values must match key in DISK_VOLUME_PARAMS.
 variable DISK_BOOT_PARTS = list(
@@ -101,6 +96,82 @@ variable DISK_SWAP_SIZE ?= {
   swap_size;
 };
 
+@{
+desc =  default size for block device biosboot
+values = long
+default = 100 MB if using GPT label, 0 otherwise
+required = no
+}
+variable DISK_BIOSBOOT_BLOCKDEV_SIZE ?= if ( DISK_BOOT_ADD_BIOSBOOT_PART ) {
+                                          100*MB;
+                                        } else {
+                                          0;
+                                        };
+                                         
+@{
+desc =  default size for block device boot
+values = long
+default = 256 MB
+required = no
+}
+variable DISK_BOOT_BLOCKDEV_SIZE ?= 256*MB;
+@{
+desc =  default size for block device home
+values = long
+default = 0 (not created)
+required = no
+}
+variable DISK_HOME_BLOCKDEV_SIZE ?= 0*GB;
+@{
+desc =  default size for block device opt
+values = long
+default = 2 GB
+required = no
+}
+variable DISK_OPT_BLOCKDEV_SIZE ?= 2*GB;
+@{
+desc =  default size for block device root
+values = long
+default = 1 GB
+required = no
+}
+variable DISK_ROOT_BLOCKDEV_SIZE ?= 1*GB;
+@{
+desc =  default size for block device swareas
+values = long
+default = 0 (not created)
+required = no
+}
+variable DISK_SWAREAS_BLOCKDEV_SIZE ?= 0*GB;
+@{
+desc =  default size for block device tmp
+values = long
+default = 1 GB
+required = no
+}
+variable DISK_TMP_BLOCKDEV_SIZE ?= 1*GB;
+@{
+desc =  default size for block device usr
+values = long
+default = 5 GB
+required = no
+}
+variable DISK_USR_BLOCKDEV_SIZE ?= 5*GB;
+@{
+desc =  default size for block device var
+values = long
+default = -1 (remaining unused space)
+required = no
+}
+variable DISK_VAR_BLOCKDEV_SIZE ?= -1;
+@{
+desc =  default size for block device vg.01
+values = long
+default = -1 (remaining unused space)
+required = no
+}
+variable DISK_VG01_BLOCKDEV_SIZE ?= -1;
+
 
 # Define list of volume (partition, logical volumes, md...).
 # Default list is a disk with 4 partitions : /boot, /, swap and one partition for LVM.
@@ -110,26 +181,26 @@ variable DISK_SWAP_SIZE ?= {
 # designated by FILESYSTEM_LAYOUT_CONFIG_SITE (this variable is defined when this template is executed).
 # Key is an arbitrary name referenced by DISK_DEVICE_LIST.
 variable DISK_VOLUME_PARAMS ?= {
-  SELF['biosboot'] = nlist('size', DISK_BOOT_BIOSBOOT_PART_SIZE,
+  SELF['biosboot'] = nlist('size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
                        'type', 'partition',
                        'flags', list('bios_grub'),
                        'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('boot',DISK_BOOT_PARTS)+1));
-  SELF['boot'] = nlist('size', 256*MB,
+  SELF['boot'] = nlist('size', DISK_BOOT_BLOCKDEV_SIZE,
                        'mountpoint', '/boot',
                        'fstype', 'ext2',
                        'type', 'partition',
                        'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('boot',DISK_BOOT_PARTS)+1));
-  SELF['home'] = nlist('size', 0*GB,
+  SELF['home'] = nlist('size', DISK_HOME_BLOCKDEV_SIZE,
                        'mountpoint', '/home',
                        'type', 'lvm',
                        'volgroup', 'vg.01',
                        'device', 'homevol');
-  SELF['opt'] = nlist('size', 2*GB,
+  SELF['opt'] = nlist('size', DISK_OPT_BLOCKDEV_SIZE,
                       'mountpoint', '/opt',
                       'type', 'lvm',
                       'volgroup', 'vg.01',
                       'device', 'optvol');
-  SELF['root'] = nlist('size', 1*GB,
+  SELF['root'] = nlist('size', DISK_ROOT_BLOCKDEV_SIZE,
                        'mountpoint', '/',
                        'type', 'partition',
                        'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('root',DISK_BOOT_PARTS)+1));
@@ -138,27 +209,27 @@ variable DISK_VOLUME_PARAMS ?= {
                        'fstype', 'swap',
                        'type', 'partition',
                        'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('swap',DISK_BOOT_PARTS)+1));
-  SELF['swareas'] = nlist('size', 0*GB,
+  SELF['swareas'] = nlist('size', DISK_SWAREAS_BLOCKDEV_SIZE,
                           'mountpoint', '/swareas',
                           'type', 'lvm',
                           'volgroup', 'vg.01',
                           'device', 'swareasvol');
-  SELF['tmp'] = nlist('size', 1*GB,
+  SELF['tmp'] = nlist('size', DISK_TMP_BLOCKDEV_SIZE,
                       'mountpoint', '/tmp',
                       'type', 'lvm',
                       'volgroup', 'vg.01',
                       'device', 'tmpvol');
-  SELF['usr'] = nlist('size', 5*GB,
+  SELF['usr'] = nlist('size', DISK_USR_BLOCKDEV_SIZE,
                       'mountpoint', '/usr',
                       'type', 'lvm',
                       'volgroup', 'vg.01',
                       'device', 'usrvol');
-  SELF['var'] = nlist('size', -1,
+  SELF['var'] = nlist('size', DISK_VAR_BLOCKDEV_SIZE,
                       'mountpoint', '/var',
                       'type', 'lvm',
                       'volgroup', 'vg.01',
                       'device', 'varvol');
-  SELF['vg.01'] = nlist('size', -1,
+  SELF['vg.01'] = nlist('size', DISK_VG01_BLOCKDEV_SIZE,
                         'type', 'vg',
                         'devices', list(DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('lvm',DISK_BOOT_PARTS)+1)));
   SELF;
