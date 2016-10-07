@@ -4,7 +4,7 @@ variable YUM_SNAPSHOT_NS ?= 'repository/snapshot';
 
 @{
 desc =  namespace of template associated with CA RPM YUM snapshot
-values =  string
+values =  string 
 default = YUM_SNAPSHOT_NS
 required = no
 }
@@ -18,10 +18,13 @@ default = YUM_SNAPSHOT_DATE
 required = no
 }
 variable YUM_CA_RPM_SNAPSHOT_DATE ?= if ( is_null(YUM_CA_RPM_SNAPSHOT_DATE) ) {
+                                       debug(format('%s: YUM_CA_RPM_SNAPSHOT_DATE set to null, ignoring YUM snapshot',OBJECT));
                                        SELF;
                                      } else if ( is_defined(YUM_SNAPSHOT_DATE) ) {
+                                       debug(format('%s: YUM_CA_RPM_SNAPSHOT_DATE undefined, using YUM_SNAPSHOT_DATE (%s)',OBJECT,YUM_SNAPSHOT_DATE));
                                        YUM_SNAPSHOT_DATE;
                                      } else {
+                                       debug(format('%s: YUM_CA_RPM_SNAPSHOT_DATE undefined, ignoring YUM snapshot',OBJECT));
                                        undef;
                                      };
 
@@ -37,8 +40,10 @@ include { 'quattor/functions/repository' };
 
 '/software/repositories' = {
   if ( is_defined(YUM_CA_RPM_SNAPSHOT_DATE) && (QUATTOR_RELEASE >= '14') ) {
+    debug(format('%s: adding CA repository for YUM snapshot %s',OBJECT,YUM_CA_RPM_SNAPSHOT_DATE));
     add_repositories(SECURITY_CA_RPM_REPOSITORY,YUM_CA_RPM_SNAPSHOT_NS);
   } else {
+    debug(format('%s: adding CA repository (no YUM snapshot)',OBJECT));
     add_repositories(SECURITY_CA_RPM_REPOSITORY);
   };
 };
