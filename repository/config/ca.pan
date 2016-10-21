@@ -4,7 +4,7 @@ variable YUM_SNAPSHOT_NS ?= 'repository/snapshot';
 
 @{
 desc =  namespace of template associated with CA RPM YUM snapshot
-values =  string 
+values =  string
 default = YUM_SNAPSHOT_NS
 required = no
 }
