@@ -37,12 +37,12 @@ variable FILESYSTEM_LAYOUT_CONFIG_INIT ?= if ( is_defined(FILESYSTEM_LAYOUT_CONF
 # Function to update DISK_VOLUME_PARAMS.
 # This function allows to merge site-specific volume parameters with default ones.
 # Calling sequence is  :
-#    variable DISK_VOLUME_PARAMS = filesystem_layout_mod(volume_nlist);
-# where 'volume_nlist' has the same format as DISK_VOLUME_PARAMS.
+#    variable DISK_VOLUME_PARAMS = filesystem_layout_mod(volume_dict);
+# where 'volume_dict' has the same format as DISK_VOLUME_PARAMS.
 function filesystem_layout_mod = {
   function_name = 'filesystem_layout_mod';
-  if ( (ARGC != 1) || !is_nlist(ARGV[0]) ) {
-    error(function_name+': one argument required, must be a nlist');
+  if ( (ARGC != 1) || !is_dict(ARGV[0]) ) {
+    error(function_name+': one argument required, must be a dict');
   };
 
   foreach (volume;params;ARGV[0]) {
@@ -231,57 +231,57 @@ variable DISK_BIOSBOOT_PART_FLAGS ?= list('bios_grub');
 # designated by FILESYSTEM_LAYOUT_CONFIG_SITE (this variable is defined when this template is executed).
 # Key is an arbitrary name referenced by DISK_DEVICE_LIST.
 variable DISK_VOLUME_PARAMS ?= {
-  SELF['biosboot'] = nlist('size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
-                       'type', 'partition',
-                       'flags', DISK_BIOSBOOT_PART_FLAGS,
-                       'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('biosboot',DISK_BOOT_PARTS)+1));
-  SELF['boot'] = nlist('size', DISK_BOOT_BLOCKDEV_SIZE,
-                       'mountpoint', '/boot',
-                       'fstype', 'ext2',
-                       'type', 'partition',
-                       'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('boot',DISK_BOOT_PARTS)+1));
-  SELF['home'] = nlist('size', DISK_HOME_BLOCKDEV_SIZE,
-                       'mountpoint', '/home',
-                       'type', 'lvm',
-                       'volgroup', DISK_VG01_VOLGROUP_NAME,
-                       'device', 'homevol');
-  SELF['opt'] = nlist('size', DISK_OPT_BLOCKDEV_SIZE,
-                      'mountpoint', '/opt',
+  SELF['biosboot'] = dict('size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
+                          'type', 'partition',
+                          'flags', DISK_BIOSBOOT_PART_FLAGS,
+                          'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('biosboot',DISK_BOOT_PARTS)+1));
+  SELF['boot'] = dict('size', DISK_BOOT_BLOCKDEV_SIZE,
+                      'mountpoint', '/boot',
+                      'fstype', 'ext2',
+                      'type', 'partition',
+                      'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('boot',DISK_BOOT_PARTS)+1));
+  SELF['home'] = dict('size', DISK_HOME_BLOCKDEV_SIZE,
+                      'mountpoint', '/home',
                       'type', 'lvm',
                       'volgroup', DISK_VG01_VOLGROUP_NAME,
-                      'device', 'optvol');
-  SELF['root'] = nlist('size', DISK_ROOT_BLOCKDEV_SIZE,
-                       'mountpoint', '/',
-                       'type', 'partition',
-                       'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('root',DISK_BOOT_PARTS)+1));
-  SELF['swap'] = nlist('size', DISK_SWAP_SIZE,
-                       'mountpoint', 'swap',
-                       'fstype', 'swap',
-                       'type', 'partition',
-                       'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('swap',DISK_BOOT_PARTS)+1));
-  SELF['swareas'] = nlist('size', DISK_SWAREAS_BLOCKDEV_SIZE,
-                          'mountpoint', '/swareas',
-                          'type', 'lvm',
-                          'volgroup', DISK_VG01_VOLGROUP_NAME,
-                          'device', 'swareasvol');
-  SELF['tmp'] = nlist('size', DISK_TMP_BLOCKDEV_SIZE,
-                      'mountpoint', '/tmp',
-                      'type', 'lvm',
-                      'volgroup', DISK_VG01_VOLGROUP_NAME,
-                      'device', 'tmpvol');
-  SELF['usr'] = nlist('size', DISK_USR_BLOCKDEV_SIZE,
-                      'mountpoint', '/usr',
-                      'type', 'lvm',
-                      'volgroup', DISK_VG01_VOLGROUP_NAME,
-                      'device', 'usrvol');
-  SELF['var'] = nlist('size', DISK_VAR_BLOCKDEV_SIZE,
-                      'mountpoint', '/var',
-                      'type', 'lvm',
-                      'volgroup', DISK_VG01_VOLGROUP_NAME,
-                      'device', 'varvol');
-  SELF[DISK_VG01_VOLGROUP_NAME] = nlist('size', DISK_VG01_BLOCKDEV_SIZE,
-                                        'type', 'vg',
-                                        'devices', list(DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('lvm',DISK_BOOT_PARTS)+1)));
+                      'device', 'homevol');
+  SELF['opt'] = dict('size', DISK_OPT_BLOCKDEV_SIZE,
+                     'mountpoint', '/opt',
+                     'type', 'lvm',
+                     'volgroup', DISK_VG01_VOLGROUP_NAME,
+                     'device', 'optvol');
+  SELF['root'] = dict('size', DISK_ROOT_BLOCKDEV_SIZE,
+                      'mountpoint', '/',
+                      'type', 'partition',
+                      'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('root',DISK_BOOT_PARTS)+1));
+  SELF['swap'] = dict('size', DISK_SWAP_SIZE,
+                      'mountpoint', 'swap',
+                      'fstype', 'swap',
+                      'type', 'partition',
+                      'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('swap',DISK_BOOT_PARTS)+1));
+  SELF['swareas'] = dict('size', DISK_SWAREAS_BLOCKDEV_SIZE,
+                         'mountpoint', '/swareas',
+                         'type', 'lvm',
+                         'volgroup', DISK_VG01_VOLGROUP_NAME,
+                         'device', 'swareasvol');
+  SELF['tmp'] = dict('size', DISK_TMP_BLOCKDEV_SIZE,
+                     'mountpoint', '/tmp',
+                     'type', 'lvm',
+                     'volgroup', DISK_VG01_VOLGROUP_NAME,
+                     'device', 'tmpvol');
+  SELF['usr'] = dict('size', DISK_USR_BLOCKDEV_SIZE,
+                     'mountpoint', '/usr',
+                     'type', 'lvm',
+                     'volgroup', DISK_VG01_VOLGROUP_NAME,
+                     'device', 'usrvol');
+  SELF['var'] = dict('size', DISK_VAR_BLOCKDEV_SIZE,
+                     'mountpoint', '/var',
+                     'type', 'lvm',
+                     'volgroup', DISK_VG01_VOLGROUP_NAME,
+                     'device', 'varvol');
+  SELF[DISK_VG01_VOLGROUP_NAME] = dict('size', DISK_VG01_BLOCKDEV_SIZE,
+                                       'type', 'vg',
+                                       'devices', list(DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('lvm',DISK_BOOT_PARTS)+1)));
   SELF;
 };
 
@@ -329,7 +329,7 @@ variable PHYSICAL_DEVICE_LABEL ?= null;
 # specific entries defined for the partitions used. In this case, add an entry for the underlying
 # partitions with the appropriate size defined.
 variable DISK_VOLUME_PARAMS = {
-  volumes = nlist();
+  volumes = dict();
   debug('Initial list of file systems: '+to_string(SELF));
 
   # MD-related checks
@@ -342,9 +342,9 @@ variable DISK_VOLUME_PARAMS = {
           # raid1 is used and size is defined for the MD device.
           foreach (i;device;params['devices']) {
             if ( !is_defined(SELF[device]) && exists(params['raid_level']) && (params['raid_level'] == 1) ) {
-              volumes[device] = nlist('device', device,
-                                      'type', 'partition',
-                                      'size', params['size']);
+              volumes[device] = dict('device', device,
+                                     'type', 'partition',
+                                     'size', params['size']);
               debug('Entry added for partition '+device+' used by '+volume+' (size='+to_string(params['size'])+'MB)');
             };
           };
@@ -438,8 +438,8 @@ variable DISK_DEVICE_LIST = {
 #   - 'changed_part_num': an entry for each partition renumbered to use a consecutive numbering. The
 #                         keys are the original partition name, the value the new one.
 variable DISK_PART_BY_DEV = {
-  SELF['partitions'] = nlist();
-  SELF['changed_part_num'] = nlist();
+  SELF['partitions'] = dict();
+  SELF['changed_part_num'] = dict();
   foreach (i;dev_name;DISK_DEVICE_LIST) {
     if ( match(DISK_VOLUME_PARAMS[dev_name]['type'], 'md|vg') ) {
       if ( exists(DISK_VOLUME_PARAMS[dev_name]['devices']) ) {
@@ -458,9 +458,9 @@ variable DISK_PART_BY_DEV = {
         params = DISK_VOLUME_PARAMS[device];
       } else {
         debug('Adding an entry to DISK_PART_BY_DEV for partition '+device+' used by '+dev_name);
-        params = nlist('device', device,
-                       'type', 'partition',
-                       'size', -1);
+        params = dict('device', device,
+                      'type', 'partition',
+                      'size', -1);
       };
       if ( params['type'] == 'partition' ) {
         if ( !exists(params['device'])  ) {
@@ -475,16 +475,16 @@ variable DISK_PART_BY_DEV = {
           phys_dev = toks[1];
         };
         if ( !exists(SELF['partitions'][phys_dev]) ) {
-          # Build 2 separate nlist, part_list and part_num, the key being the partition name in each
+          # Build 2 separate dict, part_list and part_num, the key being the partition name in each
           # list. part_list will be passed to partitions_add() which requires a dict of
           # partitions where the key is a partitionname and the value the partition parameters (as a dict).
           # part_num is a transient dict used internally to do the partition final numbering.
-          SELF['partitions'][phys_dev] = nlist('part_list', nlist(),
-                                               'part_num', nlist(),
-                                               'part_prefix', disk_part_prefix,
-                                               'extended', undef,
-                                               'last_primary', 0,
-                                              );
+          SELF['partitions'][phys_dev] = dict('part_list', dict(),
+                                              'part_num', dict(),
+                                              'part_prefix', disk_part_prefix,
+                                              'extended', undef,
+                                              'last_primary', 0,
+                                             );
         };
         part_num = to_long(toks[2]);
         if ( is_defined(params['size']) ) {
@@ -519,12 +519,12 @@ variable DISK_PART_BY_DEV = {
   # Another check is for partitions without an explicit size (size=-1). It is checked that there is no more
   # than one per disk and this partition will always be renumber to be the last one created.
   #
-  # Note that this code heavily relies on the fact PAN nlists are run through in the lexical order by foreach
+  # Note that this code heavily relies on the fact PAN dicts are run through in the lexical order by foreach
   # statement in panc v8. Should this change, this code would need to be fixed...
 
   foreach (phys_dev;dev_params;SELF['partitions']) {
     new_part_num = 1;
-    new_part_list = nlist();
+    new_part_list = dict();
     primary_no_size = list();
     logical_no_size = list();
     sorted_partition_list = list();
@@ -702,9 +702,9 @@ variable DISK_VOLUME_PARAMS = {
 "/system/blockdevices/physical_devs" = {
   foreach (phys_dev;params;DISK_PART_BY_DEV['partitions']) {
     if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
-      SELF[phys_dev] = nlist ("label", PHYSICAL_DEVICE_LABEL[phys_dev]);
+      SELF[phys_dev] = dict ("label", PHYSICAL_DEVICE_LABEL[phys_dev]);
     } else {
-      SELF[phys_dev] = nlist ("label", PHYSICAL_DEVICE_DEFAULT_LABEL);
+      SELF[phys_dev] = dict ("label", PHYSICAL_DEVICE_DEFAULT_LABEL);
     };
   };
   SELF;
@@ -766,20 +766,20 @@ variable DISK_VOLUME_PARAMS = {
       };
       if ( params['type'] == 'md') {
         if ( !exists(SELF['md']) ) {
-          SELF['md'] = nlist();
+          SELF['md'] = dict();
         };
         if ( exists(params['raid_level']) ) {
           raid_level = 'RAID'+to_string(params['raid_level']);
         } else {
           raid_level = 'RAID0';
         };
-        SELF['md'][dev_name] = nlist("device_list", partitions,
+        SELF['md'][dev_name] = dict("device_list", partitions,
                                      "raid_level", raid_level);
       } else if ( params['type'] == 'vg' ) {
          if ( !exists(SELF['volume_groups']) ) {
-          SELF['volume_groups'] = nlist();
+          SELF['volume_groups'] = dict();
         };
-        SELF['volume_groups'][dev_name] = nlist("device_list", partitions);
+        SELF['volume_groups'][dev_name] = dict("device_list", partitions);
       };
     };
   };
@@ -806,7 +806,7 @@ variable DISK_LV_BY_VG = {
         error("No volume group defined for logical volume '"+params['device']+"'");
       };
       if ( !exists(SELF[vg_name]) ) {
-        SELF[vg_name] = nlist();
+        SELF[vg_name] = dict();
       };
       if ( exists(params['size']) ) {
         SELF[vg_name][params['device']] = params['size'];
@@ -838,8 +838,8 @@ variable DISK_LV_BY_VG = {
 # Take care of creating logical volume without a defined size last in the volume group.
 "/system/filesystems" = {
   # Create a list of volume per volume group (other partitions/volumes set in 'OTHERS__').
-  volumes = nlist();
-  lastgroup = nlist();
+  volumes = dict();
+  lastgroup = dict();
   defgroup_name = 'OTHERS__';
   volgroups = list(defgroup_name);     # Use to control creation order
   foreach (i;dev_name;DISK_DEVICE_LIST) {
@@ -905,12 +905,12 @@ variable DISK_LV_BY_VG = {
         } else {
           preserve = FILESYSTEM_DEFAULT_PRESERVE;
         };
-        fs_params = nlist ("block_device", block_device,
-                           "mountpoint", params['mountpoint'],
-                           "format", format,
-                           "mount", true,
-                           "preserve", preserve,
-                           "type", fs_type);
+        fs_params = dict ("block_device", block_device,
+                          "mountpoint", params['mountpoint'],
+                          "format", format,
+                          "mount", true,
+                          "preserve", preserve,
+                          "type", fs_type);
         filesystem_mod(fs_params);
       };
     };
@@ -933,8 +933,8 @@ include {
   foreach (i;dev_name;DISK_DEVICE_LIST) {
     params = DISK_VOLUME_PARAMS[dev_name];
     if ( (exists(params['permissions']) || exists(params['owner'])) && exists(params['mountpoint']) ) {
-      path_params = nlist('path', params['mountpoint'],
-                          'type', 'd');
+      path_params = dict('path', params['mountpoint'],
+                         'type', 'd');
       if ( exists(params['owner']) ) {
         path_params['owner'] = params['owner'];
       } else {
