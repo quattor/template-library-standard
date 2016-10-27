@@ -93,17 +93,6 @@ variable DISK_BOOT_PART_PREFIX ?= if ( exists('/hardware/harddisks/'+DISK_BOOT_D
                                     '';
                                   };
 
-# Add the required biosboot partition if the disk is using a GPT label, BIOS is using legacy mode
-# Define biosboot partition size accordingly
-@{
-desc =  variable indicating that a biosboot partition must be unconditionally created
-values = boolean
-default = undef (actual value based on label used)
-required = no
-}
-variable DISK_BOOT_ADD_BIOSBOOT_PART ?= undef;
-
-
 # An ordered list of partition. Index will be used to build device name (index+1).
 # Values must match key in DISK_VOLUME_PARAMS.
 variable DISK_BOOT_PARTS = list(
@@ -151,13 +140,39 @@ variable DISK_SWAP_SIZE ?= {
   swap_size;
 };
 
+
+# Variables related to GPT biosboot/UEFI support
+
+@{
+desc = indicates if a UEFI boot is used
+values = boolean
+default = false
+required = no
+}
+variable DISK_BIOS_TYPE_UEFI ?= false;
+
+# Add the required biosboot partition if the disk is using a GPT label, BIOS is using legacy mode
+# Define biosboot partition size accordingly
+@{
+desc =  variable indicating that a biosboot partition must be unconditionally created
+values = boolean
+default = undef (actual value based on label used)
+required = no
+}
+variable DISK_BOOT_ADD_BIOSBOOT_PART ?= undef;
+
 @{
 desc =  default size for block device biosboot if created
 values = long
-default = 100 MB
+default = 100 MB for legacy BIOS, 200 MB for UEFI
 required = no
 }
-variable DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT ?= 100*MB;
+variable DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT ?= if ( DISK_BIOS_TYPE_UEFI ) {
+                                       200*MB;
+                                     } else {
+                                       100*MB;
+                                     };
+
 # DISK_BIOSBOOT_BLOCKDEV_SIZE actually only defines the initial value
 # that can be updated later based on DISK_BOOT_ADD_BIOSBOOT_PART, OS version and label
 @{
@@ -167,7 +182,50 @@ default = DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT if biosboot partition is created a
 required = no
 }
 variable DISK_BIOSBOOT_BLOCKDEV_SIZE ?= 0;
-                                         
+
+@{
+desc =  partition flags for biosboot partition
+values = list of strings (matching valid partition flag names in blockdevices schema)
+default = bios_grub for legacy BIOS, boot for UEFI
+required = no
+}
+variable DISK_BIOSBOOT_PART_FLAGS ?= if ( DISK_BIOS_TYPE_UEFI ) {
+                                       list('boot');
+                                     } else {
+                                       list('bios_grub');
+                                     };
+
+@{
+desc = name of biosboot partition
+values = string
+default = biosboot for legacy BIOS, efi for UEFI
+required = no
+}
+variable DISK_BIOSBOOT_PART_NAME ?= if ( DISK_BIOS_TYPE_UEFI ) {
+                                       'efi';
+                                     } else {
+                                       'biosboot';
+                                     };
+
+@{
+desc = fstype of UEFI BIOS boot partition
+values = string
+default = vfat (do no change unless you have a good reason to do it)
+required = no
+}
+variable DISK_UEFI_BIOSBOOT_FSTYPE ?= 'vfat';
+
+@{
+desc = mountpoint of UEFI BIOS boot partition
+values = string
+default = /boot/efi (do no change unless you have a good reason to do it)
+required = no
+}
+variable DISK_UEFI_BIOSBOOT_MOUNTPOINT ?= '/boot/efi';
+ 
+
+# Variables related to volume sizes and names
+                                        
 @{
 desc =  default size for block device boot
 values = long
@@ -248,14 +306,6 @@ required = no
 }
 variable DISK_VG01_VOLGROUP_NAME ?= 'vg.01';
 
-@{
-desc =  partition flags for biosboot partition
-values = list of strings (matching valid partition flag names in blockdevices schema)
-default = bios_grub
-required = no
-}
-variable DISK_BIOSBOOT_PART_FLAGS ?= list('bios_grub');
-
 
 # Define list of volume (partition, logical volumes, md...).
 # Default list is a disk with 4 partitions : /boot, /, swap and one partition for LVM.
@@ -274,10 +324,10 @@ default = see sources
 required = no
 }
 variable DISK_VOLUME_PARAMS ?= {
-  SELF['biosboot'] = dict('size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
-                          'type', 'partition',
-                          'flags', DISK_BIOSBOOT_PART_FLAGS,
-                          'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('biosboot',DISK_BOOT_PARTS)+1));
+  SELF[DISK_BIOSBOOT_PART_NAME] = dict('size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
+                                       'type', 'partition',
+                                       'flags', DISK_BIOSBOOT_PART_FLAGS,
+                                       'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('biosboot',DISK_BOOT_PARTS)+1));
   SELF['boot'] = dict('size', DISK_BOOT_BLOCKDEV_SIZE,
                       'mountpoint', '/boot',
                       'fstype', 'ext2',
@@ -393,20 +443,30 @@ variable DISK_VOLUME_PARAMS = {
   volumes = dict();
   debug('Initial list of file systems: '+to_string(SELF));
 
-  # Configure biosboot partition if needed
+  # Configure GPT legcay BIOS/UEFI boot partition if needed
+  #   - Legacy BIOS: bios boot partition required if GPT is ued and OS version >= EL7
+  #   - UEFI BIOS: GPT label and bios boot partition required
   define_biosboot_size = false;
+  if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
+    label = PHYSICAL_DEVICE_LABEL[phys_dev];
+  } else {
+    label = PHYSICAL_DEVICE_DEFAULT_LABEL;
+  };
+  #  UEFI requires a GPT label and a bios boot partion
+  if ( DISK_BIOS_TYPE_UEFI ) {
+    if ( label == 'gpt') {
+      define_biosboot_size = true;
+    } else {
+      error(format('UEFI BIOS requires a GPT label insted of %s',label));
+    };
+  };
   if ( is_defined(DISK_BOOT_ADD_BIOSBOOT_PART) ) {
     if ( DISK_BOOT_ADD_BIOSBOOT_PART ) {
       define_biosboot_size = true;
-    } else {
-      SELF['biosboot']['size'] = 0;
+    } else if ( ! define_biosboot_size ) {
+      SELF[DISK_BIOSBOOT_PART_NAME]['size'] = 0;
     };
-  } else {
-    if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
-      label = PHYSICAL_DEVICE_LABEL[phys_dev];
-    } else {
-      label = PHYSICAL_DEVICE_DEFAULT_LABEL;
-    };
+  } else { 
     if ( (label == 'gpt') &&
          (is_defined(OS_VERSION_PARAMS['family']) && (OS_VERSION_PARAMS['family'] == 'el')) &&
          (to_long(OS_VERSION_PARAMS['majorversion']) >= 7) ) {
@@ -414,14 +474,22 @@ variable DISK_VOLUME_PARAMS = {
     };
   };
   if ( define_biosboot_size ) {
-    if ( is_defined(SELF['biosboot']) ) {
-      if ( SELF['biosboot']['size'] == 0 ) {
-        SELF['biosboot']['size'] = DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT;
+    if ( is_defined(SELF[DISK_BIOSBOOT_PART_NAME]) ) {
+      if ( SELF[DISK_BIOSBOOT_PART_NAME]['size'] == 0 ) {
+        SELF[DISK_BIOSBOOT_PART_NAME]['size'] = DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT;
       } else {
-        debug(format("%s: 'biosboot' partition size already defined, default value not applied"));
+        debug(format("%s: '%s' partition size already defined, default value not applied", OBJECT, DISK_BIOSBOOT_PART_NAME));
       };
     } else {
-      debug(format("%s: 'biosboot' partition doesn't exist in DISK_VOLUME_PARAMS, size not defined"));
+      debug(format("%s: '%s' partition doesn't exist in DISK_VOLUME_PARAMS, size not defined", OBJECT, DISK_BIOSBOOT_PART_NAME));
+    };
+  };
+  if ( DISK_BIOS_TYPE_UEFI ) {
+    if ( is_defined(SELF[DISK_BIOSBOOT_PART_NAME]) ) {
+        SELF[DISK_BIOSBOOT_PART_NAME]['fstype'] = DISK_UEFI_BIOSBOOT_FSTYPE;
+        SELF[DISK_BIOSBOOT_PART_NAME]['mountpoint'] = DISK_UEFI_BIOSBOOT_MOUNTPOINT;
+    } else {
+      error(format('UEFI BIOS requires a GPT label insted of %s',label));
     };
   };
 
