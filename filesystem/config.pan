@@ -27,13 +27,6 @@ variable FILESYSTEM_LAYOUT_CONFIG_INIT ?= if ( is_defined(FILESYSTEM_LAYOUT_CONF
                                             null;
                                           };
 
-# The following variables define defaults for file systems and partitions.
-# They are actually defined after including FILESYSTEM_LAYOUT_CONFIG_SITE.
-#   - FILESYSTEM_DEFAULT_FS_TYPE: default file system type to use when none is specified
-#   - FILESYSTEM_DEFAULT_PRESERVE: default file system preserve flag value
-#   - FILESYSTEM_DEFAULT_FORMAT: default file system 'format' attribute
-
-
 # Function to update DISK_VOLUME_PARAMS.
 # This function allows to merge site-specific volume parameters with default ones.
 # Calling sequence is  :
@@ -63,6 +56,12 @@ include FILESYSTEM_LAYOUT_CONFIG_INIT;
 
 
 # Retrieve boot device name based on HW configuration
+@{
+desc =  blockdevice used to boot 
+values = string
+default = boot disk defined in the HW config
+required = no
+}
 variable DISK_BOOT_DEV ?= boot_disk();
 variable DISK_BOOT_DEV ?= {
   if (exists("/hardware/harddisks/sda")) {
@@ -82,6 +81,12 @@ variable DISK_BOOT_DEV ?= {
 
 # Handle disk device names as /dev/cciss/xxxpn, where 'p' must be inserted
 # between device name and partition number (e.g. HP SmartArray)
+@{
+desc =  partition name prefix (required when this is not the block device name)
+values = string
+default = part_prefix for the boot device if defined, else the empty string
+required = no
+}
 variable DISK_BOOT_PART_PREFIX ?= if ( exists('/hardware/harddisks/'+DISK_BOOT_DEV+'/part_prefix') ) {
                                     value('/hardware/harddisks/'+DISK_BOOT_DEV+'/part_prefix');
                                   } else {
@@ -90,6 +95,12 @@ variable DISK_BOOT_PART_PREFIX ?= if ( exists('/hardware/harddisks/'+DISK_BOOT_D
 
 # Add the required biosboot partition if the disk is using a GPT label, BIOS is using legacy mode
 # Define biosboot partition size accordingly
+@{
+desc =  variable indicating that a biosboot partition must be unconditionally created
+values = boolean
+default = false
+required = no
+}
 variable DISK_BOOT_ADD_BIOSBOOT_PART ?= false;
 
 
@@ -104,8 +115,26 @@ variable DISK_BOOT_PARTS = list(
 );
 
 # Swap size: by default equal to memory size, if defined
+@{
+desc =  default size to use for swap partition if it cannot be determined from DISK_SWAP_RAM_RATIO or RAM size
+values = long
+default = 4 GB
+required = no
+}
 variable DISK_SWAP_DEFAULT ?= 4*GB;
+@{
+desc =  define swap size as a ratio (float) of the RAM size
+values = double
+default = 1.0
+required = no
+}
 variable DISK_SWAP_RAM_RATIO ?= 1.0;
+@{
+desc =  swap partition size
+values = long
+default = based on DISK_SWAP_RAM_RATIO
+required = no
+}
 variable DISK_SWAP_SIZE ?= {
   ram_size = 0;
   if ( is_defined("/hardware/ram") ) {
@@ -230,6 +259,15 @@ variable DISK_BIOSBOOT_PART_FLAGS ?= list('bios_grub');
 # Default layout can be adjusted to site-specific needs by tweaking this variable in template
 # designated by FILESYSTEM_LAYOUT_CONFIG_SITE (this variable is defined when this template is executed).
 # Key is an arbitrary name referenced by DISK_DEVICE_LIST.
+@{
+desc = dictionnary of volumes with their default paramaters that can be instantiated through the layout. \
+ Normally, this dictionnary must not be redefined. To disable a volume, set its size to 0. Most parameters \
+ can be tuned with a specific variable (see sources). New entries can be added by sites using filesystem_layout_mod()
+values = key is a (free) volume name, value is a dict with the volume parameters (main keys are size, type, flags, \
+ device, fstype, volgroup, mountpoint)
+default = see sources
+required = no
+}
 variable DISK_VOLUME_PARAMS ?= {
   SELF['biosboot'] = dict('size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
                           'type', 'partition',
@@ -296,8 +334,26 @@ variable DISK_DEVICE_LIST ?= list('boot',
 include FILESYSTEM_LAYOUT_CONFIG_SITE;
 
 # Define some defaults if not yet defined
+@{
+desc =  default file system type if not explictely defined for the partition/blockdevice
+values = string
+default = ext3
+required = no
+}
 variable FILESYSTEM_DEFAULT_FS_TYPE ?= 'ext3';
+@{
+desc =  define whether a filesystem must be formatted or not by default
+values = boolean
+default = true
+required = no
+}
 variable FILESYSTEM_DEFAULT_FORMAT ?= true;
+@{
+desc =  define whether a filesystem must be preserved or not by default
+values = boolean
+default = true
+required = no
+}
 variable FILESYSTEM_DEFAULT_PRESERVE ?= true;
 
 @{
