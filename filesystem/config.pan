@@ -98,10 +98,10 @@ variable DISK_BOOT_PART_PREFIX ?= if ( exists('/hardware/harddisks/'+DISK_BOOT_D
 @{
 desc =  variable indicating that a biosboot partition must be unconditionally created
 values = boolean
-default = false
+default = undef (actual value based on label used)
 required = no
 }
-variable DISK_BOOT_ADD_BIOSBOOT_PART ?= false;
+variable DISK_BOOT_ADD_BIOSBOOT_PART ?= undef;
 
 
 # An ordered list of partition. Index will be used to build device name (index+1).
@@ -152,16 +152,21 @@ variable DISK_SWAP_SIZE ?= {
 };
 
 @{
-desc =  default size for block device biosboot
+desc =  default size for block device biosboot if created
 values = long
-default = 100 MB if using GPT label, 0 otherwise
+default = 100 MB
 required = no
 }
-variable DISK_BIOSBOOT_BLOCKDEV_SIZE ?= if ( DISK_BOOT_ADD_BIOSBOOT_PART ) {
-                                          100*MB;
-                                        } else {
-                                          0;
-                                        };
+variable DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT ?= 100*MB;
+# DISK_BIOSBOOT_BLOCKDEV_SIZE actually only defines the initial value
+# that can be updated later based on DISK_BOOT_ADD_BIOSBOOT_PART, OS version and label
+@{
+desc =  size for block device biosboot
+values = long
+default = DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT if biosboot partition is created and OS version >= EL7, 0 otherwise
+required = no
+}
+variable DISK_BIOSBOOT_BLOCKDEV_SIZE ?= 0;
                                          
 @{
 desc =  default size for block device boot
@@ -387,6 +392,38 @@ variable PHYSICAL_DEVICE_LABEL ?= null;
 variable DISK_VOLUME_PARAMS = {
   volumes = dict();
   debug('Initial list of file systems: '+to_string(SELF));
+
+  # Configure biosboot partition if needed
+  define_biosboot_size = false;
+  if ( is_defined(DISK_BOOT_ADD_BIOSBOOT_PART) ) {
+    if ( DISK_BOOT_ADD_BIOSBOOT_PART ) {
+      define_biosboot_size = true;
+    } else {
+      SELF['biosboot']['size'] = 0;
+    };
+  } else {
+    if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
+      label = PHYSICAL_DEVICE_LABEL[phys_dev];
+    } else {
+      label = PHYSICAL_DEVICE_DEFAULT_LABEL;
+    };
+    if ( (label == 'gpt') &&
+         (is_defined(OS_VERSION_PARAMS['family']) && (OS_VERSION_PARAMS['family'] == 'el')) &&
+         (to_long(OS_VERSION_PARAMS['majorversion']) >= 7) ) {
+      define_biosboot_size = true;
+    };
+  };
+  if ( define_biosboot_size ) {
+    if ( is_defined(SELF['biosboot']) ) {
+      if ( SELF['biosboot']['size'] == 0 ) {
+        SELF['biosboot']['size'] = DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT;
+      } else {
+        debug(format("%s: 'biosboot' partition size already defined, default value not applied"));
+      };
+    } else {
+      debug(format("%s: 'biosboot' partition doesn't exist in DISK_VOLUME_PARAMS, size not defined"));
+    };
+  };
 
   # MD-related checks
   foreach (volume;params;SELF) {
