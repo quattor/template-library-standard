@@ -3,7 +3,7 @@
 
 unique template filesystem/config;
 
-include { 'quattor/functions/filesystem' };
+include 'quattor/functions/filesystem';
 
 
 @{
@@ -293,7 +293,7 @@ variable DISK_DEVICE_LIST ?= list('boot',
 
 
 # Include site-specific customization to volume list or creation order
-include { FILESYSTEM_LAYOUT_CONFIG_SITE };
+include FILESYSTEM_LAYOUT_CONFIG_SITE;
 
 # Define some defaults if not yet defined
 variable FILESYSTEM_DEFAULT_FS_TYPE ?= 'ext3';
@@ -919,13 +919,9 @@ variable DISK_LV_BY_VG = {
 };
 
 # Set requested permissions or owner (if any) on filesystem mountpoints
-include {
-	if (exists(DUMMY_NODE) && DUMMY_NODE) {
-		return(null);
-	} else {
-		return('components/dirperm/config');
-	};
-};
+# FIXME: DUMMY_NODE is not really supported anymore (was useful mainly at the time
+# of SPMA) and this should probably be removed.
+include if ( !exists(DUMMY_NODE) || !DUMMY_NODE) 'components/dirperm/config';
 '/software/components/dirperm' = {
   if ( !exists(SELF['paths']) || !is_defined(SELF['paths']) ) {
     SELF['paths'] = list();
