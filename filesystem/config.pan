@@ -919,9 +919,7 @@ variable DISK_LV_BY_VG = {
 };
 
 # Set requested permissions or owner (if any) on filesystem mountpoints
-# FIXME: DUMMY_NODE is not really supported anymore (was useful mainly at the time
-# of SPMA) and this should probably be removed.
-include if ( !exists(DUMMY_NODE) || !DUMMY_NODE) 'components/dirperm/config';
+include 'components/dirperm/config';
 '/software/components/dirperm' = {
   if ( !exists(SELF['paths']) || !is_defined(SELF['paths']) ) {
     SELF['paths'] = list();
