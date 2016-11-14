@@ -17,10 +17,7 @@ values =  string matching a YUM snapshot at site (typically YYYYMMDD) or null to
 default = YUM_SNAPSHOT_DATE
 required = no
 }
-variable YUM_CA_RPM_SNAPSHOT_DATE ?= if ( is_null(YUM_CA_RPM_SNAPSHOT_DATE) ) {
-                                       debug(format('%s: YUM_CA_RPM_SNAPSHOT_DATE set to null, ignoring YUM snapshot',OBJECT));
-                                       SELF;
-                                     } else if ( is_defined(YUM_SNAPSHOT_DATE) ) {
+variable YUM_CA_RPM_SNAPSHOT_DATE ?= if ( is_defined(YUM_SNAPSHOT_DATE) ) {
                                        debug(format('%s: YUM_CA_RPM_SNAPSHOT_DATE undefined, using YUM_SNAPSHOT_DATE (%s)',OBJECT,YUM_SNAPSHOT_DATE));
                                        YUM_SNAPSHOT_DATE;
                                      } else {
