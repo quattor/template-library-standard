@@ -35,7 +35,7 @@ variable CHECK_VERSION = if ( !exists('/software/components/metaconfig/version')
                            error('fetch-crl configuration requires ncm-metaconfig version >= 16.6.0');
                          };
 'backup' = '.old';
-'daemons' =  nlist('fetch-crl-boot', 'restart');
+'daemons' =  dict('fetch-crl-boot', 'restart');
 'module' = 'tiny';
 'contents' = {
   SELF["CRLDIR"] = SITE_DEF_CERTDIR;
@@ -57,10 +57,10 @@ include 'components/cron/config';
 "/software/components/cron/entries" = {
   if (FETCH_CRL_VERSION < '3.0') {
     cron_cmd = '/usr/sbin/fetch-crl  --no-check-certificate --loc '+SITE_DEF_CERTDIR+' -out '+SITE_DEF_CERTDIR+' -a 24 --quiet';
-    append(nlist("name","fetch-crl-cron",
-                 "user","root",
-                 "frequency", "AUTO 3,9,15,21 * * *",
-                 "command", cron_cmd,
+    append(dict("name","fetch-crl-cron",
+                "user","root",
+                "frequency", "AUTO 3,9,15,21 * * *",
+                "command", cron_cmd,
           ));
   };
 
@@ -78,14 +78,14 @@ include 'components/cron/config';
 include 'components/altlogrotate/config'; 
 "/software/components/altlogrotate/entries" = {
   if (FETCH_CRL_VERSION < '3.0') {
-    SELF['fetch-crl-cron'] =   nlist("pattern", "/var/log/fetch-crl-cron.ncm-cron.log",
-                                     "compress", true,
-                                     "missingok", true,
-                                     "frequency", "monthly",
-                                     "create", true,
-                                     "ifempty", true,
-                                     "rotate", 12,
-                                    );
+    SELF['fetch-crl-cron'] =   dict("pattern", "/var/log/fetch-crl-cron.ncm-cron.log",
+                                    "compress", true,
+                                    "missingok", true,
+                                    "frequency", "monthly",
+                                    "create", true,
+                                    "ifempty", true,
+                                    "rotate", 12,
+                                   );
   };
 
   if ( is_defined(SELF) ) {
@@ -102,13 +102,13 @@ include 'components/altlogrotate/config';
 "/software/components/chkconfig/service" = {
   if (FETCH_CRL_VERSION >= '3.0') {
     # Run fetch-crl on boot
-    SELF[escape('fetch-crl-boot')] = nlist("on", "",
-                                           "startstop", true);
+    SELF[escape('fetch-crl-boot')] = dict("on", "",
+                                          "startstop", true);
   };
 
   # Enable periodic fetch-crl (cron)
-  SELF[escape('fetch-crl-cron')] = nlist("on", "",
-                                         "startstop", true);
+  SELF[escape('fetch-crl-cron')] = dict("on", "",
+                                        "startstop", true);
 
   SELF;
 };
