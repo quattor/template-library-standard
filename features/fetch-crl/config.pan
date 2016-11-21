@@ -25,13 +25,13 @@ variable FETCH_CRL_VERSION ?= '3.0';
 # ---------------------------------------------------------------------------- 
 include 'components/metaconfig/config';
 include 'features/fetch-crl/schema';
+include 'quattor/functions/package';
 # property 'daemons' and 'convert/yesno' are not supported prior to version 16.6. Additionally,
 # in version of metaconfig before 15.12, metaconfig doesn't publish its version.
 # Exit with an error if an older version is used.
 prefix '/software/components/metaconfig/services/{/etc/sysconfig/fetch-crl}';
 variable CHECK_VERSION = if ( !exists('/software/components/metaconfig/version') ||
-                              ( (value('/software/components/metaconfig/version') <= '16.6') &&
-                                (!match(value('/software/components/metaconfig/version'), '^16\.1')) )  ) {
+                              (pkg_compare_version(value('/software/components/metaconfig/version'), '16.6.0') > 0) ) {
                            error('fetch-crl configuration requires ncm-metaconfig version >= 16.6.0');
                          };
 'backup' = '.old';
