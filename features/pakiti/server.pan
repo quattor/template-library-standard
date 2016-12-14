@@ -82,9 +82,9 @@ variable CONFIG_AUTH = CONFIG_AUTH + "AuthUserFile         "+ PAKITI_USERS_FILE 
 
 #HTTP configuration
 variable CONFIG= if ( PAKITI_SERVER_PORT != 443 ) {
-	format("Listen %d\n\n", PAKITI_SERVER_PORT);
+    format("Listen %d\n\n", PAKITI_SERVER_PORT);
 } else {
-	"";
+    "";
 };
 
 variable CONFIG = CONFIG + format("<VirtualHost %s:%d>\n",PAKITI_VIRTUAL_HOST,PAKITI_SERVER_PORT);
@@ -152,13 +152,13 @@ EOF
        );
 
 variable CONFIG = {
-	contents = "";
-	ok = first(PAKITI_USERS,key,value);
+    contents = "";
+    ok = first(PAKITI_USERS,key,value);
         while(ok) {
                 contents = contents + value + ":xxj31ZMTZzkVA\n";
                 ok = next(PAKITI_USERS,key,value);
         };
-	contents;
+    contents;
 };
 "/software/components/filecopy/services" =
  npush(escape(PAKITI_USERS_FILE),
@@ -197,12 +197,12 @@ variable CONFIG = CONFIG + "password = " + PAKITI_DB_PASS + "\n";
 variable CONFIG = CONFIG + "[webinterface]\n";
 variable CONFIG = CONFIG + "# URL of your local Pakiti server\n";
 variable CONFIG = CONFIG + "url = https://" + FULL_HOSTNAME + "\n"
-	+ "title = " + PAKITI_TITLE + "\n";
+    + "title = " + PAKITI_TITLE + "\n";
 
 "/software/components/filecopy/services" =
  npush(escape("/etc/pakiti2/pakiti2-server.conf"),
        nlist("config",CONFIG,
-       		 "owner","apache",
+                "owner","apache",
              "perms","0600"));
 
 include { 'components/chkconfig/config' };

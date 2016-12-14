@@ -38,7 +38,7 @@ variable PROOF_WORKER_NODES ?= error('PROOF_WORKER_NODES must be defined to buil
 variable PROOF_STARTUP_CONTENTS ?= <<EOF;
 #! /bin/sh
 #
-# xrootd	Start/Stop the XROOTD daemon
+# xrootd    Start/Stop the XROOTD daemon
 #
 # chkconfig: 345 99 0
 # description: The xrootd daemon is used to as file server and starter of
@@ -67,7 +67,7 @@ XRDLOG=/var/log/xroot.log
 # Check that networking is up.
 if [ ${NETWORKING} = "no" ]
 then
-	exit 0
+    exit 0
 fi
 
 if [ ! -x $XROOTD ]
@@ -103,8 +103,8 @@ start() {
         # Set xrootd log file to be writable by XRDUSER
         touch $XRDLOG
         chown $XRDUSER $XRDLOG
-	# limit on 1 GB resident memory, and 2 GB virtual memory
-	#ulimit -m 1048576 -v 2097152 -n 65000
+    # limit on 1 GB resident memory, and 2 GB virtual memory
+    #ulimit -m 1048576 -v 2097152 -n 65000
         daemon $XROOTD -b -l $XRDLOG -R $XRDUSER -c $XRDCF $XRDDEBUG
         RETVAL=$?
         echo
@@ -113,40 +113,40 @@ start() {
 }
 
 stop() {
-	[ ! -f /var/lock/subsys/xrootd ] && return 0 || true
+    [ ! -f /var/lock/subsys/xrootd ] && return 0 || true
         echo -n $"Stopping $prog: "
         killproc xrootd
         RETVAL=$?
         echo
         [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/xrootd
-	return $RETVAL
+    return $RETVAL
 }
 
 # See how we were called.
 case "$1" in
   start)
-	start
-	;;
+    start
+    ;;
   stop)
-	stop
-	;;
+    stop
+    ;;
   status)
-	status xrootd
-	RETVAL=$?
-	;;
+    status xrootd
+    RETVAL=$?
+    ;;
   restart|reload)
-	stop
-	start
-	;;
+    stop
+    start
+    ;;
   condrestart)
-	if [ -f /var/lock/subsys/xrootd ]; then
+    if [ -f /var/lock/subsys/xrootd ]; then
             stop
             start
         fi
-	;;
+    ;;
   *)
-	echo  $"Usage: $0 {start|stop|status|restart|reload|condrestart}"
-	exit 1
+    echo  $"Usage: $0 {start|stop|status|restart|reload|condrestart}"
+    exit 1
 esac
 
 exit $RETVAL
