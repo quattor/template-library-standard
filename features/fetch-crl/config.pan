@@ -20,9 +20,9 @@ include 'features/fetch-crl/rpms' + RPMS_CONFIG_SUFFIX;
 # Define fetch-crl version if not defined when adding RPMs
 variable FETCH_CRL_VERSION ?= '3.0';
 
-# ---------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------
 # fetch-crl configuration
-# ---------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------
 include 'components/metaconfig/config';
 include 'features/fetch-crl/schema';
 include 'quattor/functions/package';
@@ -50,9 +50,9 @@ variable CHECK_VERSION = if ( !exists('/software/components/metaconfig/version')
 bind '/software/components/metaconfig/services/{/etc/sysconfig/fetch-crl}/contents' = fetch_crl_sysconfig_keys;
 
 
-# ---------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------
 # cron
-# ---------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------
 include 'components/cron/config';
 "/software/components/cron/entries" = {
   if (FETCH_CRL_VERSION < '3.0') {
@@ -72,10 +72,10 @@ include 'components/cron/config';
 };
 
 
-# ---------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------
 # altlogrotate
-# ---------------------------------------------------------------------------- 
-include 'components/altlogrotate/config'; 
+# ----------------------------------------------------------------------------
+include 'components/altlogrotate/config';
 "/software/components/altlogrotate/entries" = {
   if (FETCH_CRL_VERSION < '3.0') {
     SELF['fetch-crl-cron'] =   dict("pattern", "/var/log/fetch-crl-cron.ncm-cron.log",
@@ -96,9 +96,9 @@ include 'components/altlogrotate/config';
 };
 
 
-# ---------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------
 # chkconfig
-# ---------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------
 "/software/components/chkconfig/service" = {
   if (FETCH_CRL_VERSION >= '3.0') {
     # Run fetch-crl on boot
