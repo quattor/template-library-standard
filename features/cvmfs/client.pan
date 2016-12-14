@@ -111,7 +111,7 @@ include 'quattor/functions/package';
 #
 '/software/components' = {
     if (exists('/software/components/autofs/maps')) {
-        autofs = SELF['autofs'] ;
+        autofs = SELF['autofs'];
         if(!is_defined(autofs['maps']['cvmfs'])) {
             autofs['maps']['cvmfs'] = nlist(
                 'enabled', true,

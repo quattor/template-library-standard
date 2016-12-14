@@ -197,7 +197,7 @@ variable CONFIG = CONFIG + "password = " + PAKITI_DB_PASS + "\n";
 variable CONFIG = CONFIG + "[webinterface]\n";
 variable CONFIG = CONFIG + "# URL of your local Pakiti server\n";
 variable CONFIG = CONFIG + "url = https://" + FULL_HOSTNAME + "\n"
-	+ "title = " + PAKITI_TITLE + "\n" ;
+	+ "title = " + PAKITI_TITLE + "\n";
 
 "/software/components/filecopy/services" =
  npush(escape("/etc/pakiti2/pakiti2-server.conf"),
