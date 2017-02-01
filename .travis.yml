@@ -1,7 +1,7 @@
 language: bash
 
 script:
-  - ./travis-build
+  - ./.travis-scripts/panlint
   - ./.travis-scripts/test-library
 
 language: python
