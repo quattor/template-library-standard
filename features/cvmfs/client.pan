@@ -182,89 +182,88 @@ include { 'components/filecopy/config' };
 
 
 function cvmfs_add_key = {
-  if (ARGC < 2) {
-    error('number of arguments must be at least 2');
-  };
+    if (ARGC < 2) {
+        error('number of arguments must be at least 2');
+    };
 
-  pubkey_name = ARGV[0];
-  pubkey_file = ARGV[1];
+    pubkey_name = ARGV[0];
+    pubkey_file = ARGV[1];
 
-  SELF[escape('/etc/cvmfs/keys/' + pubkey_name)]=nlist(
-      'config', file_contents(pubkey_file),
-      'owner', 'root',
-      'perms', '0644',
-      'restart', CVMFS_SERVICE_RELOAD_COMMAND,
-  );
+    SELF[escape('/etc/cvmfs/keys/' + pubkey_name)] = nlist(
+        'config', file_contents(pubkey_file),
+        'owner', 'root',
+        'perms', '0644',
+        'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+    );
 
-  return(SELF);
+    return(SELF);
 };
 
 function cvmfs_add_config_file = {
-  if (ARGC < 3) {
-    error('number of arguments must be at least 3');
-  };
-
-  if (!CVMFS_CLIENT_ENABLED) {
-      return(SELF);
-  };
-
-
-  config_file = ARGV[0];
-  server_url = ARGV[1];
-  destination = ARGV[2];
-  keyfile = undef;
-
-  if (ARGC > 3) {
-      keyfile = ARGV[3];
-  };
-
-  first = true;
-  contents = 'CVMFS_SERVER_URL="';
-  foreach (k; v; server_url) {
-    if (!first) {
-      contents = contents + ';' + v;
-    } else {
-        contents = contents + v;
-        first = false;
+    if (ARGC < 3) {
+        error('number of arguments must be at least 3');
     };
-  };
 
-  contents = contents + '"' + "\n";
+    if (!CVMFS_CLIENT_ENABLED) {
+        return(SELF);
+    };
 
-  if (is_defined(keyfile)) {
-      contents = contents + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/" + keyfile + "\n";
-  };
+    config_file = ARGV[0];
+    server_url = ARGV[1];
+    destination = ARGV[2];
+    keyfile = undef;
 
-  SELF[escape('/etc/cvmfs/' + destination + '/' + config_file)]=nlist(
-      'config', contents,
-      'owner', 'root',
-      'perms', '0644',
-      'restart', CVMFS_SERVICE_RELOAD_COMMAND,
-  );
+    if (ARGC > 3) {
+        keyfile = ARGV[3];
+    };
 
-  return(SELF);
+    first = true;
+    contents = 'CVMFS_SERVER_URL="';
+    foreach (k; v; server_url) {
+        if (!first) {
+            contents = contents + '; ' + v;
+        } else {
+            contents = contents + v;
+            first = false;
+        };
+    };
+
+    contents = contents + '"' + "\n";
+
+    if (is_defined(keyfile)) {
+        contents = contents + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/" + keyfile + "\n";
+    };
+
+    SELF[escape('/etc/cvmfs/' + destination + '/' + config_file)] = nlist(
+        'config', contents,
+        'owner', 'root',
+        'perms', '0644',
+        'restart', CVMFS_SERVICE_RELOAD_COMMAND,
+    );
+
+    return(SELF);
 };
 
 function cvmfs_add_server = {
-  if (ARGC < 2) {
-    error('number of arguments must be at least 2');
-  };
+    if (ARGC < 2) {
+        error('number of arguments must be at least 2');
+    };
 
-  domain_name = ARGV[0];
-  server_url = ARGV[1];
+    domain_name = ARGV[0];
+    server_url = ARGV[1];
 
-  return(cvmfs_add_config_file(domain_name + '.conf', server_url, 'domain.d', domain_name + '.pub'));
+    return(cvmfs_add_config_file(domain_name + '.conf', server_url, 'domain.d', domain_name + '.pub'));
 };
 
 function cvmfs_add_repo = {
-  if (ARGC < 2) {
-    error('number of arguments must be at least 2');
-  };
+    if (ARGC < 2) {
+        error('number of arguments must be at least 2');
+    };
 
-  repo_name = ARGV[0];
-  server_url = ARGV[1];
+    repo_name = ARGV[0];
+    server_url = ARGV[1];
 
-  return(cvmfs_add_config_file(repo_name + '.conf', server_url, 'config.d', repo_name + '.pub'));
+    return(cvmfs_add_config_file(repo_name + '.conf', server_url, 'config.d', repo_name + '.pub'));
 };
 
 #
@@ -277,8 +276,8 @@ function cvmfs_add_repo = {
 #
 
 variable CVMFS_DESY_DOMAIN_ENABLED = {
-    foreach(i;rep;CVMFS_REPOSITORIES){
-        if(match(rep,'desy.de$')){
+    foreach(i; rep; CVMFS_REPOSITORIES){
+        if(match(rep, 'desy.de$')){
             return(true);
         };
     };
@@ -303,8 +302,8 @@ variable CVMFS_DESY_DOMAIN_ENABLED = {
 #
 
 variable CVMFS_RAL_DOMAIN_ENABLED = {
-    foreach(i;rep;CVMFS_REPOSITORIES){
-        if(match(rep,'gridpp.ac.uk$')){
+    foreach(i; rep; CVMFS_REPOSITORIES){
+        if(match(rep, 'gridpp.ac.uk$')){
             return(true);
         };
     };
@@ -328,8 +327,8 @@ variable CVMFS_RAL_DOMAIN_ENABLED = {
 #
 
 variable CVMFS_EGI_DOMAIN_ENABLED = {
-    foreach(i;rep;CVMFS_REPOSITORIES){
-        if(match(rep,'egi.eu$')){
+    foreach(i; rep; CVMFS_REPOSITORIES){
+        if(match(rep, 'egi.eu$')){
             return(true);
         };
     };
@@ -432,9 +431,9 @@ include {'components/profile/config'};
         SELF['ATLAS_LOCAL_AREA'] = VO_ATLAS_LOCAL_AREA;
     };
     if ( is_defined(SELF) ) {
-      SELF;
+        SELF;
     } else {
-      null;
+        null;
     };
 };
 
