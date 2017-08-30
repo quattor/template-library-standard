@@ -57,7 +57,7 @@ include FILESYSTEM_LAYOUT_CONFIG_INIT;
 
 # Retrieve boot device name based on HW configuration
 @{
-desc =  blockdevice used to boot 
+desc =  blockdevice used to boot
 values = string
 default = boot disk defined in the HW config
 required = no
@@ -222,10 +222,10 @@ default = /boot/efi (do no change unless you have a good reason to do it)
 required = no
 }
 variable DISK_UEFI_BIOSBOOT_MOUNTPOINT ?= '/boot/efi';
- 
+
 
 # Variables related to volume sizes and names
-                                        
+
 @{
 desc =  default size for block device boot
 values = long
@@ -466,7 +466,7 @@ variable DISK_VOLUME_PARAMS = {
     } else if ( ! define_biosboot_size ) {
       SELF[DISK_BIOSBOOT_PART_NAME]['size'] = 0;
     };
-  } else { 
+  } else {
     if ( (label == 'gpt') &&
          (is_defined(OS_VERSION_PARAMS['family']) && (OS_VERSION_PARAMS['family'] == 'el')) &&
          (to_long(OS_VERSION_PARAMS['majorversion']) >= 7) ) {
@@ -672,7 +672,7 @@ variable DISK_PART_BY_DEV = {
   };
 
   debug(format('%s: devices defined before partition renumbering = %s', OBJECT, to_string(SELF['partitions'])));
-  
+
   # Process SELF['partitions'] and ensure that for each device, partition numbers are consecutive but keeping
   # logical partitions >=5. Renumbering cannot be used only based on the alphabetical order of partitions as
   # there may be 2 digits for the partition number.
@@ -834,7 +834,7 @@ variable DISK_VOLUME_PARAMS = {
   foreach (volume;params;SELF) {
     if ( (params['type'] == 'partition') &&
          is_defined(DISK_PART_BY_DEV['changed_part_num'][params['device']]) ) {
-      debug(format('%s: updating %s device to new partition name/number: %s', 
+      debug(format('%s: updating %s device to new partition name/number: %s',
                               OBJECT, volume, DISK_PART_BY_DEV['changed_part_num'][params['device']]));
       params['device'] = DISK_PART_BY_DEV['changed_part_num'][params['device']];
       params['final'] = true;
@@ -844,7 +844,7 @@ variable DISK_VOLUME_PARAMS = {
       foreach(i;dev;params['devices']) {
         if ( !is_defined(DISK_VOLUME_PARAMS[dev]) &&
              is_defined(DISK_PART_BY_DEV['changed_part_num'][dev]) ) {
-          debug(format('%s: updating %s device %s to new partition name/number: %s', 
+          debug(format('%s: updating %s device %s to new partition name/number: %s',
                               OBJECT, volume, dev, DISK_PART_BY_DEV['changed_part_num'][dev]));
           dev_list[length(dev_list)] = DISK_PART_BY_DEV['changed_part_num'][dev];
           dev_list_updated = true;
