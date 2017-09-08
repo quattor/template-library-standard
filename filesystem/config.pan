@@ -70,7 +70,7 @@ variable DISK_BOOT_DEV ?= {
     return("hda");
   } else if (exists("/hardware/harddisks/xvda")) {
     return("xvda");
-  } else if (exists("/hardware/harddisks/cciss/c0d0")) {
+  } else if (exists("/hardware/harddisks/{cciss/c0d0}")) {
     return(escape("cciss/c0d0"));
   } else if (exists("/hardware/harddisks/vda")) {
     return("vda");
