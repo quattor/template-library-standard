@@ -410,6 +410,13 @@ default = true
 required = no
 }
 variable FILESYSTEM_DEFAULT_PRESERVE ?= true;
+@{
+desc =  define the default mount options for all file systems
+values = string
+default = null
+required = no
+}
+variable FILESYSTEM_DEFAULT_MOUNTOPTS ?= null;
 
 @{
 desc = define the default label for physical devices
@@ -1081,12 +1088,18 @@ variable DISK_LV_BY_VG = {
         } else {
           preserve = FILESYSTEM_DEFAULT_PRESERVE;
         };
+        if ( exists(params['mountopts']) ) {
+          mountopts = params['mountopts'];
+        } else {
+          mountopts = FILESYSTEM_DEFAULT_MOUNTOPTS;
+        };
         fs_params = dict ("block_device", block_device,
                           "mountpoint", params['mountpoint'],
                           "format", format,
                           "mount", true,
                           "preserve", preserve,
-                          "type", fs_type);
+                          "type", fs_type,
+                          "mountopts", mountopts);
         # Copy the optional parameters if present
         foreach (i; name; list("freq", "pass", "mkfsopts", "tuneopts", "label", "quota")) {
           if (exists(params[name])) {
