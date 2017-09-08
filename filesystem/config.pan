@@ -627,13 +627,29 @@ variable DISK_PART_BY_DEV = {
         if ( !exists(params['device'])  ) {
           error("No physical device for partition '"+params['device']+"'");
         };
-        # FIXME: partition prefix should be configurable per disk
-        disk_part_prefix = DISK_BOOT_PART_PREFIX;
-        toks = matches(params['device'], '^(.*?)'+disk_part_prefix+'(\d+)$');
-        if ( length(toks) != 3 ) {
-          error('Invalid device name pattern ('+params['device']+')');
-        } else {
-          phys_dev = toks[1];
+        phys_dev = null;
+        part_num = null;
+        part_prefix = null;
+        foreach (key; info; value("/hardware/harddisks")) {
+            if ( exists(info["part_prefix"]) ) {
+                pprefix = info["part_prefix"];
+            } else {
+                pprefix = "";
+            };
+            # Example disk name to regex conversions:
+            # 'sda' -> '^(sda)(\d+)$'
+            # escape('cciss/c0d0') -> '(cciss/c0d0)p(\d+)$'
+            # 'nvme0n1' -> '(nvme0n1)p(\d+)$'
+            toks = matches(unescape(params['device']), '^(' + unescape(key) + ")" + pprefix + '(\d+)$');
+            if ( length(toks) == 3 ) {
+                phys_dev = key;
+                part_num = to_long(toks[2]);
+                part_prefix = pprefix;
+            };
+        };
+        if (!is_defined(phys_dev)) {
+            error(format('Device %s does not match any entries under /hardware/harddisks',
+                         params['device']));
         };
         if ( !exists(SELF['partitions'][phys_dev]) ) {
           # Build 2 separate dict, part_list and part_num, the key being the partition name in each
@@ -642,12 +658,11 @@ variable DISK_PART_BY_DEV = {
           # part_num is a transient dict used internally to do the partition final numbering.
           SELF['partitions'][phys_dev] = dict('part_list', dict(),
                                               'part_num', dict(),
-                                              'part_prefix', disk_part_prefix,
+                                              'part_prefix', part_prefix,
                                               'extended', undef,
                                               'last_primary', 0,
                                              );
         };
-        part_num = to_long(toks[2]);
         if ( is_defined(params['size']) ) {
           SELF['partitions'][phys_dev]['part_list'][params['device']]['size'] = params['size'];
         } else {
