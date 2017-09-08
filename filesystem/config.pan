@@ -1087,6 +1087,12 @@ variable DISK_LV_BY_VG = {
                           "mount", true,
                           "preserve", preserve,
                           "type", fs_type);
+        # Copy the optional parameters if present
+        foreach (i; name; list("freq", "pass", "mkfsopts", "tuneopts", "label", "quota")) {
+          if (exists(params[name])) {
+            fs_params[name] = params[name];
+          };
+        };
         filesystem_mod(fs_params);
       };
     };
