@@ -447,8 +447,8 @@ variable DISK_VOLUME_PARAMS = {
   #   - Legacy BIOS: bios boot partition required if GPT is ued and OS version >= EL7
   #   - UEFI BIOS: GPT label and bios boot partition required
   define_biosboot_size = false;
-  if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
-    label = PHYSICAL_DEVICE_LABEL[phys_dev];
+  if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[DISK_BOOT_DEV])) {
+    label = PHYSICAL_DEVICE_LABEL[DISK_BOOT_DEV];
   } else {
     label = PHYSICAL_DEVICE_DEFAULT_LABEL;
   };
