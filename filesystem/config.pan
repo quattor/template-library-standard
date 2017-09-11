@@ -50,6 +50,20 @@ function filesystem_layout_mod = {
   SELF;
 };
 
+# Helper function for calculating partiton names. Takes an escaped disk name
+# and partition index, and returns the escaped partition name
+function disk_part_name = {
+    disk = ARGV[0];
+    part_num = ARGV[1];
+
+    if (exists("/hardware/harddisks/" + disk + "/part_prefix")) {
+        part_prefix = value("/hardware/harddisks/" + disk + "/part_prefix");
+    } else {
+        part_prefix = "";
+    };
+
+    escape(unescape(disk) + part_prefix + to_string(part_num));
+};
 
 # Include site configuration initialization if any
 include FILESYSTEM_LAYOUT_CONFIG_INIT;
@@ -327,12 +341,12 @@ variable DISK_VOLUME_PARAMS ?= {
   SELF[DISK_BIOSBOOT_PART_NAME] = dict('size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
                                        'type', 'partition',
                                        'flags', DISK_BIOSBOOT_PART_FLAGS,
-                                       'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('biosboot',DISK_BOOT_PARTS)+1));
+                                       'device', disk_part_name(DISK_BOOT_DEV, index('biosgrub',DISK_BOOT_PARTS) + 1));
   SELF['boot'] = dict('size', DISK_BOOT_BLOCKDEV_SIZE,
                       'mountpoint', '/boot',
                       'fstype', 'ext2',
                       'type', 'partition',
-                      'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('boot',DISK_BOOT_PARTS)+1));
+                      'device', disk_part_name(DISK_BOOT_DEV, index('boot',DISK_BOOT_PARTS) + 1));
   SELF['home'] = dict('size', DISK_HOME_BLOCKDEV_SIZE,
                       'mountpoint', '/home',
                       'type', 'lvm',
@@ -346,12 +360,12 @@ variable DISK_VOLUME_PARAMS ?= {
   SELF['root'] = dict('size', DISK_ROOT_BLOCKDEV_SIZE,
                       'mountpoint', '/',
                       'type', 'partition',
-                      'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('root',DISK_BOOT_PARTS)+1));
+                      'device', disk_part_name(DISK_BOOT_DEV, index('root',DISK_BOOT_PARTS) + 1));
   SELF['swap'] = dict('size', DISK_SWAP_SIZE,
                       'mountpoint', 'swap',
                       'fstype', 'swap',
                       'type', 'partition',
-                      'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('swap',DISK_BOOT_PARTS)+1));
+                      'device', disk_part_name(DISK_BOOT_DEV, index('swap',DISK_BOOT_PARTS) + 1));
   SELF['swareas'] = dict('size', DISK_SWAREAS_BLOCKDEV_SIZE,
                          'mountpoint', '/swareas',
                          'type', 'lvm',
@@ -374,7 +388,7 @@ variable DISK_VOLUME_PARAMS ?= {
                      'device', 'varvol');
   SELF[DISK_VG01_VOLGROUP_NAME] = dict('size', DISK_VG01_BLOCKDEV_SIZE,
                                        'type', 'vg',
-                                       'devices', list(DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('lvm',DISK_BOOT_PARTS)+1)));
+                                       'devices', list(disk_part_name(DISK_BOOT_DEV, index('lvm',DISK_BOOT_PARTS) + 1)));
   SELF;
 };
 
