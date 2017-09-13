@@ -33,9 +33,8 @@ variable FILESYSTEM_LAYOUT_CONFIG_INIT ?= if ( is_defined(FILESYSTEM_LAYOUT_CONF
 #    variable DISK_VOLUME_PARAMS = filesystem_layout_mod(volume_dict);
 # where 'volume_dict' has the same format as DISK_VOLUME_PARAMS.
 function filesystem_layout_mod = {
-  function_name = 'filesystem_layout_mod';
   if ( (ARGC != 1) || !is_dict(ARGV[0]) ) {
-    error(function_name+': one argument required, must be a dict');
+    error(format('%s: one argument required, must be a dict', FUNCTION));
   };
 
   foreach (volume;params;ARGV[0]) {
@@ -499,10 +498,10 @@ variable DISK_VOLUME_PARAMS = {
       if ( SELF[DISK_BIOSBOOT_PART_NAME]['size'] == 0 ) {
         SELF[DISK_BIOSBOOT_PART_NAME]['size'] = DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT;
       } else {
-        debug(format("%s: '%s' partition size already defined, default value not applied", OBJECT, DISK_BIOSBOOT_PART_NAME));
+        debug(format("'%s' partition size already defined, default value not applied", DISK_BIOSBOOT_PART_NAME));
       };
     } else {
-      debug(format("%s: '%s' partition doesn't exist in DISK_VOLUME_PARAMS, size not defined", OBJECT, DISK_BIOSBOOT_PART_NAME));
+      debug(format("'%s' partition doesn't exist in DISK_VOLUME_PARAMS, size not defined", DISK_BIOSBOOT_PART_NAME));
     };
   };
   if ( DISK_BIOS_TYPE_UEFI ) {
@@ -707,7 +706,7 @@ variable DISK_PART_BY_DEV = {
     };
   };
 
-  debug(format('%s: devices defined before partition renumbering = %s', OBJECT, to_string(SELF['partitions'])));
+  debug(format('devices defined before partition renumbering = %s', to_string(SELF['partitions'])));
 
   # Process SELF['partitions'] and ensure that for each device, partition numbers are consecutive but keeping
   # logical partitions >=5. Renumbering cannot be used only based on the alphabetical order of partitions as
@@ -854,8 +853,8 @@ variable DISK_PART_BY_DEV = {
     SELF['partitions'][phys_dev]['part_list'] = new_part_list;
   };
 
-  debug(format('%s: renumbered partitions = %s', OBJECT, to_string(SELF['changed_part_num'])));
-  debug(format('%s: devices defined after partition renumbering = %s', OBJECT, to_string(SELF['partitions'])));
+  debug(format('renumbered partitions = %s', to_string(SELF['changed_part_num'])));
+  debug(format('devices defined after partition renumbering = %s', to_string(SELF['partitions'])));
 
   SELF;
 };
@@ -870,8 +869,8 @@ variable DISK_VOLUME_PARAMS = {
   foreach (volume;params;SELF) {
     if ( (params['type'] == 'partition') &&
          is_defined(DISK_PART_BY_DEV['changed_part_num'][params['device']]) ) {
-      debug(format('%s: updating %s device to new partition name/number: %s',
-                              OBJECT, volume, DISK_PART_BY_DEV['changed_part_num'][params['device']]));
+      debug(format('updating %s device to new partition name/number: %s',
+                   volume, DISK_PART_BY_DEV['changed_part_num'][params['device']]));
       params['device'] = DISK_PART_BY_DEV['changed_part_num'][params['device']];
       params['final'] = true;
     } else if ( match(params['type'],'md|vg') ) {
@@ -880,15 +879,15 @@ variable DISK_VOLUME_PARAMS = {
       foreach(i;dev;params['devices']) {
         if ( !is_defined(DISK_VOLUME_PARAMS[dev]) &&
              is_defined(DISK_PART_BY_DEV['changed_part_num'][dev]) ) {
-          debug(format('%s: updating %s device %s to new partition name/number: %s',
-                              OBJECT, volume, dev, DISK_PART_BY_DEV['changed_part_num'][dev]));
+          debug(format('updating %s device %s to new partition name/number: %s',
+                       volume, dev, DISK_PART_BY_DEV['changed_part_num'][dev]));
           dev_list[length(dev_list)] = DISK_PART_BY_DEV['changed_part_num'][dev];
           dev_list_updated = true;
         } else {
           dev_list[length(dev_list)] = dev;
         };
       };
-      if ( dev_list_updated ) debug(format('%s: %s new device list = %s', OBJECT, volume, to_string(dev_list)));
+      if ( dev_list_updated ) debug(format('%s new device list = %s', volume, to_string(dev_list)));
       params['devices'] = dev_list;
     };
   };
