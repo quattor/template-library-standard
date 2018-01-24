@@ -221,7 +221,7 @@ function cvmfs_add_config_file = {
     contents = 'CVMFS_SERVER_URL="';
     foreach (k; v; server_url) {
         if (!first) {
-            contents = contents + '; ' + v;
+            contents = contents + ';' + v;
         } else {
             contents = contents + v;
             first = false;
