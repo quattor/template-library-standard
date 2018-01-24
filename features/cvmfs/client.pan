@@ -46,7 +46,7 @@ variable CVMFS_HTTP_PROXY ?= undef;
 variable CVMFS_CLIENT_VERSION ?= '2.1.19-1';
 
 # Servers for domain cern.ch, sort this according to your location
-variable CVMFS_SERVER_URL_CERN ?= nlist(
+variable CVMFS_SERVER_URL_CERN ?= dict(
     'URL-01-CERN', 'http://cvmfs-stratum-one.cern.ch:8000/opt/@org@',
     'URL-02-UK', 'http://cernvmfs.gridpp.rl.ac.uk:8000/opt/@org@',
     'URL-03-BNL', 'http://cvmfs.racf.bnl.gov:8000/opt/@org@',
@@ -54,18 +54,18 @@ variable CVMFS_SERVER_URL_CERN ?= nlist(
 );
 
 # Servers for domain desy.de, sort this according to your location
-variable CVMFS_SERVER_URL_DESY ?= nlist(
+variable CVMFS_SERVER_URL_DESY ?= dict(
     'URL-01-DESY', 'http://grid-cvmfs-one.desy.de:8000/cvmfs/@fqrn@',
 );
 
 # Servers for domain gridpp.ac.uk, sort this according to your location
-variable CVMFS_SERVER_URL_RAL ?= nlist(
+variable CVMFS_SERVER_URL_RAL ?= dict(
     'URL-01-RAL', 'http://cvmfs-egi.gridpp.rl.ac.uk:8000/cvmfs/@org@.gridpp.ac.uk',
     'URL-02-NIKHEF', 'http://cvmfs01.nikhef.nl/cvmfs/@org@.gridpp.ac.uk',
 );
 
 # Servers for domain egi.eu
-variable CVMFS_SERVER_URL_EGI ?= nlist(
+variable CVMFS_SERVER_URL_EGI ?= dict(
     'URL-01-RAL', 'http://cvmfs-egi.gridpp.rl.ac.uk:8000/cvmfs/@org@.egi.eu',
 );
 
@@ -86,21 +86,21 @@ variable VO_CMS_LOCAL_SITE ?= undef;
 # Add RPMs
 #
 variable RPMS_CONFIG_SUFFIX ?= '';
-include { 'features/cvmfs/rpms' };
+include 'features/cvmfs/rpms';
 
 
 #
 # Add repository
 #
-include { 'repository/config/cvmfs' };
+include 'repository/config/cvmfs';
 
 #
 # Enable service
 #
-include 'quattor/functions/package';
+include 'components/chkconfig/config';
 '/software/components/chkconfig/service' = {
     if ((pkg_compare_version('2.1', CVMFS_CLIENT_VERSION) == PKG_VERSION_GREATER) && ! is_defined(SELF['cvmfs'])) {
-        SELF['cvmfs'] = nlist('on', '', 'startstop', false);
+        SELF['cvmfs'] = dict('on', '', 'startstop', false);
     };
     SELF;
 };
@@ -109,11 +109,12 @@ include 'quattor/functions/package';
 #
 # Configure autofs component, if already included
 #
+include 'components/autofs/config';
 '/software/components' = {
     if (exists('/software/components/autofs/maps')) {
         autofs = SELF['autofs'];
         if(!is_defined(autofs['maps']['cvmfs'])) {
-            autofs['maps']['cvmfs'] = nlist(
+            autofs['maps']['cvmfs'] = dict(
                 'enabled', true,
                 'preserve', true,
                 'mapname', '/etc/auto.cvmfs',
@@ -172,8 +173,8 @@ variable CVMFS_SERVICE_RELOAD_COMMAND ?= {
         'cvmfs_config reload';
     };
 };
-include { 'components/filecopy/config' };
-'/software/components/filecopy/services/{/etc/cvmfs/default.local}' = nlist(
+include 'components/filecopy/config';
+'/software/components/filecopy/services/{/etc/cvmfs/default.local}' = dict(
     'config', CONTENTS,
     'owner', 'root',
     'perms', '0644',
@@ -189,7 +190,7 @@ function cvmfs_add_key = {
     pubkey_name = ARGV[0];
     pubkey_file = ARGV[1];
 
-    SELF[escape('/etc/cvmfs/keys/' + pubkey_name)] = nlist(
+    SELF[escape('/etc/cvmfs/keys/' + pubkey_name)] = dict(
         'config', file_contents(pubkey_file),
         'owner', 'root',
         'perms', '0644',
@@ -221,7 +222,7 @@ function cvmfs_add_config_file = {
     contents = 'CVMFS_SERVER_URL="';
     foreach (k; v; server_url) {
         if (!first) {
-            contents = contents + '; ' + v;
+            contents = contents + ';' + v;
         } else {
             contents = contents + v;
             first = false;
@@ -234,7 +235,7 @@ function cvmfs_add_config_file = {
         contents = contents + "CVMFS_PUBLIC_KEY=/etc/cvmfs/keys/" + keyfile + "\n";
     };
 
-    SELF[escape('/etc/cvmfs/' + destination + '/' + config_file)] = nlist(
+    SELF[escape('/etc/cvmfs/' + destination + '/' + config_file)] = dict(
         'config', contents,
         'owner', 'root',
         'perms', '0644',
@@ -355,8 +356,8 @@ variable CVMFS_EGI_DOMAIN_ENABLED = {
 # Add custom domains through predefinition of variable CVMFS_EXTRA_DOMAINS
 #
 # It should be defined as in this example:
-# variable CVMFS_EXTRA_DOMAINS ?= nlist('example.org',
-#                                             nlist('server_urls', nlist('URL-NAME1', 'http://cvmfs1.example.org/cvmfs/@org@.example.org',
+# variable CVMFS_EXTRA_DOMAINS ?= dict('example.org',
+#                                             dict('server_urls', dict('URL-NAME1', 'http://cvmfs1.example.org/cvmfs/@org@.example.org',
 #                                                                        'URL-NAME2', 'http://cvmfs2.example.org/cvmfs/@org@.example.org'),
 #                                             'pubkeys_file', 'cvmfs/keys/example.org.pub' # cvmfs/keys/example.org.pub is a local file in your template source distribution
 #                                             ),
@@ -383,8 +384,8 @@ function cvmfs_configure_extra_domains = {
 # Add custom domains through predefinition of variable CVMFS_EXTRA_REPOSITORIES
 #
 # It should be defined as in this example:
-# variable CVMFS_EXTRA_REPOSITORIES ?= nlist('vo.example.org',
-#                                             nlist('server_urls', nlist('URL-NAME1', 'http://cvmfs1.example.org/cvmfs/vo.example.org',
+# variable CVMFS_EXTRA_REPOSITORIES ?= dict('vo.example.org',
+#                                             dict('server_urls', dict('URL-NAME1', 'http://cvmfs1.example.org/cvmfs/vo.example.org',
 #                                                                        'URL-NAME2', 'http://cvmfs2.example.org/cvmfs/vo.example.org'),
 #                                             'pubkeys_file', 'cvmfs/keys/vo.example.org.pub' # cvmfs/keys/vo.example.org.pub is a local file in your template source distribution
 #                                             ),
@@ -415,7 +416,7 @@ function cvmfs_configure_extra_repos = {
 #
 # fuse filesystem sharing is required
 #
-'/software/components/filecopy/services/{/etc/fuse.conf}' = nlist(
+'/software/components/filecopy/services/{/etc/fuse.conf}' = dict(
     'config', "user_allow_other\n",
     'owner', 'root',
     'perms', '0644'
@@ -425,7 +426,7 @@ function cvmfs_configure_extra_repos = {
 #
 # Add variable for ATLAS local site config, if defined
 #
-include {'components/profile/config'};
+include 'components/profile/config';
 '/software/components/profile/env' = {
     if (is_defined(VO_ATLAS_LOCAL_AREA)) {
         SELF['ATLAS_LOCAL_AREA'] = VO_ATLAS_LOCAL_AREA;
@@ -443,7 +444,7 @@ include {'components/profile/config'};
 #
 '/software/components/filecopy/services' = {
     if (is_defined(VO_CMS_LOCAL_SITE)) {
-        SELF[escape('/etc/cvmfs/config.d/cms.cern.ch.local')] = nlist(
+        SELF[escape('/etc/cvmfs/config.d/cms.cern.ch.local')] = dict(
             'config', "export CMS_LOCAL_SITE=" + VO_CMS_LOCAL_SITE + "\n",
             'owner', 'root',
             'perms', '0644',
@@ -458,4 +459,12 @@ include {'components/profile/config'};
 # Include cleanup cron job, disabled by default
 #
 variable CVMFS_ENABLE_CLIENT_CLEANUP ?= false;
-include { if (is_boolean(CVMFS_ENABLE_CLIENT_CLEANUP) && CVMFS_ENABLE_CLIENT_CLEANUP) 'features/cvmfs/client-cleanup'};
+variable CVMFS_CLIENT_CLEANUP = {
+    if (is_boolean(CVMFS_ENABLE_CLIENT_CLEANUP) && CVMFS_ENABLE_CLIENT_CLEANUP) {
+        'features/cvmfs/client-cleanup';
+    } else {
+        null;
+    };
+};
+
+include CVMFS_CLIENT_CLEANUP;
