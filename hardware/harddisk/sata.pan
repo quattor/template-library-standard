@@ -1,11 +1,4 @@
-############################################################
-#
-# RESPONSIBLE: Jacquelin Charbonnel <charbonnel@lal.in2p3.fr>
-#
-############################################################
-
 structure template hardware/harddisk/sata;
 
-"model"     = "Generic SATA disk";
-"capacity"  = undef;
-"interface" = "scsi";
+include 'hardware/harddisk/generic/sata';
+include 'hardware/harddisk/deprecation-warning';
