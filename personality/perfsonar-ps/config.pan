@@ -61,7 +61,7 @@ variable PERFSONAR_PORTS = {
 # Make sure that the wheel group can use sudo
 include 'components/sudo/config';
 '/software/components/sudo/privilege_lines' = {
-    item = nlist('user', '%wheel', 'run_as', 'ALL', 'host', 'ALL', 'cmd', 'ALL');
+    item = dict('user', '%wheel', 'run_as', 'ALL', 'host', 'ALL', 'cmd', 'ALL');
     if ( !is_defined(SELF) || (index(item, SELF) == -1) ) {
         append(item);
     };
@@ -129,7 +129,8 @@ EOF
 # Install the script and set it to run if modified
 include 'components/filecopy/config';
 '/software/components/filecopy/services' = {
-  SELF[escape(PERFSONAR_CONFIG_SCRIPT)] = dict('config', contents,
+    SELF[escape(PERFSONAR_CONFIG_SCRIPT)] = dict(
+        'config', contents,
         'perms', '0755',
         'owner', 'root',
         'group', 'root',
