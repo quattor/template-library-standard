@@ -2,13 +2,25 @@ unique template personality/perfsonar-ps/config;
 
 variable PERFSONAR_CONFIG_SCRIPT ?= '/var/quattor/scripts/perfsonar-postconfig.sh';
 
-# RPMs
-include { 'personality/perfsonar-ps/rpms' };
-include { 'repository/config/perfsonar-ps' };
+@{
+desc = define the bwctl server configuration
+value = string
+}
+variable PERFSONAR_BWCTL_CONF_FILE ?= '/etc/bwctld/bwctld.conf';
+
+@{
+desc = define the owamp server configuration
+value = string
+}
+variable PERFSONAR_OWAMP_CONF_FILE ?= '/etc/owampd/owampd.conf';
+
+# Install needed packages for perfsonar-ps
+include 'personality/perfsonar-ps/rpms';
+include 'repository/config/perfsonar-ps';
 
 # Include EGI CA certificates and keep CRLs up to date
-include {'security/cas'};
-include {'features/fetch-crl/config'};
+include 'security/cas';
+include 'features/fetch-crl/config';
 
 # perfSONAR ports
 variable PERFSONAR_PORTS_DEFAULT ?= nlist(
@@ -71,7 +83,7 @@ variable contents = {
 #
 sed -i 's|^#\?\s*peer_port\s\+[0-9].*|peer_port QUATTOR_PEER_PORT|' /etc/bwctld/bwctld.conf
 if ! grep ^peer_port /etc/bwctld/bwctld.conf > /dev/null 2>&1 ; then
-    echo 'peer_port QUATTOR_PEER_PORT' >> /etc/bwctld/bwctld.conf
+    echo 'peer_port QUATTOR_PEER_PORT' >> PERFSONAR_BWCTL_CONF_FILE
 fi
 
 #
@@ -79,7 +91,7 @@ fi
 #
 sed -i 's|^#\?\s*iperf_port\s\+[0-9].*|iperf_port QUATTOR_IPERF_PORT|' /etc/bwctld/bwctld.conf
 if ! grep ^iperf_port /etc/bwctld/bwctld.conf > /dev/null 2>&1 ; then
-    echo 'iperf_port QUATTOR_IPERF_PORT' >> /etc/bwctld/bwctld.conf
+    echo 'iperf_port QUATTOR_IPERF_PORT' >> PERFSONAR_BWCTL_CONF_FILE
 fi
 
 #
@@ -87,7 +99,7 @@ fi
 #
 sed -i 's|^#\?\s*nuttcp_port\s\+[0-9].*|nuttcp_port QUATTOR_NUTTCP_PORT|' /etc/bwctld/bwctld.conf
 if ! grep ^nuttcp_port /etc/bwctld/bwctld.conf > /dev/null 2>&1 ; then
-    echo 'nuttcp_port QUATTOR_NUTTCP_PORT' >> /etc/bwctld/bwctld.conf
+    echo 'nuttcp_port QUATTOR_NUTTCP_PORT' >> PERFSONAR_BWCTL_CONF_FILE
 fi
 
 #
@@ -95,7 +107,7 @@ fi
 #
 sed -i 's|^#\?\s*owamp_port\s\+[0-9].*|owamp_port QUATTOR_OWAMP_PORT|' /etc/bwctld/bwctld.conf
 if ! grep ^owamp_port /etc/bwctld/bwctld.conf > /dev/null 2>&1 ; then
-    echo 'owamp_port QUATTOR_OWAMP_PORT' >> /etc/bwctld/bwctld.conf
+    echo 'owamp_port QUATTOR_OWAMP_PORT' >> PERFSONAR_BWCTL_CONF_FILE
 fi
 
 #
@@ -103,7 +115,7 @@ fi
 #
 sed -i 's|^#\?\s*test_port\s\+[0-9].*|test_port QUATTOR_TEST_PORT|' /etc/bwctld/bwctld.conf
 if ! grep ^test_port /etc/bwctld/bwctld.conf > /dev/null 2>&1 ; then
-    echo 'test_port QUATTOR_TEST_PORT' >> /etc/bwctld/bwctld.conf
+    echo 'test_port QUATTOR_TEST_PORT' >> PERFSONAR_BWCTL_CONF_FILE
 fi
 
 #
@@ -111,9 +123,12 @@ fi
 #
 sed -i 's|^#\?\s*testports\s\+[0-9].*|testports QUATTOR_TESTPORTS|' /etc/owampd/owampd.conf
 if ! grep ^testports /etc/owampd/owampd.conf > /dev/null 2>&1 ; then
-    echo 'testports QUATTOR_TESTPORTS' >> /etc/owampd/owampd.conf
+    echo 'testports QUATTOR_TESTPORTS' >> PERFSONAR_OWAMP_CONF_FILE
 fi
 EOF
+
+        this = replace('PERFSONAR_BWCTL_CONF_FILE', PERFSONAR_BWCTL_CONF_FILE, this);
+        this = replace('PERFSONAR_OWAMP_CONF_FILE', PERFSONAR_OWAMP_CONF_FILE, this);
 
         this = replace('QUATTOR_PEER_PORT', replace(':', '-', PERFSONAR_PORTS['BWCTL']['peer_port']), this);
         this = replace('QUATTOR_IPERF_PORT', replace(':', '-', PERFSONAR_PORTS['BWCTL']['iperf_port']), this);
@@ -139,3 +154,5 @@ include {'components/filecopy/config'};
                                                );
   SELF;
 };
+
+
