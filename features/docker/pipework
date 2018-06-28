@@ -1,4 +1,10 @@
 #!/bin/sh
+# Pipework lets you connect together containers in arbitrarily complex scenarios. Pipework uses cgroups 
+# and namespace and works with "plain" LXC containers (created with lxc-start), and with the awesome Docker.
+#
+# The script has been copied from https://github.com/jpetazzo/pipework where it has been
+# released under Apache Software License v2.
+
 set -e
 
 case "$1" in
