@@ -4,5 +4,6 @@ unique template personality/perfsonar-ps/rpms;
 '/software/packages' = {
     pkg_repl('perfsonar-testpoint');
     pkg_repl('perfsonar-toolkit-servicewatcher');
+    pkg_repl('perfsonar-toolkit');
     SELF;
 };
