@@ -19,10 +19,10 @@ variable DOCKER_PIPEWORK ?= false;
 @{
 descr = YUM repository containing Docker packages
 values = string
-default = null
+default = undef
 required = No
 }
-variable DOCKER_YUM_REPOSITORY ?= null;
+variable DOCKER_YUM_REPOSITORY ?= undef;
 
 @{
 descr = name of the Docker package
@@ -30,7 +30,7 @@ values = string
 default = depends on the OS version
 required = No
 }
-variable DOCKER_PACKAGE ?= null;
+variable DOCKER_PACKAGE ?= undef;
 
 @{
 descr = list of Docker related groups
