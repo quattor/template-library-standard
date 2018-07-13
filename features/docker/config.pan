@@ -27,7 +27,7 @@ variable DOCKER_YUM_REPOSITORY ?= undef;
 @{
 descr = name of the Docker package
 values = string
-default = depends on the OS version
+default = undef (but actual default is set by the Docker template for the OS verion)
 required = No
 }
 variable DOCKER_PACKAGE ?= undef;
