@@ -16,9 +16,6 @@ variable SITE_DEF_CERTDIR ?= SITE_DEF_GRIDSEC_ROOT + "/certificates";
 variable RPMS_CONFIG_SUFFIX ?= '';
 include 'features/fetch-crl/rpms' + RPMS_CONFIG_SUFFIX;
 
-# Define fetch-crl version if not defined when adding RPMs
-variable FETCH_CRL_VERSION ?= '3.0';
-
 # ----------------------------------------------------------------------------
 # fetch-crl configuration
 # ----------------------------------------------------------------------------
@@ -50,64 +47,17 @@ bind '/software/components/metaconfig/services/{/etc/sysconfig/fetch-crl}/conten
 
 
 # ----------------------------------------------------------------------------
-# cron
-# ----------------------------------------------------------------------------
-include 'components/cron/config';
-"/software/components/cron/entries" = {
-    if (FETCH_CRL_VERSION < '3.0') {
-        cron_cmd = '/usr/sbin/fetch-crl  --no-check-certificate --loc ' + SITE_DEF_CERTDIR + ' -out ' + SITE_DEF_CERTDIR + ' -a 24 --quiet';
-        append(dict("name","fetch-crl-cron",
-            "user","root",
-            "frequency", "AUTO 3,9,15,21 * * *",
-            "command", cron_cmd,
-        ));
-    };
-
-    if ( is_defined(SELF) ) {
-        SELF;
-    } else {
-        null;
-    };
-};
-
-
-# ----------------------------------------------------------------------------
-# altlogrotate
-# ----------------------------------------------------------------------------
-include 'components/altlogrotate/config';
-"/software/components/altlogrotate/entries" = {
-    if (FETCH_CRL_VERSION < '3.0') {
-        SELF['fetch-crl-cron'] = dict("pattern", "/var/log/fetch-crl-cron.ncm-cron.log",
-            "compress", true,
-            "missingok", true,
-            "frequency", "monthly",
-            "create", true,
-            "ifempty", true,
-            "rotate", 12,
-        );
-    };
-
-    if ( is_defined(SELF) ) {
-        SELF;
-    } else {
-        null;
-    };
-};
-
-
-# ----------------------------------------------------------------------------
 # chkconfig
 # ----------------------------------------------------------------------------
+include "components/chkconfig/config";
 "/software/components/chkconfig/service" = {
-    if (FETCH_CRL_VERSION >= '3.0') {
-        # Run fetch-crl on boot
-        SELF[escape('fetch-crl-boot')] = dict("on", "",
-            "startstop", true);
-    };
+    # Run fetch-crl on boot
+    SELF[escape('fetch-crl-boot')] = dict("on", "",
+                                        "startstop", true);
 
     # Enable periodic fetch-crl (cron)
     SELF[escape('fetch-crl-cron')] = dict("on", "",
-        "startstop", true);
+                                        "startstop", true);
 
     SELF;
 };
