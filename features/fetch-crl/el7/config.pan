@@ -6,13 +6,22 @@ include 'components/systemd/config';
 
 '/software/components/systemd/skip/service' = false;
 
-# This is a customization file
-'/software/components/systemd/unit/fetch-crl-boot/file/replace' = false;
+##################
+# fetch-crl-boot #
+##################
+
+prefix '/software/components/systemd/unit/fetch-crl-boot';
 
 # Fix for issue https://bugzilla.redhat.com/show_bug.cgi?id=1630027
-prefix '/software/components/systemd/unit/fetch-crl-boot/file/config/service';
-'RemainAfterExit' = true;
+# Create a customization file
+'file/replace' = false;
+'file/config/service/RemainAfterExit' = true;
 
-# Enable fetch-crl CRON
+
+##################
+# fetch-crl-cron #
+##################
+
+# Enable fetch-crl-cron
 prefix '/software/components/systemd/unit/fetch-crl-cron';
 'state' = 'enabled';
