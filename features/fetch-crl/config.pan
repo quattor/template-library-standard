@@ -13,8 +13,7 @@ variable SITE_DEF_HOST_KEY ?= SITE_DEF_GRIDSEC_ROOT + "/hostkey.pem";
 variable SITE_DEF_CERTDIR ?= SITE_DEF_GRIDSEC_ROOT + "/certificates";
 
 # Include RPMs
-variable RPMS_CONFIG_SUFFIX ?= '';
-include 'features/fetch-crl/rpms' + RPMS_CONFIG_SUFFIX;
+include 'features/fetch-crl/rpms';
 
 # ----------------------------------------------------------------------------
 # fetch-crl configuration
@@ -47,17 +46,6 @@ bind '/software/components/metaconfig/services/{/etc/sysconfig/fetch-crl}/conten
 
 
 # ----------------------------------------------------------------------------
-# chkconfig
+# fetch-crl services configuration (OS-dependent)
 # ----------------------------------------------------------------------------
-include "components/chkconfig/config";
-"/software/components/chkconfig/service" = {
-    # Run fetch-crl on boot
-    SELF[escape('fetch-crl-boot')] = dict("on", "",
-                                        "startstop", true);
-
-    # Enable periodic fetch-crl (cron)
-    SELF[escape('fetch-crl-cron')] = dict("on", "",
-                                        "startstop", true);
-
-    SELF;
-};
+include format('features/fetch-crl/%s/config', OS_VERSION_PARAMS['major']);
