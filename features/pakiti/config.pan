@@ -70,5 +70,3 @@ include    {
         'features/pakiti/client/config';
     };
 };
-# Pakiti updates if using SPMA
-include { if ( PACKAGE_MANAGER == 'spma' ) 'features/pakiti/updates' };
