@@ -61,12 +61,4 @@ include { if ( PAKITI_SERVER == FULL_HOSTNAME ) {
     'features/pakiti/server';
 }};
 
-variable PAKITI_CLIENT_V3 ?= false;
-
-include    {
-    if(PAKITI_CLIENT_V3){
-        'features/pakiti/client/configv3';
-    } else {
-        'features/pakiti/client/config';
-    };
-};
+include 'features/pakiti/client/config';
