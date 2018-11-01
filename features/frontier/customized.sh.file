@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+
+awk --file `dirname $0`/customhelps.awk --source '{
+setoption("acl NET_LOCAL src", "%s")
+setoption("acl HOST_MONITOR src","%s")
+setoption("cache_mem", "%s")
+setoptionparameter("cache_dir", 3, "%s")
+print
+}'
