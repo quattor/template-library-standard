@@ -43,10 +43,10 @@ required = no
 }
 variable PAKITI_SERVER_FEED_URL ?= "/feed/";
 variable PAKITI_SERVER_FEED_URL = {
-    if ( !match(SELF,'^/') ) {
+    if ( !match(SELF, '^/') ) {
         error('PAKITI_SERVER_FEED_URL must start with a /');
     };
-    if ( !match(SELF,'/$') ) {
+    if ( !match(SELF, '/$') ) {
         SELF + '/';
     } else {
         SELF;
@@ -54,21 +54,11 @@ variable PAKITI_SERVER_FEED_URL = {
 };
 
 
-include { 'security/cas' };
-include { 'features/fetch-crl/config' };
+include 'security/cas';
+include 'features/fetch-crl/config';
 
 include { if ( PAKITI_SERVER == FULL_HOSTNAME ) {
     'features/pakiti/server';
 }};
 
-variable PAKITI_CLIENT_V3 ?= false;
-
-include    {
-    if(PAKITI_CLIENT_V3){
-        'features/pakiti/client/configv3';
-    } else {
-        'features/pakiti/client/config';
-    };
-};
-# Pakiti updates if using SPMA
-include { if ( PACKAGE_MANAGER == 'spma' ) 'features/pakiti/updates' };
+include 'features/pakiti/client/config';

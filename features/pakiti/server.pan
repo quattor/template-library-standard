@@ -7,7 +7,7 @@ default = grid site name if defined, else server domain name
 required = no
 }
 variable PAKITI_TITLE ?= if ( is_defined(SITE_NAME) ) {
-    format("%s Pakiti instance",SITE_NAME);
+    format("%s Pakiti instance", SITE_NAME);
 } else {
     # domain_from_object() requires a valid default domain,
     # even if useless...
@@ -62,8 +62,8 @@ variable PAKITI_DOCROOT ?= '/var/lib/pakiti2/www';
 variable PAKITI_USERS_FILE ?= '/var/lib/pakiti/users';
 
 
-include { if_exists('config/pakiti/server/config') };
-include { "components/filecopy/config" };
+include if_exists('config/pakiti/server/config');
+include "components/filecopy/config";
 
 # Specific authentification part
 variable CONFIG_AUTH = "";
@@ -72,7 +72,8 @@ variable CONFIG_AUTH = CONFIG_AUTH + "SSLVerifyClient      require\n";
 variable CONFIG_AUTH = CONFIG_AUTH + "SSLVerifyDepth       5\n";
 variable CONFIG_AUTH = CONFIG_AUTH + "SSLCACertificatePath " + PAKITI_CA_PATH + "\n";
 variable CONFIG_AUTH = CONFIG_AUTH + "SSLOptions           +FakeBasicAuth\n";
-variable CONFIG_AUTH = CONFIG_AUTH + "AuthName             " + '"' + "Pakiti: YOUR CERTIFICATE MUST BE REGISTERED" + '"' + "\n";
+variable CONFIG_AUTH = CONFIG_AUTH +
+                        "AuthName             " + '"' + "Pakiti: YOUR CERTIFICATE MUST BE REGISTERED" + '"' + "\n";
 variable CONFIG_AUTH = CONFIG_AUTH + "AuthType             Basic\n";
 variable CONFIG_AUTH = CONFIG_AUTH + "require              valid-user\n";
 variable CONFIG_AUTH = CONFIG_AUTH + "SSLUserName SSL_CLIENT_S_DN\n";
@@ -90,7 +91,7 @@ variable CONFIG = if ( PAKITI_SERVER_PORT != 443 ) {
     "";
 };
 
-variable CONFIG = CONFIG + format("<VirtualHost %s:%d>\n",PAKITI_VIRTUAL_HOST,PAKITI_SERVER_PORT);
+variable CONFIG = CONFIG + format("<VirtualHost %s:%d>\n", PAKITI_VIRTUAL_HOST, PAKITI_SERVER_PORT);
 variable CONFIG = CONFIG + <<EOF;
 SSLEngine on
 SSLCipherSuite ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP
@@ -149,32 +150,33 @@ variable CONFIG = CONFIG + <<EOF;
 EOF
 
 "/software/components/filecopy/services" =
-npush(escape("/etc/httpd/conf.quattor/pakiti.conf"),
-    nlist("config",CONFIG,
-        "perms","0644",'restart', 'service httpd restart')
+    npush(escape("/etc/httpd/conf.quattor/pakiti.conf"),
+        dict("config", CONFIG,
+            "perms", "0644",
+            'restart', 'service httpd restart')
 );
 
 variable CONFIG = {
     contents = "";
-    ok = first(PAKITI_USERS,key,value);
+    ok = first(PAKITI_USERS, key, value);
     while(ok) {
         contents = contents + value + ":xxj31ZMTZzkVA\n";
-        ok = next(PAKITI_USERS,key,value);
+        ok = next(PAKITI_USERS, key, value);
     };
     contents;
 };
 "/software/components/filecopy/services" =
 npush(escape(PAKITI_USERS_FILE),
-    nlist("config",CONFIG,
-        "perms","0644")
+    dict("config", CONFIG,
+        "perms", "0644")
 );
 
-include { 'components/symlink/config' };
+include 'components/symlink/config';
 
 "/software/components/symlink/links" =
-push(nlist( "name", "/etc/httpd/conf.d/pakiti.conf",
-    "target","/etc/httpd/conf.quattor/pakiti.conf",
-    "replace",  nlist("all","yes","link", "yes")
+push(dict("name", "/etc/httpd/conf.d/pakiti.conf",
+            "target", "/etc/httpd/conf.quattor/pakiti.conf",
+            "replace", dict("all", "yes", "link", "yes")
     )
 );
 
@@ -204,21 +206,19 @@ variable CONFIG = CONFIG + "url = https://" + FULL_HOSTNAME + "\n"
 
 "/software/components/filecopy/services" =
 npush(escape("/etc/pakiti2/pakiti2-server.conf"),
-    nlist("config",CONFIG,
-        "owner","apache",
-        "perms","0600"));
+    dict("config", CONFIG,
+        "owner", "apache",
+        "perms", "0600"));
 
-include { 'components/chkconfig/config' };
+include 'components/chkconfig/config';
 "/software/components/chkconfig/service/pakiti2/on" = "";
 "/software/components/chkconfig/service/pakiti2/startstop" = true;
 
 #fix permissions of init script (otherwise, no OVAL update will be done)!
-include { 'components/dirperm/config' };
+include 'components/dirperm/config';
 "/software/components/dirperm/paths" =
-push(nlist(
-    "path", "/etc/init.d/pakiti2",
-    "owner", "root:root",
-    "perm", "0775",
-    "type", "f"
-    )
-);
+    push(dict("path", "/etc/init.d/pakiti2",
+            "owner", "root:root",
+            "perm", "0775",
+            "type", "f"
+            ));
