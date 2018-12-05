@@ -107,25 +107,18 @@ include 'components/chkconfig/config';
 
 
 #
-# Configure autofs component, if already included
+# Configure autofs component
 #
 include 'components/autofs/config';
-'/software/components' = {
-    if (exists('/software/components/autofs/maps')) {
-        autofs = SELF['autofs'];
-        if(!is_defined(autofs['maps']['cvmfs'])) {
-            autofs['maps']['cvmfs'] = dict(
-                'enabled', true,
-                'preserve', true,
-                'mapname', '/etc/auto.cvmfs',
-                'type', 'program',
-                'mountpoint', '/cvmfs',
-            );
-        };
-        SELF['autofs'] = autofs;
-    };
-    SELF;
-};
+prefix '/software/components/autofs/maps';
+# Do not overwrite an existing cvmfs map definition
+'cvmfs' ?= dict(
+    'enabled', true,
+    'preserve', true,
+    'mapname', '/etc/auto.cvmfs',
+    'type', 'program',
+    'mountpoint', '/cvmfs',
+);
 
 
 #
