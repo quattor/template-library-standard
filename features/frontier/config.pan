@@ -26,7 +26,7 @@ variable FRONTIER_HOST_MONITOR_STRING ?= {
 };
 
 include 'components/filecopy/config';
-'/software/components/filecopy/services/{/etc/squid/customize.sh}' = dict(
+'/software/components/filecopy/services/{/etc/squid/customized.sh}' = dict(
     'config', format(
         file_contents('features/frontier/customized.sh.file'),
         FRONTIER_LOCAL_NET_STRING,
