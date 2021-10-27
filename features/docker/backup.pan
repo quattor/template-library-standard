@@ -22,9 +22,11 @@ variable DOCKER_BACKUP_COMMAND ?= format("/usr/sbin/backup_docker_data -dir %s %
 
 variable DOCKER_BACKUP_FREQUENCY ?= "30 11 * * *";
 
+variable DOCKER_BACKUP_SCRIPT ?= 'features/docker/backup_docker_data';
+
 include 'components/filecopy/config';
 '/software/components/filecopy/services/{/usr/sbin/backup_docker_data}' = dict(
-                            "config", file_contents('features/docker/backup_docker_data'),
+                            "config", file_contents(DOCKER_BACKUP_SCRIPT),
                             "owner", "root",
                             "perms", "0755",
                             );

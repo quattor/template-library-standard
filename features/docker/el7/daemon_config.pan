@@ -15,7 +15,11 @@ variable DOCKER_DAEMON_CFG_CONTENT ?= {
         } else {
             sep = "\n";
         };
-        txt = txt + format('"%s": "%s"%s', name, value, sep);
+        if(is_string(value)){
+            txt = txt + format('"%s": "%s"%s', name, value, sep);
+        }else{
+            txt = txt + format('"%s": %s%s', name, value, sep);
+        };
         i = i + 1;
     };
     txt = txt + "}\n";
