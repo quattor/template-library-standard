@@ -12,6 +12,12 @@ variable SITE_DEF_HOST_CERT ?= SITE_DEF_GRIDSEC_ROOT + "/hostcert.pem";
 variable SITE_DEF_HOST_KEY ?= SITE_DEF_GRIDSEC_ROOT + "/hostkey.pem";
 variable SITE_DEF_CERTDIR ?= SITE_DEF_GRIDSEC_ROOT + "/certificates";
 
+variable FETCH_CRL_SERVICE = if ( OS_VERSION_PARAMS['majorversion'] >= '8' ) {
+    'fetch-crl';
+} else {
+    'fetch-crl-boot';
+};
+
 # Include RPMs
 include 'features/fetch-crl/rpms';
 
@@ -30,7 +36,7 @@ variable CHECK_VERSION = if ( !exists('/software/components/metaconfig/version')
     error('fetch-crl configuration requires ncm-metaconfig version >= 16.6.0');
 };
 'backup' = '.old';
-'daemons' =  dict('fetch-crl-boot', 'restart');
+'daemons' =  dict(FETCH_CRL_SERVICE, 'restart');
 'module' = 'tiny';
 'contents' = {
     SELF["CRLDIR"] = SITE_DEF_CERTDIR;
