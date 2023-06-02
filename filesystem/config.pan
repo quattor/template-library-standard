@@ -33,9 +33,8 @@ variable FILESYSTEM_LAYOUT_CONFIG_INIT ?= if ( is_defined(FILESYSTEM_LAYOUT_CONF
 #    variable DISK_VOLUME_PARAMS = filesystem_layout_mod(volume_dict);
 # where 'volume_dict' has the same format as DISK_VOLUME_PARAMS.
 function filesystem_layout_mod = {
-  function_name = 'filesystem_layout_mod';
   if ( (ARGC != 1) || !is_dict(ARGV[0]) ) {
-    error(function_name+': one argument required, must be a dict');
+    error(format('%s: one argument required, must be a dict', FUNCTION));
   };
 
   foreach (volume;params;ARGV[0]) {
@@ -50,6 +49,20 @@ function filesystem_layout_mod = {
   SELF;
 };
 
+# Helper function for calculating partiton names. Takes an escaped disk name
+# and partition index, and returns the escaped partition name
+function disk_part_name = {
+    disk = ARGV[0];
+    part_num = ARGV[1];
+
+    if (exists("/hardware/harddisks/" + disk + "/part_prefix")) {
+        part_prefix = value("/hardware/harddisks/" + disk + "/part_prefix");
+    } else {
+        part_prefix = "";
+    };
+
+    escape(unescape(disk) + part_prefix + to_string(part_num));
+};
 
 # Include site configuration initialization if any
 include FILESYSTEM_LAYOUT_CONFIG_INIT;
@@ -70,7 +83,7 @@ variable DISK_BOOT_DEV ?= {
     return("hda");
   } else if (exists("/hardware/harddisks/xvda")) {
     return("xvda");
-  } else if (exists("/hardware/harddisks/cciss/c0d0")) {
+  } else if (exists("/hardware/harddisks/{cciss/c0d0}")) {
     return(escape("cciss/c0d0"));
   } else if (exists("/hardware/harddisks/vda")) {
     return("vda");
@@ -327,12 +340,12 @@ variable DISK_VOLUME_PARAMS ?= {
   SELF[DISK_BIOSBOOT_PART_NAME] = dict('size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
                                        'type', 'partition',
                                        'flags', DISK_BIOSBOOT_PART_FLAGS,
-                                       'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('biosboot',DISK_BOOT_PARTS)+1));
+                                       'device', disk_part_name(DISK_BOOT_DEV, index('biosgrub',DISK_BOOT_PARTS) + 1));
   SELF['boot'] = dict('size', DISK_BOOT_BLOCKDEV_SIZE,
                       'mountpoint', '/boot',
                       'fstype', 'ext2',
                       'type', 'partition',
-                      'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('boot',DISK_BOOT_PARTS)+1));
+                      'device', disk_part_name(DISK_BOOT_DEV, index('boot',DISK_BOOT_PARTS) + 1));
   SELF['home'] = dict('size', DISK_HOME_BLOCKDEV_SIZE,
                       'mountpoint', '/home',
                       'type', 'lvm',
@@ -346,12 +359,12 @@ variable DISK_VOLUME_PARAMS ?= {
   SELF['root'] = dict('size', DISK_ROOT_BLOCKDEV_SIZE,
                       'mountpoint', '/',
                       'type', 'partition',
-                      'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('root',DISK_BOOT_PARTS)+1));
+                      'device', disk_part_name(DISK_BOOT_DEV, index('root',DISK_BOOT_PARTS) + 1));
   SELF['swap'] = dict('size', DISK_SWAP_SIZE,
                       'mountpoint', 'swap',
                       'fstype', 'swap',
                       'type', 'partition',
-                      'device', DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('swap',DISK_BOOT_PARTS)+1));
+                      'device', disk_part_name(DISK_BOOT_DEV, index('swap',DISK_BOOT_PARTS) + 1));
   SELF['swareas'] = dict('size', DISK_SWAREAS_BLOCKDEV_SIZE,
                          'mountpoint', '/swareas',
                          'type', 'lvm',
@@ -374,7 +387,7 @@ variable DISK_VOLUME_PARAMS ?= {
                      'device', 'varvol');
   SELF[DISK_VG01_VOLGROUP_NAME] = dict('size', DISK_VG01_BLOCKDEV_SIZE,
                                        'type', 'vg',
-                                       'devices', list(DISK_BOOT_DEV+DISK_BOOT_PART_PREFIX+to_string(index('lvm',DISK_BOOT_PARTS)+1)));
+                                       'devices', list(disk_part_name(DISK_BOOT_DEV, index('lvm',DISK_BOOT_PARTS) + 1)));
   SELF;
 };
 
@@ -410,6 +423,13 @@ default = true
 required = no
 }
 variable FILESYSTEM_DEFAULT_PRESERVE ?= true;
+@{
+desc =  define the default mount options for all file systems
+values = string
+default = null
+required = no
+}
+variable FILESYSTEM_DEFAULT_MOUNTOPTS ?= null;
 
 @{
 desc = define the default label for physical devices
@@ -447,8 +467,8 @@ variable DISK_VOLUME_PARAMS = {
   #   - Legacy BIOS: bios boot partition required if GPT is ued and OS version >= EL7
   #   - UEFI BIOS: GPT label and bios boot partition required
   define_biosboot_size = false;
-  if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
-    label = PHYSICAL_DEVICE_LABEL[phys_dev];
+  if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[DISK_BOOT_DEV])) {
+    label = PHYSICAL_DEVICE_LABEL[DISK_BOOT_DEV];
   } else {
     label = PHYSICAL_DEVICE_DEFAULT_LABEL;
   };
@@ -478,10 +498,10 @@ variable DISK_VOLUME_PARAMS = {
       if ( SELF[DISK_BIOSBOOT_PART_NAME]['size'] == 0 ) {
         SELF[DISK_BIOSBOOT_PART_NAME]['size'] = DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT;
       } else {
-        debug(format("%s: '%s' partition size already defined, default value not applied", OBJECT, DISK_BIOSBOOT_PART_NAME));
+        debug(format("'%s' partition size already defined, default value not applied", DISK_BIOSBOOT_PART_NAME));
       };
     } else {
-      debug(format("%s: '%s' partition doesn't exist in DISK_VOLUME_PARAMS, size not defined", OBJECT, DISK_BIOSBOOT_PART_NAME));
+      debug(format("'%s' partition doesn't exist in DISK_VOLUME_PARAMS, size not defined", DISK_BIOSBOOT_PART_NAME));
     };
   };
   if ( DISK_BIOS_TYPE_UEFI ) {
@@ -627,13 +647,29 @@ variable DISK_PART_BY_DEV = {
         if ( !exists(params['device'])  ) {
           error("No physical device for partition '"+params['device']+"'");
         };
-        # FIXME: partition prefix should be configurable per disk
-        disk_part_prefix = DISK_BOOT_PART_PREFIX;
-        toks = matches(params['device'], '^(.*?)'+disk_part_prefix+'(\d+)$');
-        if ( length(toks) != 3 ) {
-          error('Invalid device name pattern ('+params['device']+')');
-        } else {
-          phys_dev = toks[1];
+        phys_dev = null;
+        part_num = null;
+        part_prefix = null;
+        foreach (key; info; value("/hardware/harddisks")) {
+            if ( exists(info["part_prefix"]) ) {
+                pprefix = info["part_prefix"];
+            } else {
+                pprefix = "";
+            };
+            # Example disk name to regex conversions:
+            # 'sda' -> '^(sda)(\d+)$'
+            # escape('cciss/c0d0') -> '(cciss/c0d0)p(\d+)$'
+            # 'nvme0n1' -> '(nvme0n1)p(\d+)$'
+            toks = matches(unescape(params['device']), '^(' + unescape(key) + ")" + pprefix + '(\d+)$');
+            if ( length(toks) == 3 ) {
+                phys_dev = key;
+                part_num = to_long(toks[2]);
+                part_prefix = pprefix;
+            };
+        };
+        if (!is_defined(phys_dev)) {
+            error(format('Device %s does not match any entries under /hardware/harddisks',
+                         params['device']));
         };
         if ( !exists(SELF['partitions'][phys_dev]) ) {
           # Build 2 separate dict, part_list and part_num, the key being the partition name in each
@@ -642,12 +678,11 @@ variable DISK_PART_BY_DEV = {
           # part_num is a transient dict used internally to do the partition final numbering.
           SELF['partitions'][phys_dev] = dict('part_list', dict(),
                                               'part_num', dict(),
-                                              'part_prefix', disk_part_prefix,
+                                              'part_prefix', part_prefix,
                                               'extended', undef,
                                               'last_primary', 0,
                                              );
         };
-        part_num = to_long(toks[2]);
         if ( is_defined(params['size']) ) {
           SELF['partitions'][phys_dev]['part_list'][params['device']]['size'] = params['size'];
         } else {
@@ -671,7 +706,7 @@ variable DISK_PART_BY_DEV = {
     };
   };
 
-  debug(format('%s: devices defined before partition renumbering = %s', OBJECT, to_string(SELF['partitions'])));
+  debug(format('devices defined before partition renumbering = %s', to_string(SELF['partitions'])));
 
   # Process SELF['partitions'] and ensure that for each device, partition numbers are consecutive but keeping
   # logical partitions >=5. Renumbering cannot be used only based on the alphabetical order of partitions as
@@ -818,8 +853,8 @@ variable DISK_PART_BY_DEV = {
     SELF['partitions'][phys_dev]['part_list'] = new_part_list;
   };
 
-  debug(format('%s: renumbered partitions = %s', OBJECT, to_string(SELF['changed_part_num'])));
-  debug(format('%s: devices defined after partition renumbering = %s', OBJECT, to_string(SELF['partitions'])));
+  debug(format('renumbered partitions = %s', to_string(SELF['changed_part_num'])));
+  debug(format('devices defined after partition renumbering = %s', to_string(SELF['partitions'])));
 
   SELF;
 };
@@ -834,8 +869,8 @@ variable DISK_VOLUME_PARAMS = {
   foreach (volume;params;SELF) {
     if ( (params['type'] == 'partition') &&
          is_defined(DISK_PART_BY_DEV['changed_part_num'][params['device']]) ) {
-      debug(format('%s: updating %s device to new partition name/number: %s',
-                              OBJECT, volume, DISK_PART_BY_DEV['changed_part_num'][params['device']]));
+      debug(format('updating %s device to new partition name/number: %s',
+                   volume, DISK_PART_BY_DEV['changed_part_num'][params['device']]));
       params['device'] = DISK_PART_BY_DEV['changed_part_num'][params['device']];
       params['final'] = true;
     } else if ( match(params['type'],'md|vg') ) {
@@ -844,15 +879,15 @@ variable DISK_VOLUME_PARAMS = {
       foreach(i;dev;params['devices']) {
         if ( !is_defined(DISK_VOLUME_PARAMS[dev]) &&
              is_defined(DISK_PART_BY_DEV['changed_part_num'][dev]) ) {
-          debug(format('%s: updating %s device %s to new partition name/number: %s',
-                              OBJECT, volume, dev, DISK_PART_BY_DEV['changed_part_num'][dev]));
+          debug(format('updating %s device %s to new partition name/number: %s',
+                       volume, dev, DISK_PART_BY_DEV['changed_part_num'][dev]));
           dev_list[length(dev_list)] = DISK_PART_BY_DEV['changed_part_num'][dev];
           dev_list_updated = true;
         } else {
           dev_list[length(dev_list)] = dev;
         };
       };
-      if ( dev_list_updated ) debug(format('%s: %s new device list = %s', OBJECT, volume, to_string(dev_list)));
+      if ( dev_list_updated ) debug(format('%s new device list = %s', volume, to_string(dev_list)));
       params['devices'] = dev_list;
     };
   };
@@ -1066,12 +1101,24 @@ variable DISK_LV_BY_VG = {
         } else {
           preserve = FILESYSTEM_DEFAULT_PRESERVE;
         };
+        if ( exists(params['mountopts']) ) {
+          mountopts = params['mountopts'];
+        } else {
+          mountopts = FILESYSTEM_DEFAULT_MOUNTOPTS;
+        };
         fs_params = dict ("block_device", block_device,
                           "mountpoint", params['mountpoint'],
                           "format", format,
                           "mount", true,
                           "preserve", preserve,
-                          "type", fs_type);
+                          "type", fs_type,
+                          "mountopts", mountopts);
+        # Copy the optional parameters if present
+        foreach (i; name; list("freq", "pass", "mkfsopts", "tuneopts", "label", "quota")) {
+          if (exists(params[name])) {
+            fs_params[name] = params[name];
+          };
+        };
         filesystem_mod(fs_params);
       };
     };
