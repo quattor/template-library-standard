@@ -5,10 +5,11 @@ unique template os/network/config;
 
 variable OS_NETWORK_CONFIG_SITE ?= null;
 
-include { 'components/network/config' };
-include { 'quattor/functions/network' };
+include 'components/network/config';
+include 'quattor/functions/network';
 
 "/system/network/hostname" ?= HOSTNAME;
+"/system/network/realhostname" ?= if ( is_defined(REAL_HOSTNAME) ) REAL_HOSTNAME else null;
 "/system/network/domainname" ?= DOMAIN;
 "/system/network/nameserver" ?= NAMESERVERS;
 
@@ -18,5 +19,13 @@ variable NETWORK_DEFAULT_GATEWAY ?= null;
 
 '/system/network/interfaces' ?= copy_network_params(NETWORK_PARAMS);
 
-variable DEBUG = debug(OBJECT+' : OS_NETWORK_CONFIG_SITE='+to_string(OS_NETWORK_CONFIG_SITE));
-include { OS_NETWORK_CONFIG_SITE };
+
+# Disable management of resolv.conf by NetworkManager (EL8+)
+include if (
+    (OS_VERSION_PARAMS['family'] == 'el') && (OS_VERSION_PARAMS['majorversion'] >= "8")
+) 'os/network/network_manager';
+
+
+# Ste-specific configuration, if any
+variable DEBUG = debug('OS_NETWORK_CONFIG_SITE=%s', to_string(OS_NETWORK_CONFIG_SITE));
+include OS_NETWORK_CONFIG_SITE;
