@@ -1,4 +1,4 @@
-unique template features/docker/el7/daemon_config;
+unique template features/docker/el8/daemon_config;
 
 @{
 descr = daemon.json content
