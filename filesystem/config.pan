@@ -34,7 +34,7 @@ variable FILESYSTEM_LAYOUT_CONFIG_INIT ?= if ( is_defined(FILESYSTEM_LAYOUT_CONF
 # where 'volume_dict' has the same format as DISK_VOLUME_PARAMS.
 function filesystem_layout_mod = {
     if ( (ARGC != 1) || !is_dict(ARGV[0]) ) {
-        error(format('%s: one argument required, must be a dict', FUNCTION));
+        error('%s: one argument required, must be a dict', FUNCTION);
     };
 
     foreach (volume; params; ARGV[0]) {
@@ -484,7 +484,7 @@ variable PHYSICAL_DEVICE_LABEL ?= null;
 # partitions with the appropriate size defined.
 variable DISK_VOLUME_PARAMS = {
     volumes = dict();
-    debug('Initial list of file systems: '+to_string(SELF));
+    debug('Initial list of file systems: %s', SELF);
 
     # Configure GPT legcay BIOS/UEFI boot partition if needed
     #   - Legacy BIOS: bios boot partition required if GPT is ued and OS version >= EL7
@@ -500,7 +500,7 @@ variable DISK_VOLUME_PARAMS = {
         if ( label == 'gpt') {
             define_biosboot_size = true;
         } else {
-            error(format('UEFI BIOS requires a GPT label insted of %s',label));
+            error('UEFI BIOS requires a GPT label insted of %s', label);
         };
     };
     if ( is_defined(DISK_BOOT_ADD_BIOSBOOT_PART) ) {
@@ -521,10 +521,10 @@ variable DISK_VOLUME_PARAMS = {
             if ( SELF[DISK_BIOSBOOT_PART_NAME]['size'] == 0 ) {
                 SELF[DISK_BIOSBOOT_PART_NAME]['size'] = DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT;
             } else {
-                debug(format("'%s' partition size already defined, default value not applied", DISK_BIOSBOOT_PART_NAME));
+                debug("'%s' partition size already defined, default value not applied", DISK_BIOSBOOT_PART_NAME);
             };
         } else {
-            debug(format("'%s' partition doesn't exist in DISK_VOLUME_PARAMS, size not defined", DISK_BIOSBOOT_PART_NAME));
+            debug("'%s' partition doesn't exist in DISK_VOLUME_PARAMS, size not defined", DISK_BIOSBOOT_PART_NAME);
         };
     };
     if ( DISK_BIOS_TYPE_UEFI ) {
@@ -532,7 +532,7 @@ variable DISK_VOLUME_PARAMS = {
             SELF[DISK_BIOSBOOT_PART_NAME]['fstype'] = DISK_UEFI_BIOSBOOT_FSTYPE;
             SELF[DISK_BIOSBOOT_PART_NAME]['mountpoint'] = DISK_UEFI_BIOSBOOT_MOUNTPOINT;
         } else {
-            error(format('UEFI BIOS requires a GPT label insted of %s',label));
+            error('UEFI BIOS requires a GPT label insted of %s', label);
         };
     };
 
@@ -546,10 +546,12 @@ variable DISK_VOLUME_PARAMS = {
                     # raid1 is used and size is defined for the MD device.
                     foreach (i; device; params['devices']) {
                         if ( !is_defined(SELF[device]) && exists(params['raid_level']) && (params['raid_level'] == 1) ) {
-                            volumes[device] = dict('device', device,
+                            volumes[device] = dict(
+                                'device', device,
                                 'type', 'partition',
-                            'size', params['size']);
-                            debug('Entry added for partition '+device+' used by '+volume+' (size='+to_string(params['size'])+'MB)');
+                                'size', params['size'],
+                            );
+                            debug('Entry added for partition %s used by %s (size=%sMB)', device, volume, params['size']);
                         };
                     };
                 } else {
@@ -557,17 +559,17 @@ variable DISK_VOLUME_PARAMS = {
                         if ( exists(SELF[device]['size']) && (SELF[device]['size'] != 0) ) {
                             md_dev_list[length(md_dev_list)] = device;
                         } else {
-                            debug('Device '+device+' removed from '+volume+' partition list');
+                            debug('Device %s removed from %s partition list', device, volume);
                         };
                     };
                     if ( length(md_dev_list) == 0 ) {
                         # Mark md device for deletion by defining its size to 0
-                        debug('MD device '+volume+' has no partition left. Marking for deletion');
+                        debug('MD device %s has no partition left. Marking for deletion', volume);
                         params['size'] = 0;
                     };
                 };
             } else {
-                error("MD device "+volume+": property 'devices' missing or not a list");
+                error("MD device %s: property 'devices' missing or not a list", volume);
             };
         };
     };
@@ -580,14 +582,14 @@ variable DISK_VOLUME_PARAMS = {
                 if ( exists(params['device']) ) {
                     if ( is_defined(SELF[params['device']]) ) {
                         if ( is_defined(SELF[params['device']]['size']) && (SELF[params['device']]['size'] == 0) ) {
-                            debug('Device '+params['device']+' used by file system '+volume+' has a zero size. Marking file system for deletion');
+                            debug('Device %s used by file system %s has a zero size. Marking file system for deletion', params['device'], volume);
                             params['size'] = 0;
                         }
                     } else if ( !is_defined(params['size']) ) {
-                        error("Filesystem "+volume+": size not specified but device "+params['device']+" has no explicitly entry");
+                        error("Filesystem %s: size not specified but device %s has no explicitly entry", params['device']);
                     };
                 } else {
-                    error("Filesystem "+volume+": 'device' property missing");
+                    error("Filesystem %s: 'device' property missing", volume);
                 };
             };
         };
@@ -597,14 +599,14 @@ variable DISK_VOLUME_PARAMS = {
     foreach (volume; params; SELF) {
         if ( !exists(params['size']) || (params['size'] != 0) ) {
             if ( !exists(params['type']) ) {
-                error('Type undefined for volume '+volume);
+                error('Type undefined for volume %s', volume);
             };
             volumes[volume] = SELF[volume];
         } else {
-            debug('Removing volume '+volume+' (size=0)');
+            debug('Removing volume %s (size=0)', volume);
         };
     };
-    debug('New list of file systems: '+to_string(volumes));
+    debug('New list of file systems: %s', volumes);
     volumes;
 };
 
@@ -616,7 +618,7 @@ variable DISK_DEVICE_LIST = {
         if ( is_defined(DISK_VOLUME_PARAMS[volume]) ) {
             volume_order[length(volume_order)] = volume;
         } else {
-            debug('Removing '+volume+' from DISK_DEVICE_LIST (not used in configuration');
+            debug('Removing %s from DISK_DEVICE_LIST (not used in configuration', volume);
         };
     };
     foreach (volume; params; DISK_VOLUME_PARAMS) {
@@ -624,7 +626,7 @@ variable DISK_DEVICE_LIST = {
             volume_order[length(volume_order)] = volume;
         };
     };
-    debug('Volume processing order='+to_string(volume_order));
+    debug('Volume processing order=%s', volume_order);
     volume_order;
 };
 
@@ -649,7 +651,7 @@ variable DISK_PART_BY_DEV = {
             if ( exists(DISK_VOLUME_PARAMS[dev_name]['devices']) ) {
                 devices = DISK_VOLUME_PARAMS[dev_name]['devices'];
             } else {
-                error('Missing physical device list for device '+dev_name);
+                error('Missing physical device list for device %s', dev_name);
             };
         } else {
             devices = list(dev_name);
@@ -661,14 +663,14 @@ variable DISK_PART_BY_DEV = {
             if ( exists(DISK_VOLUME_PARAMS[device]) ) {
                 params = DISK_VOLUME_PARAMS[device];
             } else {
-                debug('Adding an entry to DISK_PART_BY_DEV for partition '+device+' used by '+dev_name);
+                debug('Adding an entry to DISK_PART_BY_DEV for partition %s used by %s', device, dev_name);
                 params = dict('device', device,
                     'type', 'partition',
                 'size', -1);
             };
             if ( params['type'] == 'partition' ) {
                 if ( !exists(params['device'])  ) {
-                    error("No physical device for partition '"+params['device']+"'");
+                    error("No physical device for partition '%s'", params['device']);
                 };
                 phys_dev = null;
                 part_num = null;
@@ -691,8 +693,7 @@ variable DISK_PART_BY_DEV = {
                     };
                 };
                 if (!is_defined(phys_dev)) {
-                    error(format('Device %s does not match any entries under /hardware/harddisks',
-                    params['device']));
+                    error('Device %s does not match any entries under /hardware/harddisks', params['device']);
                 };
                 if ( !exists(SELF['partitions'][phys_dev]) ) {
                     # Build 2 separate dict, part_list and part_num, the key being the partition name in each
@@ -719,8 +720,13 @@ variable DISK_PART_BY_DEV = {
                 SELF['partitions'][phys_dev]['part_num'][params['device']] = part_num;
                 if ( is_defined(params['subtype']) && (params['subtype'] == 'extended') ) {
                     if ( is_defined(SELF['partitions'][phys_dev]['extended']) ) {
-                        error('Extended partition already defined for '+volume+' (number='+SELF['partitions'][phys_dev]['extended']+
-                        '). Impossible to add a new one (number='+to_string(part_num)+')');
+                        error(
+                            'Extended partition already defined for %s (number=%s). Impossible to add a new one (number=%s)',
+                            volume,
+                            SELF['partitions'][phys_dev]['extended'],
+                            part_num,
+                            part_num,
+                        );
                     } else {
                         SELF['partitions'][phys_dev]['extended'] = part_num;
                     };
@@ -729,7 +735,7 @@ variable DISK_PART_BY_DEV = {
         };
     };
 
-    debug(format('devices defined before partition renumbering = %s', to_string(SELF['partitions'])));
+    debug('devices defined before partition renumbering = %s', SELF['partitions']);
 
     # Process SELF['partitions'] and ensure that for each device, partition numbers are consecutive but keeping
     # logical partitions >=5. Renumbering cannot be used only based on the alphabetical order of partitions as
@@ -776,7 +782,7 @@ variable DISK_PART_BY_DEV = {
             # An extended partition is treated as a primary one at this point.
             if ( (part_num <= 4)  || (label == "gpt") ) {
                 if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] == -1 ) {
-                    debug('Primary/extended partition '+partition+' has no size defined. Postponing allocation of a partition number.');
+                    debug('Primary/extended partition %s has no size defined. Postponing allocation of a partition number.', partition);
                     primary_no_size[length(primary_no_size)] = part_num;
                 } else{
                     last_primary = new_part_num;
@@ -789,7 +795,7 @@ variable DISK_PART_BY_DEV = {
                     new_part_num = 5;
                 };
                 if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] == -1 ) {
-                    debug('Logical partition '+partition+' has no size defined. Postponing allocation of a partition number.');
+                    debug('Logical partition %s has no size defined. Postponing allocation of a partition number.', partition);
                     logical_no_size[length(logical_no_size)] = part_num;
                 };
             };
@@ -799,8 +805,8 @@ variable DISK_PART_BY_DEV = {
                 if ( part_num == new_part_num ) {
                     new_part_name = partition;
                 } else {
-                    new_part_name = replace(to_string(part_num)+'$',to_string(new_part_num),partition);
-                    debug('Renaming partition '+partition+' into '+new_part_name);
+                    new_part_name = replace(to_string(part_num) + '$', to_string(new_part_num), partition);
+                    debug('Renaming partition %s into %s', partition, new_part_name);
                     SELF['changed_part_num'][partition] = new_part_name;
                 };
                 new_part_list[new_part_name] = SELF['partitions'][phys_dev]['part_list'][partition];
@@ -816,13 +822,13 @@ variable DISK_PART_BY_DEV = {
         # new_part_num-1).
         if ( (new_part_num > 5) && !is_defined(SELF['partitions'][phys_dev]['extended']) && (label != 'gpt') ) {
             if ( last_primary == 0 ) {
-                debug('No primary partition defined for '+phys_dev);
+                debug('No primary partition defined for %s', phys_dev);
             };
             if ( last_primary == 4 ) {
-                error('Need to create an extended partition on '+phys_dev+' but fourth partition already used and not defined as extended');
+                error('Need to create an extended partition on %s but fourth partition already used and not defined as extended', phys_dev);
             } else {
-                partition = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(last_primary+1);
-                debug('Creating '+partition+' as an extended partition using unused part of '+phys_dev);
+                partition = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(last_primary + 1);
+                debug('Creating %s as an extended partition using unused part of %s', partition, phys_dev);
                 new_part_list[partition]['size'] = -1;
                 last_primary = last_primary + 1;
                 SELF['partitions'][phys_dev]['extended'] = last_primary;
@@ -845,17 +851,26 @@ variable DISK_PART_BY_DEV = {
                         } else {
                             extended_msg='';
                         };
-                        error(to_string(length(no_size_list))+' primary '+to_string(no_size_list)+' '+extended_msg+
-                        ' partitions found on '+phys_dev+' without an explicit size defined');
+                        error(
+                            '%d primary %s %s partitions found on %s without an explicit size defined',
+                            length(no_size_list),
+                            no_size_list,
+                            extended_msg,
+                            phys_dev,
+                        );
                     };
                     if ( (last_primary >= 4) && (label != 'gpt') ) {
-                        error('Cannot add partition (formerly) '+old_part_name+': 4 primary partitions already defined');
+                        error('Cannot add partition (formerly) %s: 4 primary partitions already defined', old_part_name);
                     };
                     no_size_part_num = last_primary + 1;
                 } else {                           # Logical partitions
                     if ( length(no_size_list) > 1 ) {
-                        error(to_string(length(no_size_list))+' logical partitions '+to_string(no_size_list)+' found on '+phys_dev+
-                        ' without an explicit size defined(');
+                        error(
+                            '%d logical partitions %s found on %s without an explicit size defined',
+                            length(no_size_list),
+                            no_size_list,
+                            phys_dev,
+                        );
                     };
                     if ( new_part_num <= 4 ) {
                         new_part_num = 5;
@@ -864,7 +879,7 @@ variable DISK_PART_BY_DEV = {
                 };
 
                 new_part_name = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(no_size_part_num);
-                debug('Assigning partition name '+new_part_name+' to former '+old_part_name+' (no explicit size)');
+                debug('Assigning partition name %s to former %s (no explicit size)', new_part_name, old_part_name);
                 new_part_list[new_part_name]['size'] = -1;
                 if ( old_part_name != new_part_name ) {
                     SELF['changed_part_num'][old_part_name] = new_part_name;
@@ -876,8 +891,8 @@ variable DISK_PART_BY_DEV = {
         SELF['partitions'][phys_dev]['part_list'] = new_part_list;
     };
 
-    debug(format('renumbered partitions = %s', to_string(SELF['changed_part_num'])));
-    debug(format('devices defined after partition renumbering = %s', to_string(SELF['partitions'])));
+    debug('renumbered partitions = %s', SELF['changed_part_num']);
+    debug('devices defined after partition renumbering = %s', SELF['partitions']);
 
     SELF;
 };
@@ -892,8 +907,11 @@ variable DISK_VOLUME_PARAMS = {
     foreach (volume; params; SELF) {
         if ( (params['type'] == 'partition') &&
             is_defined(DISK_PART_BY_DEV['changed_part_num'][params['device']])) {
-            debug(format('updating %s device to new partition name/number: %s',
-            volume, DISK_PART_BY_DEV['changed_part_num'][params['device']]));
+            debug(
+                'updating %s device to new partition name/number: %s',
+                volume,
+                DISK_PART_BY_DEV['changed_part_num'][params['device']],
+            );
             params['device'] = DISK_PART_BY_DEV['changed_part_num'][params['device']];
             params['final'] = true;
         } else if ( match(params['type'],'md|vg') ) {
@@ -902,15 +920,19 @@ variable DISK_VOLUME_PARAMS = {
             foreach(i; dev; params['devices']) {
                 if ( !is_defined(DISK_VOLUME_PARAMS[dev]) &&
                     is_defined(DISK_PART_BY_DEV['changed_part_num'][dev]) ) {
-                    debug(format('updating %s device %s to new partition name/number: %s',
-                    volume, dev, DISK_PART_BY_DEV['changed_part_num'][dev]));
+                    debug(
+                        'updating %s device %s to new partition name/number: %s',
+                        volume,
+                        dev,
+                        DISK_PART_BY_DEV['changed_part_num'][dev],
+                    );
                     dev_list[length(dev_list)] = DISK_PART_BY_DEV['changed_part_num'][dev];
                     dev_list_updated = true;
                 } else {
                     dev_list[length(dev_list)] = dev;
                 };
             };
-            if ( dev_list_updated ) debug(format('%s new device list = %s', volume, to_string(dev_list)));
+            if ( dev_list_updated ) debug('%s new device list = %s', volume, dev_list);
             params['devices'] = dev_list;
         };
     };
@@ -955,7 +977,7 @@ variable DISK_VOLUME_PARAMS = {
             foreach (j; device; params['devices']) {
                 part_not_found = true;
                 part_name = device;
-                debug('Looking for partition name corresponding to '+device+' used by '+dev_name);
+                debug('Looking for partition name corresponding to %s used by %s', device, dev_name);
                 # Device names listed by MD or VG entries are derefenced using other entries in DISK_VOLUME_PARAMS
                 # until the actual partition to use has been found.
                 # The actual partition entry is identified either by having a 'final' flag defined and
@@ -977,10 +999,13 @@ variable DISK_VOLUME_PARAMS = {
                     };
                 };
                 if ( !is_defined(SELF['partitions'][part_name]) ) {
-                    error('Partition '+part_name+' is used by '+dev_name+
-                    ' but has no entry under /system/blockdevices/partitions');
+                    error(
+                        'Partition %s is used by %s but has no entry under /system/blockdevices/partitions',
+                        part_name,
+                        dev_name,
+                    );
                 };
-                debug('Found: '+part_name);
+                debug('Found: %s', part_name);
                 partitions[length(partitions)] = "partitions/" + part_name;
             };
             if ( params['type'] == 'md') {
@@ -1017,12 +1042,12 @@ variable DISK_LV_BY_VG = {
             params = DISK_VOLUME_PARAMS[device];
 
             if ( !exists(params['device'])  ) {
-                error("Logical volume name undefined for '"+device+"'");
+                error("Logical volume name undefined for '%s'", device);
             };
             if ( exists(params['volgroup'])  ) {
                 vg_name = params['volgroup'];
             } else {
-                error("No volume group defined for logical volume '"+params['device']+"'");
+                error("No volume group defined for logical volume '%s'", params['device']);
             };
             if ( !exists(SELF[vg_name]) ) {
                 SELF[vg_name] = dict();
@@ -1031,7 +1056,7 @@ variable DISK_LV_BY_VG = {
             if ( exists(params['size']) ) {
                 options['size'] = params['size'];
             } else {
-                error('Size has not been specified for logical volume '+params['device']);
+                error('Size has not been specified for logical volume %s', params['device']);
             };
             if ( exists(params['raid_type'] ) ) {
                 options['raid_type'] = params['raid_type'];
@@ -1096,7 +1121,7 @@ variable DISK_LV_BY_VG = {
     foreach (volgroup; logvols; lastgroup) {
         # If an entry exist for a vg, there is at least one entry in it.
         if ( length(logvols) > 1 ) {
-            error('Several logical volumes with an undefined size in volume group '+volgroup+' '+to_string(logvols));
+            error('Several logical volumes with an undefined size in volume group %s %s', volgroup, logvols);
         };
         volumes[volgroup][length(volumes[volgroup])] = logvols[0];
     };
