@@ -1004,11 +1004,16 @@ variable DISK_LV_BY_VG = {
       if ( !exists(SELF[vg_name]) ) {
         SELF[vg_name] = dict();
       };
+      options = dict();
       if ( exists(params['size']) ) {
-        SELF[vg_name][params['device']] = params['size'];
+        options['size'] = params['size'];
       } else {
         error('Size has not been specified for logical volume '+params['device']);
       };
+      if ( exists(params['raid_type'] ) ) {
+        options['raid_type'] = params['raid_type'];
+      };
+      SELF[vg_name][params['device']] = options;
     };
   };
 
@@ -1019,7 +1024,7 @@ variable DISK_LV_BY_VG = {
 "/system/blockdevices/logical_volumes" = {
   if ( is_defined(DISK_LV_BY_VG) ) {
     foreach (vg_name;lv_list;DISK_LV_BY_VG) {
-      lvs_add (vg_name, lv_list);
+      lvo_add (vg_name, lv_list);
     };
     SELF;
   } else {
