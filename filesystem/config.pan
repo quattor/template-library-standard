@@ -545,13 +545,22 @@ variable DISK_VOLUME_PARAMS = {
                     # Create an entry for the underlying device with the appropriate size if it doesn't exist,
                     # raid1 is used and size is defined for the MD device.
                     foreach (i; device; params['devices']) {
-                        if ( !is_defined(SELF[device]) && exists(params['raid_level']) && (params['raid_level'] == 1) ) {
+                        if (
+                            !is_defined(SELF[device]) &&
+                            exists(params['raid_level']) &&
+                            (params['raid_level'] == 1)
+                        ) {
                             volumes[device] = dict(
                                 'device', device,
                                 'type', 'partition',
                                 'size', params['size'],
                             );
-                            debug('Entry added for partition %s used by %s (size=%sMB)', device, volume, params['size']);
+                            debug(
+                                'Entry added for partition %s used by %s (size=%sMB)',
+                                device,
+                                volume,
+                                params['size'],
+                            );
                         };
                     };
                 } else {
@@ -582,11 +591,19 @@ variable DISK_VOLUME_PARAMS = {
                 if ( exists(params['device']) ) {
                     if ( is_defined(SELF[params['device']]) ) {
                         if ( is_defined(SELF[params['device']]['size']) && (SELF[params['device']]['size'] == 0) ) {
-                            debug('Device %s used by file system %s has a zero size. Marking file system for deletion', params['device'], volume);
+                            debug(
+                                'Device %s used by file system %s has a zero size. Marking file system for deletion',
+                                params['device'],
+                                volume,
+                            );
                             params['size'] = 0;
                         }
                     } else if ( !is_defined(params['size']) ) {
-                        error("Filesystem %s: size not specified but device %s has no explicitly entry", params['device']);
+                        error(
+                            'Filesystem %s: size not specified but device %s has no explicit entry',
+                            volume,
+                            params['device'],
+                        );
                     };
                 } else {
                     error("Filesystem %s: 'device' property missing", volume);
@@ -721,7 +738,8 @@ variable DISK_PART_BY_DEV = {
                 if ( is_defined(params['subtype']) && (params['subtype'] == 'extended') ) {
                     if ( is_defined(SELF['partitions'][phys_dev]['extended']) ) {
                         error(
-                            'Extended partition already defined for %s (number=%s). Impossible to add a new one (number=%s)',
+                            'Extended partition already defined for %s (number=%s).' +
+                            ' Impossible to add a new one (number=%s)',
                             volume,
                             SELF['partitions'][phys_dev]['extended'],
                             part_num,
@@ -782,7 +800,11 @@ variable DISK_PART_BY_DEV = {
             # An extended partition is treated as a primary one at this point.
             if ( (part_num <= 4)  || (label == "gpt") ) {
                 if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] == -1 ) {
-                    debug('Primary/extended partition %s has no size defined. Postponing allocation of a partition number.', partition);
+                    debug(
+                        'Primary/extended partition %s has no size defined.' +
+                        ' Postponing allocation of a partition number.',
+                        partition,
+                    );
                     primary_no_size[length(primary_no_size)] = part_num;
                 } else{
                     last_primary = new_part_num;
@@ -795,7 +817,10 @@ variable DISK_PART_BY_DEV = {
                     new_part_num = 5;
                 };
                 if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] == -1 ) {
-                    debug('Logical partition %s has no size defined. Postponing allocation of a partition number.', partition);
+                    debug(
+                        'Logical partition %s has no size defined. Postponing allocation of a partition number.',
+                        partition,
+                    );
                     logical_no_size[length(logical_no_size)] = part_num;
                 };
             };
@@ -825,7 +850,10 @@ variable DISK_PART_BY_DEV = {
                 debug('No primary partition defined for %s', phys_dev);
             };
             if ( last_primary == 4 ) {
-                error('Need to create an extended partition on %s but fourth partition already used and not defined as extended', phys_dev);
+                error(
+                    'Need to create an extended partition on %s but fourth partition is not defined as extended',
+                    phys_dev,
+                );
             } else {
                 partition = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(last_primary + 1);
                 debug('Creating %s as an extended partition using unused part of %s', partition, phys_dev);
@@ -860,7 +888,10 @@ variable DISK_PART_BY_DEV = {
                         );
                     };
                     if ( (last_primary >= 4) && (label != 'gpt') ) {
-                        error('Cannot add partition (formerly) %s: 4 primary partitions already defined', old_part_name);
+                        error(
+                            'Cannot add partition (formerly) %s: 4 primary partitions already defined',
+                            old_part_name,
+                        );
                     };
                     no_size_part_num = last_primary + 1;
                 } else {                           # Logical partitions
@@ -992,9 +1023,17 @@ variable DISK_VOLUME_PARAMS = {
                     if ( is_defined(DISK_VOLUME_PARAMS[part_name]) ) {
                         part_name = DISK_VOLUME_PARAMS[part_name]['device'];
                     };
-                    if ( !is_defined(DISK_VOLUME_PARAMS[part_name]) ||
-                        (is_defined(DISK_VOLUME_PARAMS[part_name]['final']) && DISK_VOLUME_PARAMS[part_name]['final']) ||
-                        (is_defined(DISK_VOLUME_PARAMS[part_name]['device']) && (DISK_VOLUME_PARAMS[part_name]['device'] == part_name)) ) {
+                    if (
+                        (
+                            !is_defined(DISK_VOLUME_PARAMS[part_name])
+                        ) || (
+                            is_defined(DISK_VOLUME_PARAMS[part_name]['final']) &&
+                            DISK_VOLUME_PARAMS[part_name]['final']
+                        ) || (
+                            is_defined(DISK_VOLUME_PARAMS[part_name]['device']) &&
+                            (DISK_VOLUME_PARAMS[part_name]['device'] == part_name)
+                        )
+                    ) {
                         part_not_found = false;
                     };
                 };
