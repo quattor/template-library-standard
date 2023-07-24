@@ -18,7 +18,7 @@ variable FILESYSTEM_LAYOUT_CONFIG_SITE ?= null;
 desc =  template included at the beginning of the file system configuration and allowing to \
  to redefine the default size of block devices defined in the default configuration
 values = template namespace
-default = FILESYSTEM_LAYOUT_CONFIG_SITE+'-init' or null if FILESYSTEM_LAYOUT_CONFIG_SITE is undefined
+default = FILESYSTEM_LAYOUT_CONFIG_SITE + '-init' or null if FILESYSTEM_LAYOUT_CONFIG_SITE is undefined
 required = no
 }
 variable FILESYSTEM_LAYOUT_CONFIG_INIT ?= if ( is_defined(FILESYSTEM_LAYOUT_CONFIG_SITE) ) {
@@ -100,13 +100,13 @@ values = string
 default = part_prefix for the boot device if defined, else the empty string
 required = no
 }
-variable DISK_BOOT_PART_PREFIX ?= if ( exists('/hardware/harddisks/'+DISK_BOOT_DEV+'/part_prefix') ) {
-    value('/hardware/harddisks/'+DISK_BOOT_DEV+'/part_prefix');
+variable DISK_BOOT_PART_PREFIX ?= if ( exists('/hardware/harddisks/' + DISK_BOOT_DEV + '/part_prefix') ) {
+    value('/hardware/harddisks/' + DISK_BOOT_DEV + '/part_prefix');
 } else {
     '';
 };
 
-# An ordered list of partition. Index will be used to build device name (index+1).
+# An ordered list of partition. Index will be used to build device name (index + 1).
 # Values must match key in DISK_VOLUME_PARAMS.
 variable DISK_BOOT_PARTS = list(
     'biosboot',
@@ -123,7 +123,7 @@ values = long
 default = 4 GB
 required = no
 }
-variable DISK_SWAP_DEFAULT ?= 4*GB;
+variable DISK_SWAP_DEFAULT ?= 4 * GB;
 @{
 desc =  define swap size as a ratio (float) of the RAM size
 values = double
@@ -181,9 +181,9 @@ default = 100 MB for legacy BIOS, 200 MB for UEFI
 required = no
 }
 variable DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT ?= if ( DISK_BIOS_TYPE_UEFI ) {
-    200*MB;
+    200 * MB;
 } else {
-    100*MB;
+    100 * MB;
 };
 
 # DISK_BIOSBOOT_BLOCKDEV_SIZE actually only defines the initial value
@@ -245,7 +245,7 @@ values = long
 default = 256 MB
 required = no
 }
-variable DISK_BOOT_BLOCKDEV_SIZE ?= 256*MB;
+variable DISK_BOOT_BLOCKDEV_SIZE ?= 256 * MB;
 
 @{
 desc =  default size for block device home
@@ -253,7 +253,7 @@ values = long
 default = 0 (not created)
 required = no
 }
-variable DISK_HOME_BLOCKDEV_SIZE ?= 0*GB;
+variable DISK_HOME_BLOCKDEV_SIZE ?= 0 * GB;
 
 @{
 desc =  default size for block device opt
@@ -261,7 +261,7 @@ values = long
 default = 2 GB
 required = no
 }
-variable DISK_OPT_BLOCKDEV_SIZE ?= 2*GB;
+variable DISK_OPT_BLOCKDEV_SIZE ?= 2 * GB;
 
 @{
 desc =  default size for block device root
@@ -269,7 +269,7 @@ values = long
 default = 1 GB
 required = no
 }
-variable DISK_ROOT_BLOCKDEV_SIZE ?= 1*GB;
+variable DISK_ROOT_BLOCKDEV_SIZE ?= 1 * GB;
 
 @{
 desc =  default size for block device swareas
@@ -277,7 +277,7 @@ values = long
 default = 0 (not created)
 required = no
 }
-variable DISK_SWAREAS_BLOCKDEV_SIZE ?= 0*GB;
+variable DISK_SWAREAS_BLOCKDEV_SIZE ?= 0 * GB;
 
 @{
 desc =  default size for block device tmp
@@ -285,7 +285,7 @@ values = long
 default = 1 GB
 required = no
 }
-variable DISK_TMP_BLOCKDEV_SIZE ?= 1*GB;
+variable DISK_TMP_BLOCKDEV_SIZE ?= 1 * GB;
 
 @{
 desc =  default size for block device usr
@@ -293,7 +293,7 @@ values = long
 default = 5 GB
 required = no
 }
-variable DISK_USR_BLOCKDEV_SIZE ?= 5*GB;
+variable DISK_USR_BLOCKDEV_SIZE ?= 5 * GB;
 
 @{
 desc =  default size for block device var
@@ -341,14 +341,14 @@ variable DISK_VOLUME_PARAMS ?= {
         'size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
         'type', 'partition',
         'flags', DISK_BIOSBOOT_PART_FLAGS,
-        'device', disk_part_name(DISK_BOOT_DEV, index('biosgrub',DISK_BOOT_PARTS) + 1),
+        'device', disk_part_name(DISK_BOOT_DEV, index('biosgrub', DISK_BOOT_PARTS) + 1),
     );
     SELF['boot'] = dict(
         'size', DISK_BOOT_BLOCKDEV_SIZE,
         'mountpoint', '/boot',
         'fstype', 'ext2',
         'type', 'partition',
-        'device', disk_part_name(DISK_BOOT_DEV, index('boot',DISK_BOOT_PARTS) + 1),
+        'device', disk_part_name(DISK_BOOT_DEV, index('boot', DISK_BOOT_PARTS) + 1),
     );
     SELF['home'] = dict(
         'size', DISK_HOME_BLOCKDEV_SIZE,
@@ -368,14 +368,14 @@ variable DISK_VOLUME_PARAMS ?= {
         'size', DISK_ROOT_BLOCKDEV_SIZE,
         'mountpoint', '/',
         'type', 'partition',
-        'device', disk_part_name(DISK_BOOT_DEV, index('root',DISK_BOOT_PARTS) + 1),
+        'device', disk_part_name(DISK_BOOT_DEV, index('root', DISK_BOOT_PARTS) + 1),
     );
     SELF['swap'] = dict(
         'size', DISK_SWAP_SIZE,
         'mountpoint', 'swap',
         'fstype', 'swap',
         'type', 'partition',
-        'device', disk_part_name(DISK_BOOT_DEV, index('swap',DISK_BOOT_PARTS) + 1),
+        'device', disk_part_name(DISK_BOOT_DEV, index('swap', DISK_BOOT_PARTS) + 1),
     );
     SELF['swareas'] = dict(
         'size', DISK_SWAREAS_BLOCKDEV_SIZE,
@@ -408,7 +408,7 @@ variable DISK_VOLUME_PARAMS ?= {
     SELF[DISK_VG01_VOLGROUP_NAME] = dict(
         'size', DISK_VG01_BLOCKDEV_SIZE,
         'type', 'vg',
-        'devices', list(disk_part_name(DISK_BOOT_DEV, index('lvm',DISK_BOOT_PARTS) + 1)),
+        'devices', list(disk_part_name(DISK_BOOT_DEV, index('lvm', DISK_BOOT_PARTS) + 1)),
     );
     SELF;
 };
@@ -622,7 +622,7 @@ variable DISK_DEVICE_LIST = {
         };
     };
     foreach (volume; params; DISK_VOLUME_PARAMS) {
-        if ( index(volume,SELF) < 0 ) {
+        if ( index(volume, SELF) < 0 ) {
             volume_order[length(volume_order)] = volume;
         };
     };
@@ -771,7 +771,7 @@ variable DISK_PART_BY_DEV = {
                 sorted_partition_list[length(sorted_partition_list)] = partition;
             };
         };
-        sorted_partition_list = merge(sorted_partition_list,two_digit_units);
+        sorted_partition_list = merge(sorted_partition_list, two_digit_units);
 
         # Renumber partitions if necessary.
         foreach (i; partition; sorted_partition_list) {
@@ -837,7 +837,7 @@ variable DISK_PART_BY_DEV = {
 
         # Check that there is no more than one partition without an explicit size and
         # assign it a number taking into accout if this is a primary or logical partition.
-        foreach (listnum; no_size_list; list(primary_no_size,logical_no_size)) {
+        foreach (listnum; no_size_list; list(primary_no_size, logical_no_size)) {
             if ( length(no_size_list) > 0 ) {
                 old_part_name = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(no_size_list[0]);
                 # Checks are different for primary and logical partitions
@@ -847,9 +847,9 @@ variable DISK_PART_BY_DEV = {
                             is_defined(SELF['partitions'][phys_dev]['extended']) &&
                         (no_size_list[0] != SELF['partitions'][phys_dev]['extended']) ) ) {
                         if ( is_defined(SELF['partitions'][phys_dev]['extended']) ) {
-                            extended_msg='and 1 extended';
+                            extended_msg = 'and 1 extended';
                         } else {
-                            extended_msg='';
+                            extended_msg = '';
                         };
                         error(
                             '%d primary %s %s partitions found on %s without an explicit size defined',
@@ -914,7 +914,7 @@ variable DISK_VOLUME_PARAMS = {
             );
             params['device'] = DISK_PART_BY_DEV['changed_part_num'][params['device']];
             params['final'] = true;
-        } else if ( match(params['type'],'md|vg') ) {
+        } else if ( match(params['type'], 'md|vg') ) {
             dev_list = list();
             dev_list_updated = false;
             foreach(i; dev; params['devices']) {
@@ -970,7 +970,7 @@ variable DISK_VOLUME_PARAMS = {
 "/system/blockdevices" = {
     foreach (i; dev_name; DISK_DEVICE_LIST) {
         params = DISK_VOLUME_PARAMS[dev_name];
-        if ( match(params['type'],'md|vg') ) {
+        if ( match(params['type'], 'md|vg') ) {
             # First build partition list with the appropriate name.
             # Dereference until it is a real partition.
             partitions = list();
@@ -1013,7 +1013,7 @@ variable DISK_VOLUME_PARAMS = {
                     SELF['md'] = dict();
                 };
                 if ( exists(params['raid_level']) ) {
-                    raid_level = 'RAID'+to_string(params['raid_level']);
+                    raid_level = 'RAID' + to_string(params['raid_level']);
                 } else {
                     raid_level = 'RAID0';
                 };
