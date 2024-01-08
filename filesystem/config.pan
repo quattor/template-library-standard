@@ -18,14 +18,14 @@ variable FILESYSTEM_LAYOUT_CONFIG_SITE ?= null;
 desc =  template included at the beginning of the file system configuration and allowing to \
  to redefine the default size of block devices defined in the default configuration
 values = template namespace
-default = FILESYSTEM_LAYOUT_CONFIG_SITE+'-init' or null if FILESYSTEM_LAYOUT_CONFIG_SITE is undefined
+default = FILESYSTEM_LAYOUT_CONFIG_SITE + '-init' or null if FILESYSTEM_LAYOUT_CONFIG_SITE is undefined
 required = no
 }
 variable FILESYSTEM_LAYOUT_CONFIG_INIT ?= if ( is_defined(FILESYSTEM_LAYOUT_CONFIG_SITE) ) {
-                                            if_exists(FILESYSTEM_LAYOUT_CONFIG_SITE + '-init');
-                                          } else {
-                                            null;
-                                          };
+    if_exists(FILESYSTEM_LAYOUT_CONFIG_SITE + '-init');
+} else {
+    null;
+};
 
 # Function to update DISK_VOLUME_PARAMS.
 # This function allows to merge site-specific volume parameters with default ones.
@@ -33,20 +33,20 @@ variable FILESYSTEM_LAYOUT_CONFIG_INIT ?= if ( is_defined(FILESYSTEM_LAYOUT_CONF
 #    variable DISK_VOLUME_PARAMS = filesystem_layout_mod(volume_dict);
 # where 'volume_dict' has the same format as DISK_VOLUME_PARAMS.
 function filesystem_layout_mod = {
-  if ( (ARGC != 1) || !is_dict(ARGV[0]) ) {
-    error(format('%s: one argument required, must be a dict', FUNCTION));
-  };
-
-  foreach (volume;params;ARGV[0]) {
-    if ( exists(SELF[volume]) ) {
-      foreach (key;value;params) {
-        SELF[volume][key] = value;
-      };
-    } else {
-      SELF[volume] = params;
+    if ( (ARGC != 1) || !is_dict(ARGV[0]) ) {
+        error('%s: one argument required, must be a dict', FUNCTION);
     };
-  };
-  SELF;
+
+    foreach (volume; params; ARGV[0]) {
+        if ( exists(SELF[volume]) ) {
+            foreach (key; value; params) {
+                SELF[volume][key] = value;
+            };
+        } else {
+            SELF[volume] = params;
+        };
+    };
+    SELF;
 };
 
 # Helper function for calculating partiton names. Takes an escaped disk name
@@ -77,19 +77,19 @@ required = no
 }
 variable DISK_BOOT_DEV ?= boot_disk();
 variable DISK_BOOT_DEV ?= {
-  if (exists("/hardware/harddisks/sda")) {
-    return("sda");
-  } else if (exists("/hardware/harddisks/hda")) {
-    return("hda");
-  } else if (exists("/hardware/harddisks/xvda")) {
-    return("xvda");
-  } else if (exists("/hardware/harddisks/{cciss/c0d0}")) {
-    return(escape("cciss/c0d0"));
-  } else if (exists("/hardware/harddisks/vda")) {
-    return("vda");
-  } else {
-    error('Unable to locate primary disk');
-  };
+    if (exists("/hardware/harddisks/sda")) {
+        return("sda");
+    } else if (exists("/hardware/harddisks/hda")) {
+        return("hda");
+    } else if (exists("/hardware/harddisks/xvda")) {
+        return("xvda");
+    } else if (exists("/hardware/harddisks/{cciss/c0d0}")) {
+        return(escape("cciss/c0d0"));
+    } else if (exists("/hardware/harddisks/vda")) {
+        return("vda");
+    } else {
+        error('Unable to locate primary disk');
+    };
 };
 
 # Handle disk device names as /dev/cciss/xxxpn, where 'p' must be inserted
@@ -100,20 +100,20 @@ values = string
 default = part_prefix for the boot device if defined, else the empty string
 required = no
 }
-variable DISK_BOOT_PART_PREFIX ?= if ( exists('/hardware/harddisks/'+DISK_BOOT_DEV+'/part_prefix') ) {
-                                    value('/hardware/harddisks/'+DISK_BOOT_DEV+'/part_prefix');
-                                  } else {
-                                    '';
-                                  };
+variable DISK_BOOT_PART_PREFIX ?= if ( exists('/hardware/harddisks/' + DISK_BOOT_DEV + '/part_prefix') ) {
+    value('/hardware/harddisks/' + DISK_BOOT_DEV + '/part_prefix');
+} else {
+    '';
+};
 
-# An ordered list of partition. Index will be used to build device name (index+1).
+# An ordered list of partition. Index will be used to build device name (index + 1).
 # Values must match key in DISK_VOLUME_PARAMS.
 variable DISK_BOOT_PARTS = list(
-  'biosboot',
-  'boot',
-  'root',
-  'swap',
-  'lvm',
+    'biosboot',
+    'boot',
+    'root',
+    'swap',
+    'lvm',
 );
 
 # Swap size: by default equal to memory size, if defined
@@ -123,7 +123,7 @@ values = long
 default = 4 GB
 required = no
 }
-variable DISK_SWAP_DEFAULT ?= 4*GB;
+variable DISK_SWAP_DEFAULT ?= 4 * GB;
 @{
 desc =  define swap size as a ratio (float) of the RAM size
 values = double
@@ -138,19 +138,19 @@ default = based on DISK_SWAP_RAM_RATIO
 required = no
 }
 variable DISK_SWAP_SIZE ?= {
-  ram_size = 0;
-  if ( is_defined("/hardware/ram") ) {
-    foreach (i;v;value("/hardware/ram")) {
-      if ( is_defined(v["size"]) ) {
-        ram_size = ram_size + v["size"];
-      };
+    ram_size = 0;
+    if ( is_defined("/hardware/ram") ) {
+        foreach (i; v; value("/hardware/ram")) {
+            if ( is_defined(v["size"]) ) {
+                ram_size = ram_size + v["size"];
+            };
+        };
     };
-  };
-  swap_size = to_long(ram_size * DISK_SWAP_RAM_RATIO);
-  if ( swap_size == 0 ) {
-   swap_size = DISK_SWAP_DEFAULT;
-  };
-  swap_size;
+    swap_size = to_long(ram_size * DISK_SWAP_RAM_RATIO);
+    if ( swap_size == 0 ) {
+        swap_size = DISK_SWAP_DEFAULT;
+    };
+    swap_size;
 };
 
 
@@ -181,10 +181,10 @@ default = 100 MB for legacy BIOS, 200 MB for UEFI
 required = no
 }
 variable DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT ?= if ( DISK_BIOS_TYPE_UEFI ) {
-                                       200*MB;
-                                     } else {
-                                       100*MB;
-                                     };
+    200 * MB;
+} else {
+    100 * MB;
+};
 
 # DISK_BIOSBOOT_BLOCKDEV_SIZE actually only defines the initial value
 # that can be updated later based on DISK_BOOT_ADD_BIOSBOOT_PART, OS version and label
@@ -203,10 +203,10 @@ default = bios_grub for legacy BIOS, boot for UEFI
 required = no
 }
 variable DISK_BIOSBOOT_PART_FLAGS ?= if ( DISK_BIOS_TYPE_UEFI ) {
-                                       list('boot');
-                                     } else {
-                                       list('bios_grub');
-                                     };
+    list('boot');
+} else {
+    list('bios_grub');
+};
 
 @{
 desc = name of biosboot partition
@@ -215,10 +215,10 @@ default = biosboot for legacy BIOS, efi for UEFI
 required = no
 }
 variable DISK_BIOSBOOT_PART_NAME ?= if ( DISK_BIOS_TYPE_UEFI ) {
-                                       'efi';
-                                     } else {
-                                       'biosboot';
-                                     };
+    'efi';
+} else {
+    'biosboot';
+};
 
 @{
 desc = fstype of UEFI BIOS boot partition
@@ -245,7 +245,7 @@ values = long
 default = 256 MB
 required = no
 }
-variable DISK_BOOT_BLOCKDEV_SIZE ?= 256*MB;
+variable DISK_BOOT_BLOCKDEV_SIZE ?= 256 * MB;
 
 @{
 desc =  default size for block device home
@@ -253,7 +253,7 @@ values = long
 default = 0 (not created)
 required = no
 }
-variable DISK_HOME_BLOCKDEV_SIZE ?= 0*GB;
+variable DISK_HOME_BLOCKDEV_SIZE ?= 0 * GB;
 
 @{
 desc =  default size for block device opt
@@ -261,7 +261,7 @@ values = long
 default = 2 GB
 required = no
 }
-variable DISK_OPT_BLOCKDEV_SIZE ?= 2*GB;
+variable DISK_OPT_BLOCKDEV_SIZE ?= 2 * GB;
 
 @{
 desc =  default size for block device root
@@ -269,7 +269,7 @@ values = long
 default = 1 GB
 required = no
 }
-variable DISK_ROOT_BLOCKDEV_SIZE ?= 1*GB;
+variable DISK_ROOT_BLOCKDEV_SIZE ?= 1 * GB;
 
 @{
 desc =  default size for block device swareas
@@ -277,7 +277,7 @@ values = long
 default = 0 (not created)
 required = no
 }
-variable DISK_SWAREAS_BLOCKDEV_SIZE ?= 0*GB;
+variable DISK_SWAREAS_BLOCKDEV_SIZE ?= 0 * GB;
 
 @{
 desc =  default size for block device tmp
@@ -285,7 +285,7 @@ values = long
 default = 1 GB
 required = no
 }
-variable DISK_TMP_BLOCKDEV_SIZE ?= 1*GB;
+variable DISK_TMP_BLOCKDEV_SIZE ?= 1 * GB;
 
 @{
 desc =  default size for block device usr
@@ -293,7 +293,7 @@ values = long
 default = 5 GB
 required = no
 }
-variable DISK_USR_BLOCKDEV_SIZE ?= 5*GB;
+variable DISK_USR_BLOCKDEV_SIZE ?= 5 * GB;
 
 @{
 desc =  default size for block device var
@@ -337,65 +337,88 @@ default = see sources
 required = no
 }
 variable DISK_VOLUME_PARAMS ?= {
-  SELF[DISK_BIOSBOOT_PART_NAME] = dict('size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
-                                       'type', 'partition',
-                                       'flags', DISK_BIOSBOOT_PART_FLAGS,
-                                       'device', disk_part_name(DISK_BOOT_DEV, index('biosgrub',DISK_BOOT_PARTS) + 1));
-  SELF['boot'] = dict('size', DISK_BOOT_BLOCKDEV_SIZE,
-                      'mountpoint', '/boot',
-                      'fstype', 'ext2',
-                      'type', 'partition',
-                      'device', disk_part_name(DISK_BOOT_DEV, index('boot',DISK_BOOT_PARTS) + 1));
-  SELF['home'] = dict('size', DISK_HOME_BLOCKDEV_SIZE,
-                      'mountpoint', '/home',
-                      'type', 'lvm',
-                      'volgroup', DISK_VG01_VOLGROUP_NAME,
-                      'device', 'homevol');
-  SELF['opt'] = dict('size', DISK_OPT_BLOCKDEV_SIZE,
-                     'mountpoint', '/opt',
-                     'type', 'lvm',
-                     'volgroup', DISK_VG01_VOLGROUP_NAME,
-                     'device', 'optvol');
-  SELF['root'] = dict('size', DISK_ROOT_BLOCKDEV_SIZE,
-                      'mountpoint', '/',
-                      'type', 'partition',
-                      'device', disk_part_name(DISK_BOOT_DEV, index('root',DISK_BOOT_PARTS) + 1));
-  SELF['swap'] = dict('size', DISK_SWAP_SIZE,
-                      'mountpoint', 'swap',
-                      'fstype', 'swap',
-                      'type', 'partition',
-                      'device', disk_part_name(DISK_BOOT_DEV, index('swap',DISK_BOOT_PARTS) + 1));
-  SELF['swareas'] = dict('size', DISK_SWAREAS_BLOCKDEV_SIZE,
-                         'mountpoint', '/swareas',
-                         'type', 'lvm',
-                         'volgroup', DISK_VG01_VOLGROUP_NAME,
-                         'device', 'swareasvol');
-  SELF['tmp'] = dict('size', DISK_TMP_BLOCKDEV_SIZE,
-                     'mountpoint', '/tmp',
-                     'type', 'lvm',
-                     'volgroup', DISK_VG01_VOLGROUP_NAME,
-                     'device', 'tmpvol');
-  SELF['usr'] = dict('size', DISK_USR_BLOCKDEV_SIZE,
-                     'mountpoint', '/usr',
-                     'type', 'lvm',
-                     'volgroup', DISK_VG01_VOLGROUP_NAME,
-                     'device', 'usrvol');
-  SELF['var'] = dict('size', DISK_VAR_BLOCKDEV_SIZE,
-                     'mountpoint', '/var',
-                     'type', 'lvm',
-                     'volgroup', DISK_VG01_VOLGROUP_NAME,
-                     'device', 'varvol');
-  SELF[DISK_VG01_VOLGROUP_NAME] = dict('size', DISK_VG01_BLOCKDEV_SIZE,
-                                       'type', 'vg',
-                                       'devices', list(disk_part_name(DISK_BOOT_DEV, index('lvm',DISK_BOOT_PARTS) + 1)));
-  SELF;
+    SELF[DISK_BIOSBOOT_PART_NAME] = dict(
+        'size', DISK_BIOSBOOT_BLOCKDEV_SIZE,
+        'type', 'partition',
+        'flags', DISK_BIOSBOOT_PART_FLAGS,
+        'device', disk_part_name(DISK_BOOT_DEV, index('biosgrub', DISK_BOOT_PARTS) + 1),
+    );
+    SELF['boot'] = dict(
+        'size', DISK_BOOT_BLOCKDEV_SIZE,
+        'mountpoint', '/boot',
+        'fstype', 'ext2',
+        'type', 'partition',
+        'device', disk_part_name(DISK_BOOT_DEV, index('boot', DISK_BOOT_PARTS) + 1),
+    );
+    SELF['home'] = dict(
+        'size', DISK_HOME_BLOCKDEV_SIZE,
+        'mountpoint', '/home',
+        'type', 'lvm',
+        'volgroup', DISK_VG01_VOLGROUP_NAME,
+        'device', 'homevol',
+    );
+    SELF['opt'] = dict(
+        'size', DISK_OPT_BLOCKDEV_SIZE,
+        'mountpoint', '/opt',
+        'type', 'lvm',
+        'volgroup', DISK_VG01_VOLGROUP_NAME,
+        'device', 'optvol',
+    );
+    SELF['root'] = dict(
+        'size', DISK_ROOT_BLOCKDEV_SIZE,
+        'mountpoint', '/',
+        'type', 'partition',
+        'device', disk_part_name(DISK_BOOT_DEV, index('root', DISK_BOOT_PARTS) + 1),
+    );
+    SELF['swap'] = dict(
+        'size', DISK_SWAP_SIZE,
+        'mountpoint', 'swap',
+        'fstype', 'swap',
+        'type', 'partition',
+        'device', disk_part_name(DISK_BOOT_DEV, index('swap', DISK_BOOT_PARTS) + 1),
+    );
+    SELF['swareas'] = dict(
+        'size', DISK_SWAREAS_BLOCKDEV_SIZE,
+        'mountpoint', '/swareas',
+        'type', 'lvm',
+        'volgroup', DISK_VG01_VOLGROUP_NAME,
+        'device', 'swareasvol',
+    );
+    SELF['tmp'] = dict(
+        'size', DISK_TMP_BLOCKDEV_SIZE,
+        'mountpoint', '/tmp',
+        'type', 'lvm',
+        'volgroup', DISK_VG01_VOLGROUP_NAME,
+        'device', 'tmpvol',
+    );
+    SELF['usr'] = dict(
+        'size', DISK_USR_BLOCKDEV_SIZE,
+        'mountpoint', '/usr',
+        'type', 'lvm',
+        'volgroup', DISK_VG01_VOLGROUP_NAME,
+        'device', 'usrvol',
+    );
+    SELF['var'] = dict(
+        'size', DISK_VAR_BLOCKDEV_SIZE,
+        'mountpoint', '/var',
+        'type', 'lvm',
+        'volgroup', DISK_VG01_VOLGROUP_NAME,
+        'device', 'varvol',
+    );
+    SELF[DISK_VG01_VOLGROUP_NAME] = dict(
+        'size', DISK_VG01_BLOCKDEV_SIZE,
+        'type', 'vg',
+        'devices', list(disk_part_name(DISK_BOOT_DEV, index('lvm', DISK_BOOT_PARTS) + 1)),
+    );
+    SELF;
 };
 
 # List order of creation, for volume/partition where it matters
-variable DISK_DEVICE_LIST ?= list('boot',
-                                  'root',
-                                  'swap',
-                                 );
+variable DISK_DEVICE_LIST ?= list(
+    'boot',
+    'root',
+    'swap',
+);
 
 
 # Include site-specific customization to volume list or creation order
@@ -460,149 +483,168 @@ variable PHYSICAL_DEVICE_LABEL ?= null;
 # specific entries defined for the partitions used. In this case, add an entry for the underlying
 # partitions with the appropriate size defined.
 variable DISK_VOLUME_PARAMS = {
-  volumes = dict();
-  debug('Initial list of file systems: '+to_string(SELF));
+    volumes = dict();
+    debug('Initial list of file systems: %s', SELF);
 
-  # Configure GPT legcay BIOS/UEFI boot partition if needed
-  #   - Legacy BIOS: bios boot partition required if GPT is ued and OS version >= EL7
-  #   - UEFI BIOS: GPT label and bios boot partition required
-  define_biosboot_size = false;
-  if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[DISK_BOOT_DEV])) {
-    label = PHYSICAL_DEVICE_LABEL[DISK_BOOT_DEV];
-  } else {
-    label = PHYSICAL_DEVICE_DEFAULT_LABEL;
-  };
-  #  UEFI requires a GPT label and a bios boot partion
-  if ( DISK_BIOS_TYPE_UEFI ) {
-    if ( label == 'gpt') {
-      define_biosboot_size = true;
+    # Configure GPT legcay BIOS/UEFI boot partition if needed
+    #   - Legacy BIOS: bios boot partition required if GPT is ued and OS version >= EL7
+    #   - UEFI BIOS: GPT label and bios boot partition required
+    define_biosboot_size = false;
+    if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[DISK_BOOT_DEV])) {
+        label = PHYSICAL_DEVICE_LABEL[DISK_BOOT_DEV];
     } else {
-      error(format('UEFI BIOS requires a GPT label insted of %s',label));
+        label = PHYSICAL_DEVICE_DEFAULT_LABEL;
     };
-  };
-  if ( is_defined(DISK_BOOT_ADD_BIOSBOOT_PART) ) {
-    if ( DISK_BOOT_ADD_BIOSBOOT_PART ) {
-      define_biosboot_size = true;
-    } else if ( ! define_biosboot_size ) {
-      SELF[DISK_BIOSBOOT_PART_NAME]['size'] = 0;
-    };
-  } else {
-    if ( (label == 'gpt') &&
-         (is_defined(OS_VERSION_PARAMS['family']) && (OS_VERSION_PARAMS['family'] == 'el')) &&
-         (to_long(OS_VERSION_PARAMS['majorversion']) >= 7) ) {
-      define_biosboot_size = true;
-    };
-  };
-  if ( define_biosboot_size ) {
-    if ( is_defined(SELF[DISK_BIOSBOOT_PART_NAME]) ) {
-      if ( SELF[DISK_BIOSBOOT_PART_NAME]['size'] == 0 ) {
-        SELF[DISK_BIOSBOOT_PART_NAME]['size'] = DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT;
-      } else {
-        debug(format("'%s' partition size already defined, default value not applied", DISK_BIOSBOOT_PART_NAME));
-      };
-    } else {
-      debug(format("'%s' partition doesn't exist in DISK_VOLUME_PARAMS, size not defined", DISK_BIOSBOOT_PART_NAME));
-    };
-  };
-  if ( DISK_BIOS_TYPE_UEFI ) {
-    if ( is_defined(SELF[DISK_BIOSBOOT_PART_NAME]) ) {
-        SELF[DISK_BIOSBOOT_PART_NAME]['fstype'] = DISK_UEFI_BIOSBOOT_FSTYPE;
-        SELF[DISK_BIOSBOOT_PART_NAME]['mountpoint'] = DISK_UEFI_BIOSBOOT_MOUNTPOINT;
-    } else {
-      error(format('UEFI BIOS requires a GPT label insted of %s',label));
-    };
-  };
-
-  # MD-related checks
-  foreach (volume;params;SELF) {
-    if ( exists(params['type']) && (params['type'] == 'md') ) {
-      if ( is_list(params['devices']) ) {
-        md_dev_list = list();
-        if ( exists(params['size']) && (params['size'] != 0) ) {
-          # Create an entry for the underlying device with the appropriate size if it doesn't exist,
-          # raid1 is used and size is defined for the MD device.
-          foreach (i;device;params['devices']) {
-            if ( !is_defined(SELF[device]) && exists(params['raid_level']) && (params['raid_level'] == 1) ) {
-              volumes[device] = dict('device', device,
-                                     'type', 'partition',
-                                     'size', params['size']);
-              debug('Entry added for partition '+device+' used by '+volume+' (size='+to_string(params['size'])+'MB)');
-            };
-          };
+    #  UEFI requires a GPT label and a bios boot partion
+    if ( DISK_BIOS_TYPE_UEFI ) {
+        if ( label == 'gpt') {
+            define_biosboot_size = true;
         } else {
-          foreach (i;device;params['devices']) {
-            if ( exists(SELF[device]['size']) && (SELF[device]['size'] != 0) ) {
-              md_dev_list[length(md_dev_list)] = device;
+            error('UEFI BIOS requires a GPT label insted of %s', label);
+        };
+    };
+    if ( is_defined(DISK_BOOT_ADD_BIOSBOOT_PART) ) {
+        if ( DISK_BOOT_ADD_BIOSBOOT_PART ) {
+            define_biosboot_size = true;
+        } else if ( ! define_biosboot_size ) {
+            SELF[DISK_BIOSBOOT_PART_NAME]['size'] = 0;
+        };
+    } else {
+        if ( (label == 'gpt') &&
+            (is_defined(OS_VERSION_PARAMS['family']) && (OS_VERSION_PARAMS['family'] == 'el')) &&
+            (to_long(OS_VERSION_PARAMS['majorversion']) >= 7) ) {
+            define_biosboot_size = true;
+        };
+    };
+    if ( define_biosboot_size ) {
+        if ( is_defined(SELF[DISK_BIOSBOOT_PART_NAME]) ) {
+            if ( SELF[DISK_BIOSBOOT_PART_NAME]['size'] == 0 ) {
+                SELF[DISK_BIOSBOOT_PART_NAME]['size'] = DISK_BIOSBOOT_BLOCKDEV_SIZE_DEFAULT;
             } else {
-              debug('Device '+device+' removed from '+volume+' partition list');
+                debug("'%s' partition size already defined, default value not applied", DISK_BIOSBOOT_PART_NAME);
             };
-          };
-          if ( length(md_dev_list) == 0 ) {
-            # Mark md device for deletion by defining its size to 0
-            debug('MD device '+volume+' has no partition left. Marking for deletion');
-            params['size'] = 0;
-          };
-        };
-      } else {
-        error("MD device "+volume+": property 'devices' missing or not a list");
-      };
-    };
-  };
-
-  # File system related checks (a file system is recognized by its mountpoint attribute).
-  # Ignore LVM-based file systems: check will be done later.
-  foreach (volume;params;SELF) {
-    if ( exists(params['mountpoint']) ) {
-      if ( !exists(params['type']) || (params['type'] != 'lvm') ) {
-        if ( exists(params['device']) ) {
-          if ( is_defined(SELF[params['device']]) ) {
-            if ( is_defined(SELF[params['device']]['size']) && (SELF[params['device']]['size'] == 0) ) {
-              debug('Device '+params['device']+' used by file system '+volume+' has a zero size. Marking file system for deletion');
-              params['size'] = 0;
-            }
-          } else if ( !is_defined(params['size']) ) {
-            error("Filesystem "+volume+": size not specified but device "+params['device']+" has no explicitly entry");
-          };
         } else {
-          error("Filesystem "+volume+": 'device' property missing");
+            debug("'%s' partition doesn't exist in DISK_VOLUME_PARAMS, size not defined", DISK_BIOSBOOT_PART_NAME);
         };
-      };
     };
-  };
+    if ( DISK_BIOS_TYPE_UEFI ) {
+        if ( is_defined(SELF[DISK_BIOSBOOT_PART_NAME]) ) {
+            SELF[DISK_BIOSBOOT_PART_NAME]['fstype'] = DISK_UEFI_BIOSBOOT_FSTYPE;
+            SELF[DISK_BIOSBOOT_PART_NAME]['mountpoint'] = DISK_UEFI_BIOSBOOT_MOUNTPOINT;
+        } else {
+            error('UEFI BIOS requires a GPT label insted of %s', label);
+        };
+    };
 
-  # Remove all entries with a zero size
-  foreach (volume;params;SELF) {
-    if ( !exists(params['size']) || (params['size'] != 0) ) {
-      if ( !exists(params['type']) ) {
-        error('Type undefined for volume '+volume);
-      };
-      volumes[volume] = SELF[volume];
-    } else {
-      debug('Removing volume '+volume+' (size=0)');
+    # MD-related checks
+    foreach (volume; params; SELF) {
+        if ( exists(params['type']) && (params['type'] == 'md') ) {
+            if ( is_list(params['devices']) ) {
+                md_dev_list = list();
+                if ( exists(params['size']) && (params['size'] != 0) ) {
+                    # Create an entry for the underlying device with the appropriate size if it doesn't exist,
+                    # raid1 is used and size is defined for the MD device.
+                    foreach (i; device; params['devices']) {
+                        if (
+                            !is_defined(SELF[device]) &&
+                            exists(params['raid_level']) &&
+                            (params['raid_level'] == 1)
+                        ) {
+                            volumes[device] = dict(
+                                'device', device,
+                                'type', 'partition',
+                                'size', params['size'],
+                            );
+                            debug(
+                                'Entry added for partition %s used by %s (size=%sMB)',
+                                device,
+                                volume,
+                                params['size'],
+                            );
+                        };
+                    };
+                } else {
+                    foreach (i; device; params['devices']) {
+                        if ( exists(SELF[device]['size']) && (SELF[device]['size'] != 0) ) {
+                            md_dev_list[length(md_dev_list)] = device;
+                        } else {
+                            debug('Device %s removed from %s partition list', device, volume);
+                        };
+                    };
+                    if ( length(md_dev_list) == 0 ) {
+                        # Mark md device for deletion by defining its size to 0
+                        debug('MD device %s has no partition left. Marking for deletion', volume);
+                        params['size'] = 0;
+                    };
+                };
+            } else {
+                error("MD device %s: property 'devices' missing or not a list", volume);
+            };
+        };
     };
-  };
-  debug('New list of file systems: '+to_string(volumes));
-  volumes;
+
+    # File system related checks (a file system is recognized by its mountpoint attribute).
+    # Ignore LVM-based file systems: check will be done later.
+    foreach (volume; params; SELF) {
+        if ( exists(params['mountpoint']) ) {
+            if ( !exists(params['type']) || (params['type'] != 'lvm') ) {
+                if ( exists(params['device']) ) {
+                    if ( is_defined(SELF[params['device']]) ) {
+                        if ( is_defined(SELF[params['device']]['size']) && (SELF[params['device']]['size'] == 0) ) {
+                            debug(
+                                'Device %s used by file system %s has a zero size. Marking file system for deletion',
+                                params['device'],
+                                volume,
+                            );
+                            params['size'] = 0;
+                        }
+                    } else if ( !is_defined(params['size']) ) {
+                        error(
+                            'Filesystem %s: size not specified but device %s has no explicit entry',
+                            volume,
+                            params['device'],
+                        );
+                    };
+                } else {
+                    error("Filesystem %s: 'device' property missing", volume);
+                };
+            };
+        };
+    };
+
+    # Remove all entries with a zero size
+    foreach (volume; params; SELF) {
+        if ( !exists(params['size']) || (params['size'] != 0) ) {
+            if ( !exists(params['type']) ) {
+                error('Type undefined for volume %s', volume);
+            };
+            volumes[volume] = SELF[volume];
+        } else {
+            debug('Removing volume %s (size=0)', volume);
+        };
+    };
+    debug('New list of file systems: %s', volumes);
+    volumes;
 };
 
 # Update DISK_DEVICE_LIST to include all volumes in DISK_VOLUME_PARAMS, preserving original order,
 # and removing volume present by default in this list but deleted in the configuration.
 variable DISK_DEVICE_LIST = {
-  volume_order = list();
-  foreach (i;volume;SELF) {
-    if ( is_defined(DISK_VOLUME_PARAMS[volume]) ) {
-      volume_order[length(volume_order)] = volume;
-    } else {
-      debug('Removing '+volume+' from DISK_DEVICE_LIST (not used in configuration');
+    volume_order = list();
+    foreach (i; volume; SELF) {
+        if ( is_defined(DISK_VOLUME_PARAMS[volume]) ) {
+            volume_order[length(volume_order)] = volume;
+        } else {
+            debug('Removing %s from DISK_DEVICE_LIST (not used in configuration', volume);
+        };
     };
-  };
-  foreach (volume;params;DISK_VOLUME_PARAMS) {
-    if ( index(volume,SELF) < 0 ) {
-      volume_order[length(volume_order)] = volume;
+    foreach (volume; params; DISK_VOLUME_PARAMS) {
+        if ( index(volume, SELF) < 0 ) {
+            volume_order[length(volume_order)] = volume;
+        };
     };
-  };
-  debug('Volume processing order='+to_string(volume_order));
-  volume_order;
+    debug('Volume processing order=%s', volume_order);
+    volume_order;
 };
 
 
@@ -619,244 +661,271 @@ variable DISK_DEVICE_LIST = {
 #   - 'changed_part_num': an entry for each partition renumbered to use a consecutive numbering. The
 #                         keys are the original partition name, the value the new one.
 variable DISK_PART_BY_DEV = {
-  SELF['partitions'] = dict();
-  SELF['changed_part_num'] = dict();
-  foreach (i;dev_name;DISK_DEVICE_LIST) {
-    if ( match(DISK_VOLUME_PARAMS[dev_name]['type'], 'md|vg') ) {
-      if ( exists(DISK_VOLUME_PARAMS[dev_name]['devices']) ) {
-        devices = DISK_VOLUME_PARAMS[dev_name]['devices'];
-      } else {
-        error('Missing physical device list for device '+dev_name);
-      };
-    } else {
-      devices = list(dev_name);
-    };
-
-    foreach (j;device;devices) {
-      # If the device is not present in DISK_VOLUME_PARAMS,
-      # assume a partition using the unused part of the disk
-      if ( exists(DISK_VOLUME_PARAMS[device]) ) {
-        params = DISK_VOLUME_PARAMS[device];
-      } else {
-        debug('Adding an entry to DISK_PART_BY_DEV for partition '+device+' used by '+dev_name);
-        params = dict('device', device,
-                      'type', 'partition',
-                      'size', -1);
-      };
-      if ( params['type'] == 'partition' ) {
-        if ( !exists(params['device'])  ) {
-          error("No physical device for partition '"+params['device']+"'");
-        };
-        phys_dev = null;
-        part_num = null;
-        part_prefix = null;
-        foreach (key; info; value("/hardware/harddisks")) {
-            if ( exists(info["part_prefix"]) ) {
-                pprefix = info["part_prefix"];
+    SELF['partitions'] = dict();
+    SELF['changed_part_num'] = dict();
+    foreach (i; dev_name; DISK_DEVICE_LIST) {
+        if ( match(DISK_VOLUME_PARAMS[dev_name]['type'], 'md|vg') ) {
+            if ( exists(DISK_VOLUME_PARAMS[dev_name]['devices']) ) {
+                devices = DISK_VOLUME_PARAMS[dev_name]['devices'];
             } else {
-                pprefix = "";
+                error('Missing physical device list for device %s', dev_name);
             };
-            # Example disk name to regex conversions:
-            # 'sda' -> '^(sda)(\d+)$'
-            # escape('cciss/c0d0') -> '(cciss/c0d0)p(\d+)$'
-            # 'nvme0n1' -> '(nvme0n1)p(\d+)$'
-            toks = matches(unescape(params['device']), '^(' + unescape(key) + ")" + pprefix + '(\d+)$');
-            if ( length(toks) == 3 ) {
-                phys_dev = key;
-                part_num = to_long(toks[2]);
-                part_prefix = pprefix;
-            };
-        };
-        if (!is_defined(phys_dev)) {
-            error(format('Device %s does not match any entries under /hardware/harddisks',
-                         params['device']));
-        };
-        if ( !exists(SELF['partitions'][phys_dev]) ) {
-          # Build 2 separate dict, part_list and part_num, the key being the partition name in each
-          # list. part_list will be passed to partitions_add() which requires a dict of
-          # partitions where the key is a partitionname and the value the partition parameters (as a dict).
-          # part_num is a transient dict used internally to do the partition final numbering.
-          SELF['partitions'][phys_dev] = dict('part_list', dict(),
-                                              'part_num', dict(),
-                                              'part_prefix', part_prefix,
-                                              'extended', undef,
-                                              'last_primary', 0,
-                                             );
-        };
-        if ( is_defined(params['size']) ) {
-          SELF['partitions'][phys_dev]['part_list'][params['device']]['size'] = params['size'];
         } else {
-          # Assume rest of physical device by default
-          SELF['partitions'][phys_dev]['part_list'][params['device']]['size'] = -1;
+            devices = list(dev_name);
         };
-        # 'flags' is a list of property that will be set to true in the block device configuration
-        if ( is_defined(params['flags']) ) {
-          SELF['partitions'][phys_dev]['part_list'][params['device']]['flags'] = params['flags'];
-        };
-        SELF['partitions'][phys_dev]['part_num'][params['device']] = part_num;
-        if ( is_defined(params['subtype']) && (params['subtype'] == 'extended') ) {
-          if ( is_defined(SELF['partitions'][phys_dev]['extended']) ) {
-            error('Extended partition already defined for '+volume+' (number='+SELF['partitions'][phys_dev]['extended']+
-                                                               '). Impossible to add a new one (number='+to_string(part_num)+')');
-          } else {
-            SELF['partitions'][phys_dev]['extended'] = part_num;
-          };
-        };
-      };
-    };
-  };
 
-  debug(format('devices defined before partition renumbering = %s', to_string(SELF['partitions'])));
-
-  # Process SELF['partitions'] and ensure that for each device, partition numbers are consecutive but keeping
-  # logical partitions >=5. Renumbering cannot be used only based on the alphabetical order of partitions as
-  # there may be 2 digits for the partition number.
-  #
-  # Another check is for partitions without an explicit size (size=-1). It is checked that there is no more
-  # than one per disk and this partition will always be renumber to be the last one created.
-  #
-  # Note that this code heavily relies on the fact PAN dicts are run through in the lexical order by foreach
-  # statement in panc v8. Should this change, this code would need to be fixed...
-
-  foreach (phys_dev;dev_params;SELF['partitions']) {
-    new_part_num = 1;
-    new_part_list = dict();
-    primary_no_size = list();
-    logical_no_size = list();
-    sorted_partition_list = list();
-    two_digit_units = list();
-    last_primary = SELF['partitions'][phys_dev]['last_primary'];
-    if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
-      label = PHYSICAL_DEVICE_LABEL[phys_dev];
-    } else {
-      label = PHYSICAL_DEVICE_DEFAULT_LABEL;
-    };
-
-    # First build the list of partitions sorted by partition number instead of lexical order
-    # (10 after 9 and not after 1). This would not work with partition number >= 100 but this
-    # is unlikely to happen...
-    foreach (partition;part_num;SELF['partitions'][phys_dev]['part_num']) {
-      if ( part_num >= 10 ) {
-        two_digit_units[length(two_digit_units)] = partition;
-      } else {
-        sorted_partition_list[length(sorted_partition_list)] = partition;
-      };
-    };
-    sorted_partition_list = merge(sorted_partition_list,two_digit_units);
-
-    # Renumber partitions if necessary.
-    foreach (i;partition;sorted_partition_list) {
-      part_num = SELF['partitions'][phys_dev]['part_num'][partition];
-      # Primary partitions: update last primary partition detected.
-      # Also if the partition as no explicit size (size=-1), add it
-      # to the list of primary partitions without and explicit size.
-      # An extended partition is treated as a primary one at this point.
-      if ( (part_num <= 4)  || (label == "gpt") ) {
-        if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] == -1 ) {
-          debug('Primary/extended partition '+partition+' has no size defined. Postponing allocation of a partition number.');
-          primary_no_size[length(primary_no_size)] = part_num;
-        } else{
-          last_primary = new_part_num;
-        };
-      # Logical partitions: update to 5 next partition number to be assigned
-      # to ensure a logical partition is not changed into a primary one.
-      # Also keep track of the logical partitions without an explicit size.
-      } else {
-        if ( new_part_num <= 4 ) {
-          new_part_num = 5;
-        };
-        if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] == -1 ) {
-          debug('Logical partition '+partition+' has no size defined. Postponing allocation of a partition number.');
-          logical_no_size[length(logical_no_size)] = part_num;
-        };
-      };
-      # If the partition has no defined size (size=-1), ignore it at the moment.
-      # It number will be assigned later.
-      if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] != -1 ) {
-        if ( part_num == new_part_num ) {
-          new_part_name = partition;
-        } else {
-          new_part_name = replace(to_string(part_num)+'$',to_string(new_part_num),partition);
-          debug('Renaming partition '+partition+' into '+new_part_name);
-          SELF['changed_part_num'][partition] = new_part_name;
-        };
-        new_part_list[new_part_name] = SELF['partitions'][phys_dev]['part_list'][partition];
-        new_part_num = new_part_num + 1;
-      };
-    };
-
-    # No longer needed
-    SELF['partitions'][phys_dev]['part_num'] = null;
-
-    # Check that an extended partition has been explicitly defined, else create one if
-    # there are partition numbers >=5 (last existing number used after renumbering is
-    # new_part_num-1).
-    if ( (new_part_num > 5) && !is_defined(SELF['partitions'][phys_dev]['extended']) && (label != 'gpt') ) {
-      if ( last_primary == 0 ) {
-        debug('No primary partition defined for '+phys_dev);
-      };
-      if ( last_primary == 4 ) {
-        error('Need to create an extended partition on '+phys_dev+' but fourth partition already used and not defined as extended');
-      } else {
-        partition = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(last_primary+1);
-        debug('Creating '+partition+' as an extended partition using unused part of '+phys_dev);
-        new_part_list[partition]['size'] = -1;
-        last_primary = last_primary + 1;
-        SELF['partitions'][phys_dev]['extended'] = last_primary;
-      };
-    };
-
-    # Check that there is no more than one partition without an explicit size and
-    # assign it a number taking into accout if this is a primary or logical partition.
-    foreach (listnum;no_size_list;list(primary_no_size,logical_no_size)) {
-      if ( length(no_size_list) > 0 ) {
-        old_part_name = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(no_size_list[0]);
-        # Checks are different for primary and logical partitions
-        if ( listnum == 0 ) {              # Primary partitions
-          if ( (length(no_size_list) > 1) ||
-               ((length(no_size_list) == 1) &&
-                 is_defined(SELF['partitions'][phys_dev]['extended']) &&
-                 (no_size_list[0] != SELF['partitions'][phys_dev]['extended']) ) ) {
-            if ( is_defined(SELF['partitions'][phys_dev]['extended']) ) {
-              extended_msg='and 1 extended';
+        foreach (j; device; devices) {
+            # If the device is not present in DISK_VOLUME_PARAMS,
+            # assume a partition using the unused part of the disk
+            if ( exists(DISK_VOLUME_PARAMS[device]) ) {
+                params = DISK_VOLUME_PARAMS[device];
             } else {
-              extended_msg='';
+                debug('Adding an entry to DISK_PART_BY_DEV for partition %s used by %s', device, dev_name);
+                params = dict('device', device,
+                    'type', 'partition',
+                'size', -1);
             };
-            error(to_string(length(no_size_list))+' primary '+to_string(no_size_list)+' '+extended_msg+
-                                           ' partitions found on '+phys_dev+' without an explicit size defined');
-          };
-          if ( (last_primary >= 4) && (label != 'gpt') ) {
-            error('Cannot add partition (formerly) '+old_part_name+': 4 primary partitions already defined');
-          };
-          no_size_part_num = last_primary + 1;
-        } else {                           # Logical partitions
-          if ( length(no_size_list) > 1 ) {
-            error(to_string(length(no_size_list))+' logical partitions '+to_string(no_size_list)+' found on '+phys_dev+
-                                         ' without an explicit size defined(');
-          };
-          if ( new_part_num <= 4 ) {
-            new_part_num = 5;
-          };
-          no_size_part_num = new_part_num;
+            if ( params['type'] == 'partition' ) {
+                if ( !exists(params['device'])  ) {
+                    error("No physical device for partition '%s'", params['device']);
+                };
+                phys_dev = null;
+                part_num = null;
+                part_prefix = null;
+                foreach (key; info; value("/hardware/harddisks")) {
+                    if ( exists(info["part_prefix"]) ) {
+                        pprefix = info["part_prefix"];
+                    } else {
+                        pprefix = "";
+                    };
+                    # Example disk name to regex conversions:
+                    # 'sda' -> '^(sda)(\d+)$'
+                    # escape('cciss/c0d0') -> '(cciss/c0d0)p(\d+)$'
+                    # 'nvme0n1' -> '(nvme0n1)p(\d+)$'
+                    toks = matches(unescape(params['device']), '^(' + unescape(key) + ")" + pprefix + '(\d+)$');
+                    if ( length(toks) == 3 ) {
+                        phys_dev = key;
+                        part_num = to_long(toks[2]);
+                        part_prefix = pprefix;
+                    };
+                };
+                if (!is_defined(phys_dev)) {
+                    error('Device %s does not match any entries under /hardware/harddisks', params['device']);
+                };
+                if ( !exists(SELF['partitions'][phys_dev]) ) {
+                    # Build 2 separate dict, part_list and part_num, the key being the partition name in each
+                    # list. part_list will be passed to partitions_add() which requires a dict of
+                    # partitions where the key is a partitionname and the value the partition parameters (as a dict).
+                    # part_num is a transient dict used internally to do the partition final numbering.
+                    SELF['partitions'][phys_dev] = dict('part_list', dict(),
+                        'part_num', dict(),
+                        'part_prefix', part_prefix,
+                        'extended', undef,
+                        'last_primary', 0,
+                    );
+                };
+                if ( is_defined(params['size']) ) {
+                    SELF['partitions'][phys_dev]['part_list'][params['device']]['size'] = params['size'];
+                } else {
+                    # Assume rest of physical device by default
+                    SELF['partitions'][phys_dev]['part_list'][params['device']]['size'] = -1;
+                };
+                # 'flags' is a list of property that will be set to true in the block device configuration
+                if ( is_defined(params['flags']) ) {
+                    SELF['partitions'][phys_dev]['part_list'][params['device']]['flags'] = params['flags'];
+                };
+                SELF['partitions'][phys_dev]['part_num'][params['device']] = part_num;
+                if ( is_defined(params['subtype']) && (params['subtype'] == 'extended') ) {
+                    if ( is_defined(SELF['partitions'][phys_dev]['extended']) ) {
+                        error(
+                            'Extended partition already defined for %s (number=%s).' +
+                            ' Impossible to add a new one (number=%s)',
+                            volume,
+                            SELF['partitions'][phys_dev]['extended'],
+                            part_num,
+                            part_num,
+                        );
+                    } else {
+                        SELF['partitions'][phys_dev]['extended'] = part_num;
+                    };
+                };
+            };
         };
-
-        new_part_name = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(no_size_part_num);
-        debug('Assigning partition name '+new_part_name+' to former '+old_part_name+' (no explicit size)');
-        new_part_list[new_part_name]['size'] = -1;
-        if ( old_part_name != new_part_name ) {
-          SELF['changed_part_num'][old_part_name] = new_part_name;
-        };
-      };
     };
 
-    # Assign the new list of partition for the device.
-    SELF['partitions'][phys_dev]['part_list'] = new_part_list;
-  };
+    debug('devices defined before partition renumbering = %s', SELF['partitions']);
 
-  debug(format('renumbered partitions = %s', to_string(SELF['changed_part_num'])));
-  debug(format('devices defined after partition renumbering = %s', to_string(SELF['partitions'])));
+    # Process SELF['partitions'] and ensure that for each device, partition numbers are consecutive but keeping
+    # logical partitions >=5. Renumbering cannot be used only based on the alphabetical order of partitions as
+    # there may be 2 digits for the partition number.
+    #
+    # Another check is for partitions without an explicit size (size=-1). It is checked that there is no more
+    # than one per disk and this partition will always be renumber to be the last one created.
+    #
+    # Note that this code heavily relies on the fact PAN dicts are run through in the lexical order by foreach
+    # statement in panc v8. Should this change, this code would need to be fixed...
 
-  SELF;
+    foreach (phys_dev; dev_params; SELF['partitions']) {
+        new_part_num = 1;
+        new_part_list = dict();
+        primary_no_size = list();
+        logical_no_size = list();
+        sorted_partition_list = list();
+        two_digit_units = list();
+        last_primary = SELF['partitions'][phys_dev]['last_primary'];
+        if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
+            label = PHYSICAL_DEVICE_LABEL[phys_dev];
+        } else {
+            label = PHYSICAL_DEVICE_DEFAULT_LABEL;
+        };
+
+        # First build the list of partitions sorted by partition number instead of lexical order
+        # (10 after 9 and not after 1). This would not work with partition number >= 100 but this
+        # is unlikely to happen...
+        foreach (partition; part_num; SELF['partitions'][phys_dev]['part_num']) {
+            if ( part_num >= 10 ) {
+                two_digit_units[length(two_digit_units)] = partition;
+            } else {
+                sorted_partition_list[length(sorted_partition_list)] = partition;
+            };
+        };
+        sorted_partition_list = merge(sorted_partition_list, two_digit_units);
+
+        # Renumber partitions if necessary.
+        foreach (i; partition; sorted_partition_list) {
+            part_num = SELF['partitions'][phys_dev]['part_num'][partition];
+            # Primary partitions: update last primary partition detected.
+            # Also if the partition as no explicit size (size=-1), add it
+            # to the list of primary partitions without and explicit size.
+            # An extended partition is treated as a primary one at this point.
+            if ( (part_num <= 4)  || (label == "gpt") ) {
+                if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] == -1 ) {
+                    debug(
+                        'Primary/extended partition %s has no size defined.' +
+                        ' Postponing allocation of a partition number.',
+                        partition,
+                    );
+                    primary_no_size[length(primary_no_size)] = part_num;
+                } else{
+                    last_primary = new_part_num;
+                };
+                # Logical partitions: update to 5 next partition number to be assigned
+                # to ensure a logical partition is not changed into a primary one.
+                # Also keep track of the logical partitions without an explicit size.
+            } else {
+                if ( new_part_num <= 4 ) {
+                    new_part_num = 5;
+                };
+                if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] == -1 ) {
+                    debug(
+                        'Logical partition %s has no size defined. Postponing allocation of a partition number.',
+                        partition,
+                    );
+                    logical_no_size[length(logical_no_size)] = part_num;
+                };
+            };
+            # If the partition has no defined size (size=-1), ignore it at the moment.
+            # It number will be assigned later.
+            if ( SELF['partitions'][phys_dev]['part_list'][partition]['size'] != -1 ) {
+                if ( part_num == new_part_num ) {
+                    new_part_name = partition;
+                } else {
+                    new_part_name = replace(to_string(part_num) + '$', to_string(new_part_num), partition);
+                    debug('Renaming partition %s into %s', partition, new_part_name);
+                    SELF['changed_part_num'][partition] = new_part_name;
+                };
+                new_part_list[new_part_name] = SELF['partitions'][phys_dev]['part_list'][partition];
+                new_part_num = new_part_num + 1;
+            };
+        };
+
+        # No longer needed
+        SELF['partitions'][phys_dev]['part_num'] = null;
+
+        # Check that an extended partition has been explicitly defined, else create one if
+        # there are partition numbers >=5 (last existing number used after renumbering is
+        # new_part_num-1).
+        if ( (new_part_num > 5) && !is_defined(SELF['partitions'][phys_dev]['extended']) && (label != 'gpt') ) {
+            if ( last_primary == 0 ) {
+                debug('No primary partition defined for %s', phys_dev);
+            };
+            if ( last_primary == 4 ) {
+                error(
+                    'Need to create an extended partition on %s but fourth partition is not defined as extended',
+                    phys_dev,
+                );
+            } else {
+                partition = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(last_primary + 1);
+                debug('Creating %s as an extended partition using unused part of %s', partition, phys_dev);
+                new_part_list[partition]['size'] = -1;
+                last_primary = last_primary + 1;
+                SELF['partitions'][phys_dev]['extended'] = last_primary;
+            };
+        };
+
+        # Check that there is no more than one partition without an explicit size and
+        # assign it a number taking into accout if this is a primary or logical partition.
+        foreach (listnum; no_size_list; list(primary_no_size, logical_no_size)) {
+            if ( length(no_size_list) > 0 ) {
+                old_part_name = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(no_size_list[0]);
+                # Checks are different for primary and logical partitions
+                if ( listnum == 0 ) {              # Primary partitions
+                    if ( (length(no_size_list) > 1) ||
+                        ((length(no_size_list) == 1) &&
+                            is_defined(SELF['partitions'][phys_dev]['extended']) &&
+                        (no_size_list[0] != SELF['partitions'][phys_dev]['extended']) ) ) {
+                        if ( is_defined(SELF['partitions'][phys_dev]['extended']) ) {
+                            extended_msg = 'and 1 extended';
+                        } else {
+                            extended_msg = '';
+                        };
+                        error(
+                            '%d primary %s %s partitions found on %s without an explicit size defined',
+                            length(no_size_list),
+                            no_size_list,
+                            extended_msg,
+                            phys_dev,
+                        );
+                    };
+                    if ( (last_primary >= 4) && (label != 'gpt') ) {
+                        error(
+                            'Cannot add partition (formerly) %s: 4 primary partitions already defined',
+                            old_part_name,
+                        );
+                    };
+                    no_size_part_num = last_primary + 1;
+                } else {                           # Logical partitions
+                    if ( length(no_size_list) > 1 ) {
+                        error(
+                            '%d logical partitions %s found on %s without an explicit size defined',
+                            length(no_size_list),
+                            no_size_list,
+                            phys_dev,
+                        );
+                    };
+                    if ( new_part_num <= 4 ) {
+                        new_part_num = 5;
+                    };
+                    no_size_part_num = new_part_num;
+                };
+
+                new_part_name = phys_dev + SELF['partitions'][phys_dev]['part_prefix'] + to_string(no_size_part_num);
+                debug('Assigning partition name %s to former %s (no explicit size)', new_part_name, old_part_name);
+                new_part_list[new_part_name]['size'] = -1;
+                if ( old_part_name != new_part_name ) {
+                    SELF['changed_part_num'][old_part_name] = new_part_name;
+                };
+            };
+        };
+
+        # Assign the new list of partition for the device.
+        SELF['partitions'][phys_dev]['part_list'] = new_part_list;
+    };
+
+    debug('renumbered partitions = %s', SELF['changed_part_num']);
+    debug('devices defined after partition renumbering = %s', SELF['partitions']);
+
+    SELF;
 };
 
 # Update DISK_VOLUME_PARAMS to reflect changed partition names/numbers in the device attribute for
@@ -866,171 +935,188 @@ variable DISK_PART_BY_DEV = {
 # DISK_VOLUME_PARAMS: this flag explicitly states that this entry correspond to a
 # physical partition description and that no attempt should be made to dereference it.
 variable DISK_VOLUME_PARAMS = {
-  foreach (volume;params;SELF) {
-    if ( (params['type'] == 'partition') &&
-         is_defined(DISK_PART_BY_DEV['changed_part_num'][params['device']]) ) {
-      debug(format('updating %s device to new partition name/number: %s',
-                   volume, DISK_PART_BY_DEV['changed_part_num'][params['device']]));
-      params['device'] = DISK_PART_BY_DEV['changed_part_num'][params['device']];
-      params['final'] = true;
-    } else if ( match(params['type'],'md|vg') ) {
-      dev_list = list();
-      dev_list_updated = false;
-      foreach(i;dev;params['devices']) {
-        if ( !is_defined(DISK_VOLUME_PARAMS[dev]) &&
-             is_defined(DISK_PART_BY_DEV['changed_part_num'][dev]) ) {
-          debug(format('updating %s device %s to new partition name/number: %s',
-                       volume, dev, DISK_PART_BY_DEV['changed_part_num'][dev]));
-          dev_list[length(dev_list)] = DISK_PART_BY_DEV['changed_part_num'][dev];
-          dev_list_updated = true;
-        } else {
-          dev_list[length(dev_list)] = dev;
+    foreach (volume; params; SELF) {
+        if ( (params['type'] == 'partition') &&
+            is_defined(DISK_PART_BY_DEV['changed_part_num'][params['device']])) {
+            debug(
+                'updating %s device to new partition name/number: %s',
+                volume,
+                DISK_PART_BY_DEV['changed_part_num'][params['device']],
+            );
+            params['device'] = DISK_PART_BY_DEV['changed_part_num'][params['device']];
+            params['final'] = true;
+        } else if ( match(params['type'], 'md|vg') ) {
+            dev_list = list();
+            dev_list_updated = false;
+            foreach(i; dev; params['devices']) {
+                if ( !is_defined(DISK_VOLUME_PARAMS[dev]) &&
+                    is_defined(DISK_PART_BY_DEV['changed_part_num'][dev]) ) {
+                    debug(
+                        'updating %s device %s to new partition name/number: %s',
+                        volume,
+                        dev,
+                        DISK_PART_BY_DEV['changed_part_num'][dev],
+                    );
+                    dev_list[length(dev_list)] = DISK_PART_BY_DEV['changed_part_num'][dev];
+                    dev_list_updated = true;
+                } else {
+                    dev_list[length(dev_list)] = dev;
+                };
+            };
+            if ( dev_list_updated ) debug('%s new device list = %s', volume, dev_list);
+            params['devices'] = dev_list;
         };
-      };
-      if ( dev_list_updated ) debug(format('%s new device list = %s', volume, to_string(dev_list)));
-      params['devices'] = dev_list;
     };
-  };
-  SELF;
+    SELF;
 };
 
 #Create physical devices
 "/system/blockdevices/physical_devs" = {
-  foreach (phys_dev;params;DISK_PART_BY_DEV['partitions']) {
-    if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
-      SELF[phys_dev] = dict ("label", PHYSICAL_DEVICE_LABEL[phys_dev]);
-    } else {
-      SELF[phys_dev] = dict ("label", PHYSICAL_DEVICE_DEFAULT_LABEL);
+    foreach (phys_dev; params; DISK_PART_BY_DEV['partitions']) {
+        if (is_defined(PHYSICAL_DEVICE_LABEL) && exists(PHYSICAL_DEVICE_LABEL[phys_dev])) {
+            SELF[phys_dev] = dict ("label", PHYSICAL_DEVICE_LABEL[phys_dev]);
+        } else {
+            SELF[phys_dev] = dict ("label", PHYSICAL_DEVICE_DEFAULT_LABEL);
+        };
     };
-  };
-  SELF;
+    SELF;
 };
 
 # Create partitions.
 # Configuration validity has already been checked.
 "/system/blockdevices/partitions" = {
-  foreach (phys_dev;params;DISK_PART_BY_DEV['partitions']) {
-    if ( is_defined(DISK_PART_BY_DEV['partitions'][phys_dev]['extended']) ) {
-      extended_part = phys_dev + DISK_PART_BY_DEV['partitions'][phys_dev]['part_prefix'] +
-                                            to_string(DISK_PART_BY_DEV['partitions'][phys_dev]['extended']);
-      partitions_add (phys_dev, params['part_list'], extended_part);
-    } else {
-      partitions_add (phys_dev, params['part_list']);
+    foreach (phys_dev; params; DISK_PART_BY_DEV['partitions']) {
+        if ( is_defined(DISK_PART_BY_DEV['partitions'][phys_dev]['extended']) ) {
+            extended_part = phys_dev + DISK_PART_BY_DEV['partitions'][phys_dev]['part_prefix'] +
+            to_string(DISK_PART_BY_DEV['partitions'][phys_dev]['extended']);
+            partitions_add (phys_dev, params['part_list'], extended_part);
+        } else {
+            partitions_add (phys_dev, params['part_list']);
+        };
     };
-  };
-  SELF;
+    SELF;
 };
 
 # Add MD and VG definitions
 "/system/blockdevices" = {
-  foreach (i;dev_name;DISK_DEVICE_LIST) {
-    params = DISK_VOLUME_PARAMS[dev_name];
-    if ( match(params['type'],'md|vg') ) {
-      # First build partition list with the appropriate name.
-      # Dereference until it is a real partition.
-      partitions = list();
-      foreach (j;device;params['devices']) {
-        part_not_found = true;
-        part_name = device;
-        debug('Looking for partition name corresponding to '+device+' used by '+dev_name);
-        # Device names listed by MD or VG entries are derefenced using other entries in DISK_VOLUME_PARAMS
-        # until the actual partition to use has been found.
-        # The actual partition entry is identified either by having a 'final' flag defined and
-        # set to true (this is done as part of the partition renumbering to avoid resulting possible loops)
-        # or by the device name associated with the entry to be the same as the entry name or
-        # or by the entry missing in DISK_VOLUME_PARAMS (implicitly created in DISK_PART_BY_DEV).
-        # It is very important for all partition entries matching actual partitions to have the
-        # final flag set if the device name associated with them doesn't match the entry name.
-        # Check the device identified is found in /system/blockdevices/partitions, else
-        # raise an error. Something wrong happened before...
-        while ( part_not_found ) {
-          if ( is_defined(DISK_VOLUME_PARAMS[part_name]) ) {
-            part_name = DISK_VOLUME_PARAMS[part_name]['device'];
-          };
-          if ( !is_defined(DISK_VOLUME_PARAMS[part_name]) ||
-               (is_defined(DISK_VOLUME_PARAMS[part_name]['final']) && DISK_VOLUME_PARAMS[part_name]['final']) ||
-               (is_defined(DISK_VOLUME_PARAMS[part_name]['device']) && (DISK_VOLUME_PARAMS[part_name]['device'] == part_name)) ) {
-            part_not_found = false;
-          };
+    foreach (i; dev_name; DISK_DEVICE_LIST) {
+        params = DISK_VOLUME_PARAMS[dev_name];
+        if ( match(params['type'], 'md|vg') ) {
+            # First build partition list with the appropriate name.
+            # Dereference until it is a real partition.
+            partitions = list();
+            foreach (j; device; params['devices']) {
+                part_not_found = true;
+                part_name = device;
+                debug('Looking for partition name corresponding to %s used by %s', device, dev_name);
+                # Device names listed by MD or VG entries are derefenced using other entries in DISK_VOLUME_PARAMS
+                # until the actual partition to use has been found.
+                # The actual partition entry is identified either by having a 'final' flag defined and
+                # set to true (this is done as part of the partition renumbering to avoid resulting possible loops)
+                # or by the device name associated with the entry to be the same as the entry name or
+                # or by the entry missing in DISK_VOLUME_PARAMS (implicitly created in DISK_PART_BY_DEV).
+                # It is very important for all partition entries matching actual partitions to have the
+                # final flag set if the device name associated with them doesn't match the entry name.
+                # Check the device identified is found in /system/blockdevices/partitions, else
+                # raise an error. Something wrong happened before...
+                while ( part_not_found ) {
+                    if ( is_defined(DISK_VOLUME_PARAMS[part_name]) ) {
+                        part_name = DISK_VOLUME_PARAMS[part_name]['device'];
+                    };
+                    if (
+                        (
+                            !is_defined(DISK_VOLUME_PARAMS[part_name])
+                        ) || (
+                            is_defined(DISK_VOLUME_PARAMS[part_name]['final']) &&
+                            DISK_VOLUME_PARAMS[part_name]['final']
+                        ) || (
+                            is_defined(DISK_VOLUME_PARAMS[part_name]['device']) &&
+                            (DISK_VOLUME_PARAMS[part_name]['device'] == part_name)
+                        )
+                    ) {
+                        part_not_found = false;
+                    };
+                };
+                if ( !is_defined(SELF['partitions'][part_name]) ) {
+                    error(
+                        'Partition %s is used by %s but has no entry under /system/blockdevices/partitions',
+                        part_name,
+                        dev_name,
+                    );
+                };
+                debug('Found: %s', part_name);
+                partitions[length(partitions)] = "partitions/" + part_name;
+            };
+            if ( params['type'] == 'md') {
+                if ( !exists(SELF['md']) ) {
+                    SELF['md'] = dict();
+                };
+                if ( exists(params['raid_level']) ) {
+                    raid_level = 'RAID' + to_string(params['raid_level']);
+                } else {
+                    raid_level = 'RAID0';
+                };
+                SELF['md'][dev_name] = dict("device_list", partitions,
+                "raid_level", raid_level);
+            } else if ( params['type'] == 'vg' ) {
+                if ( !exists(SELF['volume_groups']) ) {
+                    SELF['volume_groups'] = dict();
+                };
+                SELF['volume_groups'][dev_name] = dict("device_list", partitions);
+            };
         };
-        if ( !is_defined(SELF['partitions'][part_name]) ) {
-          error('Partition '+part_name+' is used by '+dev_name+
-                                       ' but has no entry under /system/blockdevices/partitions');
-        };
-        debug('Found: '+part_name);
-        partitions[length(partitions)] = "partitions/" + part_name;
-      };
-      if ( params['type'] == 'md') {
-        if ( !exists(SELF['md']) ) {
-          SELF['md'] = dict();
-        };
-        if ( exists(params['raid_level']) ) {
-          raid_level = 'RAID'+to_string(params['raid_level']);
-        } else {
-          raid_level = 'RAID0';
-        };
-        SELF['md'][dev_name] = dict("device_list", partitions,
-                                     "raid_level", raid_level);
-      } else if ( params['type'] == 'vg' ) {
-         if ( !exists(SELF['volume_groups']) ) {
-          SELF['volume_groups'] = dict();
-        };
-        SELF['volume_groups'][dev_name] = dict("device_list", partitions);
-      };
     };
-  };
 
-  SELF;
+    SELF;
 };
 
 # Build a list of logical volumes per volume group.
 # They will be properly ordered at creation time, based on file system
 # creation order.
 variable DISK_LV_BY_VG = {
-  foreach (i;device;DISK_DEVICE_LIST) {
-    params = DISK_VOLUME_PARAMS[device];
-    if ( params['type'] == 'lvm' ) {
-      # Already checked for existence
-      params = DISK_VOLUME_PARAMS[device];
+    foreach (i; device; DISK_DEVICE_LIST) {
+        params = DISK_VOLUME_PARAMS[device];
+        if ( params['type'] == 'lvm' ) {
+            # Already checked for existence
+            params = DISK_VOLUME_PARAMS[device];
 
-      if ( !exists(params['device'])  ) {
-        error("Logical volume name undefined for '"+device+"'");
-      };
-      if ( exists(params['volgroup'])  ) {
-        vg_name = params['volgroup'];
-      } else {
-        error("No volume group defined for logical volume '"+params['device']+"'");
-      };
-      if ( !exists(SELF[vg_name]) ) {
-        SELF[vg_name] = dict();
-      };
-      options = dict();
-      if ( exists(params['size']) ) {
-        options['size'] = params['size'];
-      } else {
-        error('Size has not been specified for logical volume '+params['device']);
-      };
-      if ( exists(params['raid_type'] ) ) {
-        options['raid_type'] = params['raid_type'];
-      };
-      SELF[vg_name][params['device']] = options;
+            if ( !exists(params['device'])  ) {
+                error("Logical volume name undefined for '%s'", device);
+            };
+            if ( exists(params['volgroup'])  ) {
+                vg_name = params['volgroup'];
+            } else {
+                error("No volume group defined for logical volume '%s'", params['device']);
+            };
+            if ( !exists(SELF[vg_name]) ) {
+                SELF[vg_name] = dict();
+            };
+            options = dict();
+            if ( exists(params['size']) ) {
+                options['size'] = params['size'];
+            } else {
+                error('Size has not been specified for logical volume %s', params['device']);
+            };
+            if ( exists(params['raid_type'] ) ) {
+                options['raid_type'] = params['raid_type'];
+            };
+            SELF[vg_name][params['device']] = options;
+        };
     };
-  };
-
-  SELF;
+    SELF;
 };
 
 
 "/system/blockdevices/logical_volumes" = {
-  if ( is_defined(DISK_LV_BY_VG) ) {
-    foreach (vg_name;lv_list;DISK_LV_BY_VG) {
-      lvo_add (vg_name, lv_list);
+    if ( is_defined(DISK_LV_BY_VG) ) {
+        foreach (vg_name; lv_list; DISK_LV_BY_VG) {
+            lvo_add (vg_name, lv_list);
+        };
+        SELF;
+    } else {
+        debug('No logical volumes found');
+        null;
     };
-    SELF;
-  } else {
-    debug('No logical volumes found');
-    null;
-  };
 };
 
 
@@ -1038,123 +1124,123 @@ variable DISK_LV_BY_VG = {
 # Ignore entries in this list that have no mount point defined.
 # Take care of creating logical volume without a defined size last in the volume group.
 "/system/filesystems" = {
-  # Create a list of volume per volume group (other partitions/volumes set in 'OTHERS__').
-  volumes = dict();
-  lastgroup = dict();
-  defgroup_name = 'OTHERS__';
-  volgroups = list(defgroup_name);     # Use to control creation order
-  foreach (i;dev_name;DISK_DEVICE_LIST) {
-    params = DISK_VOLUME_PARAMS[dev_name];
-    if ( params['type'] == 'lvm' ) {
-      volgroup = params['volgroup'];
-      if ( !exists(volumes[volgroup]) ) {
-        volumes[volgroup] = list();
-        volgroups[length(volgroups)] = volgroup;
-      };
-      if ( params['size'] == -1 ) {
-        # Use a list for lastgroup to allow more useful diagnostics...
-        if ( !exists(lastgroup[volgroup]) ) {
-          lastgroup[volgroup] = list();
+    # Create a list of volume per volume group (other partitions/volumes set in 'OTHERS__').
+    volumes = dict();
+    lastgroup = dict();
+    defgroup_name = 'OTHERS__';
+    volgroups = list(defgroup_name);     # Use to control creation order
+    foreach (i; dev_name; DISK_DEVICE_LIST) {
+        params = DISK_VOLUME_PARAMS[dev_name];
+        if ( params['type'] == 'lvm' ) {
+            volgroup = params['volgroup'];
+            if ( !exists(volumes[volgroup]) ) {
+                volumes[volgroup] = list();
+                volgroups[length(volgroups)] = volgroup;
+            };
+            if ( params['size'] == -1 ) {
+                # Use a list for lastgroup to allow more useful diagnostics...
+                if ( !exists(lastgroup[volgroup]) ) {
+                    lastgroup[volgroup] = list();
+                };
+                lastgroup[volgroup][length(lastgroup[volgroup])] = dev_name;
+            } else {
+                volumes[volgroup][length(volumes[volgroup])] = dev_name;
+            };
+        } else {
+            if ( !exists(volumes[defgroup_name]) ) {
+                volumes[defgroup_name] = list();
+            };
+            volumes[defgroup_name][length(volumes[defgroup_name])] = dev_name;
         };
-        lastgroup[volgroup][length(lastgroup[volgroup])] = dev_name;
-      } else {
-        volumes[volgroup][length(volumes[volgroup])] = dev_name;
-      };
-    } else {
-      if ( !exists(volumes[defgroup_name]) ) {
-        volumes[defgroup_name] = list();
-      };
-      volumes[defgroup_name][length(volumes[defgroup_name])] = dev_name;
     };
-  };
 
-  # Add logical volumes that must be created last in each volume group
-  # because they have no expicit size defined.
-  # Check there is just one such logical volume per volume group.
-  foreach (volgroup;logvols;lastgroup) {
-    # If an entry exist for a vg, there is at least one entry in it.
-    if ( length(logvols) > 1 ) {
-      error('Several logical volumes with an undefined size in volume group '+volgroup+' '+to_string(logvols));
+    # Add logical volumes that must be created last in each volume group
+    # because they have no expicit size defined.
+    # Check there is just one such logical volume per volume group.
+    foreach (volgroup; logvols; lastgroup) {
+        # If an entry exist for a vg, there is at least one entry in it.
+        if ( length(logvols) > 1 ) {
+            error('Several logical volumes with an undefined size in volume group %s %s', volgroup, logvols);
+        };
+        volumes[volgroup][length(volumes[volgroup])] = logvols[0];
     };
-    volumes[volgroup][length(volumes[volgroup])] = logvols[0];
-  };
 
-  # Add configuration information for each file system
-  foreach (i;volgroup;volgroups) {
-    foreach (i;dev_name;volumes[volgroup]) {
-      params = DISK_VOLUME_PARAMS[dev_name];
-      if ( exists(params['mountpoint']) ) {
-        if ( params['type'] == 'partition' ) {
-          block_device = 'partitions/' + params['device'];
-        } else if ( params['type'] == 'lvm' ) {
-          block_device = 'logical_volumes/' + params['device'];
-        } else if ( params['type'] == 'raid' ) {
-          block_device = 'md/' + params['device'];
+    # Add configuration information for each file system
+    foreach (i; volgroup; volgroups) {
+        foreach (i; dev_name; volumes[volgroup]) {
+            params = DISK_VOLUME_PARAMS[dev_name];
+            if ( exists(params['mountpoint']) ) {
+                if ( params['type'] == 'partition' ) {
+                    block_device = 'partitions/' + params['device'];
+                } else if ( params['type'] == 'lvm' ) {
+                    block_device = 'logical_volumes/' + params['device'];
+                } else if ( params['type'] == 'raid' ) {
+                    block_device = 'md/' + params['device'];
+                };
+                if ( exists(params['fstype']) ) {
+                    fs_type = params['fstype'];
+                } else {
+                    fs_type = FILESYSTEM_DEFAULT_FS_TYPE;
+                };
+                if ( exists(params['format']) ) {
+                    format = params['format'];
+                } else {
+                    format = FILESYSTEM_DEFAULT_FORMAT;
+                };
+                if ( exists(params['preserve']) ) {
+                    preserve = params['preserve'];
+                } else {
+                    preserve = FILESYSTEM_DEFAULT_PRESERVE;
+                };
+                if ( exists(params['mountopts']) ) {
+                    mountopts = params['mountopts'];
+                } else {
+                    mountopts = FILESYSTEM_DEFAULT_MOUNTOPTS;
+                };
+                fs_params = dict ("block_device", block_device,
+                    "mountpoint", params['mountpoint'],
+                    "format", format,
+                    "mount", true,
+                    "preserve", preserve,
+                    "type", fs_type,
+                "mountopts", mountopts);
+                # Copy the optional parameters if present
+                foreach (i; name; list("freq", "pass", "mkfsopts", "tuneopts", "label", "quota")) {
+                    if (exists(params[name])) {
+                        fs_params[name] = params[name];
+                    };
+                };
+                filesystem_mod(fs_params);
+            };
         };
-        if ( exists(params['fstype']) ) {
-          fs_type = params['fstype'];
-        } else {
-          fs_type = FILESYSTEM_DEFAULT_FS_TYPE;
-        };
-        if ( exists(params['format']) ) {
-          format = params['format'];
-        } else {
-          format = FILESYSTEM_DEFAULT_FORMAT;
-        };
-        if ( exists(params['preserve']) ) {
-          preserve = params['preserve'];
-        } else {
-          preserve = FILESYSTEM_DEFAULT_PRESERVE;
-        };
-        if ( exists(params['mountopts']) ) {
-          mountopts = params['mountopts'];
-        } else {
-          mountopts = FILESYSTEM_DEFAULT_MOUNTOPTS;
-        };
-        fs_params = dict ("block_device", block_device,
-                          "mountpoint", params['mountpoint'],
-                          "format", format,
-                          "mount", true,
-                          "preserve", preserve,
-                          "type", fs_type,
-                          "mountopts", mountopts);
-        # Copy the optional parameters if present
-        foreach (i; name; list("freq", "pass", "mkfsopts", "tuneopts", "label", "quota")) {
-          if (exists(params[name])) {
-            fs_params[name] = params[name];
-          };
-        };
-        filesystem_mod(fs_params);
-      };
     };
-  };
-  SELF;
+    SELF;
 };
 
 # Set requested permissions or owner (if any) on filesystem mountpoints
 include 'components/dirperm/config';
 '/software/components/dirperm' = {
-  if ( !exists(SELF['paths']) || !is_defined(SELF['paths']) ) {
-    SELF['paths'] = list();
-  };
-  foreach (i;dev_name;DISK_DEVICE_LIST) {
-    params = DISK_VOLUME_PARAMS[dev_name];
-    if ( (exists(params['permissions']) || exists(params['owner'])) && exists(params['mountpoint']) ) {
-      path_params = dict('path', params['mountpoint'],
-                         'type', 'd');
-      if ( exists(params['owner']) ) {
-        path_params['owner'] = params['owner'];
-      } else {
-        path_params['owner'] = 'root:root';
-      };
-      if ( exists(params['permissions']) ) {
-        path_params['perm'] = params['permissions'];
-      } else {
-        path_params['perm'] = '0755';
-      };
-      SELF['paths'][length(SELF['paths'])] = path_params
+    if ( !exists(SELF['paths']) || !is_defined(SELF['paths']) ) {
+        SELF['paths'] = list();
     };
-  };
+    foreach (i; dev_name; DISK_DEVICE_LIST) {
+        params = DISK_VOLUME_PARAMS[dev_name];
+        if ( (exists(params['permissions']) || exists(params['owner'])) && exists(params['mountpoint']) ) {
+            path_params = dict('path', params['mountpoint'],
+            'type', 'd');
+            if ( exists(params['owner']) ) {
+                path_params['owner'] = params['owner'];
+            } else {
+                path_params['owner'] = 'root:root';
+            };
+            if ( exists(params['permissions']) ) {
+                path_params['perm'] = params['permissions'];
+            } else {
+                path_params['perm'] = '0755';
+            };
+            SELF['paths'][length(SELF['paths'])] = path_params
+        };
+    };
 
-  SELF;
+    SELF;
 };
