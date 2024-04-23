@@ -6,5 +6,5 @@ structure template hardware/cpu/intel/xeon_gold_6240r;
 "arch" = "x86_64";
 "cores" = 24;
 "max_threads" = 48;
-"type" = "skylake"; # Intel codename
+"type" = "cascade lake"; # Intel codename
 "power" = 165; # TDP in watts
