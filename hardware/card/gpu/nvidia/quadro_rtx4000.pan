@@ -11,4 +11,4 @@ structure template hardware/card/gpu/nvidia/quadro_rtx4000;
 
 'pci/class' = 0x030000; # Display controller, VGA compatible.
 'pci/vendor' = 0x10de; # nVidia Corporation
-'pci/device' = 0x1ed3;
+'pci/device' = 0x1eb1;
