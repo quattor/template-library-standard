@@ -5,6 +5,6 @@ structure template hardware/cpu/amd/epyc_7281;
 "speed" = 2100; # MHz
 "arch" = "x86_64";
 "cores" = 16;
-"max_threads" = 32;
+"max_threads" = 16;
 "type" = "zen"; # AMD codename
 "power" = 170; # TDP in watts
