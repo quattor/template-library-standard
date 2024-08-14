@@ -5,3 +5,4 @@ structure template hardware/cpu/amd/opteron_4334;
 "speed"  = 3100 * MHz;
 "arch"   = "x86_64";
 "cores"  = 6;
+"max_threads" = 6;

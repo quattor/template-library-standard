@@ -6,3 +6,4 @@ structure template hardware/cpu/intel/pentium_xeon_3000;
 "speed" = 3000 * MHz;
 "arch" = "x86_64";
 "cores" = 1;
+"max_threads" = 1;

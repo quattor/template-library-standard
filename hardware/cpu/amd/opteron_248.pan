@@ -6,3 +6,4 @@ structure template hardware/cpu/amd/opteron_248;
 "speed"  = 2200 * MHz;
 "arch"   = "x86_64";
 "cores"  = 1;
+"max_threads" = 1;
