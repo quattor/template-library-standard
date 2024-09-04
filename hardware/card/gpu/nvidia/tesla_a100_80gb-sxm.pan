@@ -1,4 +1,4 @@
-structure template hardware/card/gpu/nvidia/tesla_a100_40gb-sxm;
+structure template hardware/card/gpu/nvidia/tesla_a100_80gb-sxm;
 
 'manufacturer' = 'nvidia';
 'name' = 'tesla_a100_80gb-sxm';
