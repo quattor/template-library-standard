@@ -6,3 +6,4 @@ structure template hardware/cpu/intel/xeon_3400;
 "speed" = 3400 * MHz;
 "arch" = "x86_64";
 "cores" = 1;
+"max_threads" = 2;

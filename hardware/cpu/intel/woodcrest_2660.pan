@@ -6,3 +6,4 @@ structure template hardware/cpu/intel/woodcrest_2660;
 "speed" = 2660 * MHz;
 "arch" = "x86_64";
 "cores" = 2;
+"max_threads" = 2;

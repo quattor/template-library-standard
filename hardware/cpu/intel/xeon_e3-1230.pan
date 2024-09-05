@@ -5,6 +5,7 @@ structure template hardware/cpu/intel/xeon_e3-1230;
 "speed" = 3500 * MHz;
 "arch" = "x86_64";
 "cores" = 4;
+"max_threads" = 8;
 "type" = "kaby lake"; # Intel codename
 "power" = 72; # TDP in watts
 

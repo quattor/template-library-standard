@@ -6,3 +6,4 @@ structure template hardware/cpu/amd/opteron_2218;
 "speed"  = 2600 * MHz;
 "arch"   = "x86_64";
 "cores"  = 2;
+"max_threads" = 2;
