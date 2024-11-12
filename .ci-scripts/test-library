@@ -2,6 +2,10 @@
 
 set -e # halt script on error
 
+echo GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}
+echo GITHUB_BASE_REF: ${GITHUB_BASE_REF}
+echo GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}
+
 # Retrieve last version of create-vanilla-SCDB from GitHub
 echo "Downloading create-vanilla-SCDB from GitHub..."
 rm -f /tmp/create-vanilla-SCDB.sh
