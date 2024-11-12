@@ -14,11 +14,15 @@ include SITE_GLOBAL_VARS_TEMPLATE;
 variable SITE_FUNCTIONS_TEMPLATE ?= if_exists('site/functions');
 include SITE_FUNCTIONS_TEMPLATE;
 
+# Load Quattor version
+include 'quattor/client/version';
+variable DEBUG = debug('QUATTOR_RELEASE = %s', to_string(QUATTOR_RELEASE));
+
 # Package management core functions
 include 'components/spma/functions';
 
-# profile_base for profile structure
-include 'quattor/profile_base';
+# Load Pan units
+include 'pan/units';
 
 # hardware
 include 'hardware/functions';

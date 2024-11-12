@@ -27,10 +27,7 @@ variable OS_POSTPONE_AII_CONFIG ?= OS_POSTPONE_FILESYSTEM_CONFIG;
 variable DEBUG = debug('%s: OS_POSTPONE_AII_CONFIG=%s', OS_POSTPONE_AII_CONFIG);
 
 
-# Grub configuration module initialisation
-include 'components/grub/config';
-
-# common site machine configuration
+# common site machine early configuration
 variable SITE_CONFIG_TEMPLATE ?= 'site/config';
 include SITE_CONFIG_TEMPLATE;
 
@@ -54,9 +51,6 @@ variable OS_NS_REPOSITORY ?= 'repository/';
 # software packages
 include 'pan/functions';
 
-# Configure Bind resolver
-include 'site/named';
-
 
 # Include OS version dependent RPMs
 variable SERVICE_OS_BASE_TEMPLATE = {
@@ -67,6 +61,19 @@ variable SERVICE_OS_BASE_TEMPLATE = {
     };
 };
 include SERVICE_OS_BASE_TEMPLATE;
+
+# common site machine configuration to be done after the OS
+variable SITE_CONFIG_POSTOS_TEMPLATE ?= 'site/config-postos';
+include if_exists(SITE_CONFIG_POSTOS_TEMPLATE);
+
+# profile_base for profile structure
+include 'quattor/profile_base';
+
+# Configure Bind resolver
+include 'site/named';
+
+# Grub configuration module initialisation
+include 'components/grub/config';
 
 # Configure time synchonisation
 include if_exists('site/time_synchronisation');
