@@ -7,4 +7,4 @@ structure template hardware/cpu/amd/epyc_7452;
 "cores" = 32;
 "max_threads" = 64;
 "type" = "zen2"; # AMD codename
-"power" = 180; # TDP in watts
+"power" = 155; # TDP in watts
