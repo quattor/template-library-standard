@@ -1,7 +1,7 @@
-structure template hardware/cpu/intel/xeon_gold_5218;
+structure template hardware/cpu/intel/xeon_gold_5218b;
 
 "manufacturer" = "Intel";
-"model" = "Intel(R) Xeon(R) Gold 5218 CPU @ 2.30GHz";
+"model" = "Intel(R) Xeon(R) Gold 5218B CPU @ 2.30GHz";
 "speed" = 2300; # MHz
 "arch" = "x86_64";
 "cores" = 16;
