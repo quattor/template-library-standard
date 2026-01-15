@@ -9,3 +9,12 @@ jobs:
 
   standard-pan:
     uses: quattor/release/.github/workflows/pan-template-tests.yaml@main
+
+  test-templates:
+    runs-on: ubuntu-latest
+    container: ghcr.io/quattor/quattor-test-container:latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: test templates
+      run: .ci-scripts/test-templates
